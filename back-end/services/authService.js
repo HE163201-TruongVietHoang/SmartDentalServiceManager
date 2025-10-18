@@ -1,0 +1,145 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const { findUserByEmail, setOtpForUser, updatePassword, createUser } = require('../access/userAccess');
+const { getActiveSessions, createSession, deactivateSession, findSessionByRefreshToken, deactivateAllSessionsByUser } = require('../access/sessionAccess');
+const {getPool,sql} = require('../config/db');
+const MAX_SESSIONS = 3;
+
+function generateAccessToken(user) {
+  return jwt.sign(
+    { userId: user.userId, role: user.roleName },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" }
+  );
+}
+
+function generateRefreshToken() {
+  return crypto.randomBytes(64).toString('hex');
+}
+
+// Login
+async function login({ email, password, ip, device }) {
+  const user = await findUserByEmail(email);
+  if (!user) throw new Error("Tài khoản không tồn tại");
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) throw new Error("Sai mật khẩu");
+
+  const activeSessions = await getActiveSessions(user.userId);
+  if (activeSessions.length >= MAX_SESSIONS) {
+    await deactivateSession(activeSessions[0].sessionId); // logout cũ nhất
+  }
+
+  const jwtToken = generateAccessToken(user);
+  const refreshToken = generateRefreshToken();
+
+  await createSession({ userId: user.userId, jwtToken, refreshToken, ip, device });
+
+  return { jwtToken, refreshToken, user };
+}
+
+// Refresh token
+async function refreshToken(oldRefreshToken) {
+  const session = await findSessionByRefreshToken(oldRefreshToken);
+  if (!session) throw new Error("Refresh token không hợp lệ");
+
+  const user = { userId: session.userId, roleName: session.roleName };
+  const newAccessToken = generateAccessToken(user);
+
+  return { jwtToken: newAccessToken };
+}
+
+async function changePassword({ userId, oldPassword, newPassword }) {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('userId', sql.Int, userId)
+    .query(`SELECT password FROM dbo.Users WHERE userId = @userId`);
+
+  const user = result.recordset[0];
+  if (!user) throw new Error("User không tồn tại");
+
+  const isMatch = await bcrypt.compare(oldPassword, user.password);
+  if (!isMatch) throw new Error("Mật khẩu cũ không đúng");
+
+  // Hash mật khẩu mới
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  // Update mật khẩu trong DB
+  await pool.request()
+    .input('userId', sql.Int, userId)
+    .input('password', sql.NVarChar, hashedPassword)
+    .query(`UPDATE dbo.Users SET password = @password WHERE userId = @userId`);
+
+  // Logout tất cả thiết bị / session
+  await deactivateAllSessionsByUser(userId);
+
+  return { message: "Đổi mật khẩu thành công. Tất cả thiết bị đã bị logout." };
+}
+
+function generateOtp() {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
+// Gửi OTP (demo: bạn có thể dùng email/SMS thật)
+async function sendOtpEmail(email, otp) {
+  console.log(`Gửi OTP ${otp} tới email: ${email}`);
+}
+
+// Bước 1: Yêu cầu reset password
+async function requestPasswordReset(email) {
+  const user = await findUserByEmail(email);
+  if (!user) throw new Error("Email không tồn tại");
+
+  const otp = generateOtp();
+  const expiresAt = new Date(Date.now() + 10*60*1000); // OTP 10 phút
+  await setOtpForUser(user.userId, otp, expiresAt);
+
+  await sendOtpEmail(email, otp);
+
+  return { message: "Mã OTP đã được gửi tới email" };
+}
+
+// Bước 2: Reset password bằng OTP
+async function resetPassword({ email, otpCode, newPassword }) {
+  const user = await findUserByEmail(email);
+  if (!user) throw new Error("Email không tồn tại");
+
+  if (!user.otpCode || user.otpCode !== otpCode) {
+    throw new Error("Mã OTP không hợp lệ");
+  }
+
+  if (user.otpExpiresAt < new Date()) {
+    throw new Error("Mã OTP đã hết hạn");
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+  await updatePassword(user.userId, hashedPassword);
+
+  // Logout tất cả session
+  await deactivateAllSessionsByUser(user.userId);
+
+  return { message: "Đổi mật khẩu thành công, tất cả thiết bị đã bị logout" };
+}
+
+async function registerUser({ username, email, password, fullName, phone, gender, dob, address, roleId }) {
+  const existingUser = await findUserByEmail(email);
+  if (existingUser) throw new Error("Email đã được sử dụng");
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const user = await createUser({
+    username,
+    email,
+    password: hashedPassword,
+    fullName,
+    phone,
+    gender,
+    dob,
+    address,
+    roleId
+  });
+
+  return { message: "Đăng ký thành công", userId: user.userId };
+}
+module.exports = { login, refreshToken , changePassword, requestPasswordReset, resetPassword ,registerUser};
