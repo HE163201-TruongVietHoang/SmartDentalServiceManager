@@ -31,4 +31,9 @@ nav .active li {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+html {
+  scroll-padding-top: 90px; /* chừa khoảng trống bằng chiều cao navbar */
+  scroll-behavior: smooth; /* cuộn mượt */
+}
 /* ============= NavLink active End here ================ */

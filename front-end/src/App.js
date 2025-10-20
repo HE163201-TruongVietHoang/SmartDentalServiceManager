@@ -14,6 +14,7 @@ import Examination from "./components/doctor/Examination";
 import Prescription from "./components/doctor/PrescribeMedication";
 import DiagnosisPlan from "./components/doctor/DiagnosisPlan";
 import TreatmentProgress from "./components/doctor/TreatmentProgress";
+import ServicesPage from "./pages/Service/Service";
 
 // 🔐 Trang đăng nhập / đăng ký
 import SignIn from "./pages/Account/SignIn";
@@ -36,6 +37,9 @@ function App() {
         <Route path="/doctor/prescription" element={<Prescription />} />
         <Route path="/doctor/diagnosis" element={<DiagnosisPlan />} />
         <Route path="/doctor/progress" element={<TreatmentProgress />} />
+
+        {/* Trang Home */}
+        <Route path="/service" element={<ServicesPage />} />
 
         {/* 🔑 Trang tài khoản */}
         <Route path="/signin" element={<SignIn />} />
