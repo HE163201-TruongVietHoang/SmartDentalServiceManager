@@ -18,6 +18,7 @@ import TreatmentProgress from "./components/doctor/TreatmentProgress";
 // 🔐 Trang đăng nhập / đăng ký
 import SignIn from "./pages/Account/SignIn";
 import SignUp from "./pages/Account/SignUp";
+import UserManagement from "./pages/Admin/UserManagement";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
         {/* 🔑 Trang tài khoản */}
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/admin/users" element={<UserManagement />} />
       </Routes>
     </Router>
   );
