@@ -8,4 +8,13 @@ router.post('/change-password', authMiddleware, changePasswordController);
 router.post('/request-reset-password', requestPasswordResetController);
 router.post('/reset-password', resetPasswordController);
 router.post('/register', registerController);
+
+// Account management (require authentication; consider role-based check in future)
+const { listUsersController, getUserController, editUserController, updateRoleController, toggleUserActiveController, deleteUserController } = require('../controllers/authController');
+router.get('/users', authMiddleware, listUsersController);
+router.get('/users/:id', authMiddleware, getUserController);
+router.put('/users/:id', authMiddleware, editUserController);
+router.patch('/users/:id/role', authMiddleware, updateRoleController);
+router.patch('/users/:id/active', authMiddleware, toggleUserActiveController);
+router.delete('/users/:id', authMiddleware, deleteUserController);
 module.exports = router;

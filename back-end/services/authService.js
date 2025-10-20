@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { findUserByEmail, setOtpForUser, updatePassword, createUser } = require('../access/userAccess');
+const { getUsers, findUserById, updateUser, changeUserRole, setUserActive, deleteUser } = require('../access/userAccess');
 const { getActiveSessions, createSession, deactivateSession, findSessionByRefreshToken, deactivateAllSessionsByUser } = require('../access/sessionAccess');
 const {getPool,sql} = require('../config/db');
 const MAX_SESSIONS = 3;
@@ -142,4 +143,39 @@ async function registerUser({ username, email, password, fullName, phone, gender
 
   return { message: "Đăng ký thành công", userId: user.userId };
 }
+
+// ----- Account management services -----
+// list users with pagination and optional search (admin)
+async function listUsers({ page = 1, pageSize = 10, search = '' }) {
+  const data = await getUsers({ page, pageSize, search });
+  return data;
+}
+
+async function getUser(userId) {
+  const user = await findUserById(userId);
+  if (!user) throw new Error('Người dùng không tồn tại');
+  return user;
+}
+
+async function editUser(userId, payload) {
+  // payload may include username, fullName, phone, gender, dob, address, roleId
+  await updateUser(userId, payload);
+  return { message: 'Cập nhật thông tin người dùng thành công' };
+}
+
+async function updateRole(userId, roleId) {
+  await changeUserRole(userId, roleId);
+  return { message: 'Cập nhật vai trò thành công' };
+}
+
+async function toggleUserActive(userId, isActive) {
+  await setUserActive(userId, isActive);
+  return { message: isActive ? 'Kích hoạt người dùng thành công' : 'Vô hiệu hóa người dùng thành công' };
+}
+
+async function removeUser(userId) {
+  await deleteUser(userId);
+  return { message: 'Xóa người dùng thành công' };
+}
+
 module.exports = { login, refreshToken , changePassword, requestPasswordReset, resetPassword ,registerUser};
