@@ -15,7 +15,7 @@ function UsersTable({ onRefresh }) {
     try {
       const token = localStorage.getItem('token');
       const q = `?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}`;
-      const res = await fetch(`/api/auth/users${q}`, {
+      const res = await fetch(`http://localhost:5000/api/auth/users${q}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -34,7 +34,7 @@ function UsersTable({ onRefresh }) {
   async function doDelete(userId) {
     if (!window.confirm('Bạn có chắc muốn xóa người dùng này?')) return;
     const token = localStorage.getItem('token');
-    const res = await fetch(`/api/auth/users/${userId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
+    const res = await fetch(`http://localhost:5000/api/auth/users/${userId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json();
     if (res.ok) {
       alert(data.message);
@@ -45,7 +45,7 @@ function UsersTable({ onRefresh }) {
 
   async function toggleActive(userId, isActive) {
     const token = localStorage.getItem('token');
-    const res = await fetch(`/api/auth/users/${userId}/active`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ isActive }) });
+    const res = await fetch(`http://localhost:5000/api/auth/users/${userId}/active`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ isActive }) });
     const data = await res.json();
     if (res.ok) {
       alert(data.message);

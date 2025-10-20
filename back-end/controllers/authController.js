@@ -134,6 +134,18 @@ async function deleteUserController(req, res) {
   }
 }
 
-module.exports = { loginController, refreshTokenController, changePasswordController, requestPasswordResetController, resetPasswordController ,registerController, listUsersController, getUserController, editUserController, updateRoleController, toggleUserActiveController, deleteUserController };
-module.exports = { loginController, refreshTokenController, changePasswordController, requestPasswordResetController, resetPasswordController ,registerController};
+module.exports = { 
+  loginController, 
+  refreshTokenController, 
+  changePasswordController, 
+  requestPasswordResetController, 
+  resetPasswordController,
+  registerController,
+  listUsersController,
+  getUserController,
+  editUserController,
+  updateRoleController,
+  toggleUserActiveController,
+  deleteUserController
+};
 
