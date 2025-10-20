@@ -27,7 +27,7 @@ function SignIn() {
         // ✅ Điều hướng theo ROLE
         if (data.user.role === "Admin") navigate("/admin/dashboard");
         else if (data.user.role === "Doctor") navigate("/doctor/home");
-        else if (data.user.role === "Patient") navigate("/patient/home");
+        else if (data.user.role === "Patient") navigate("/");
         else navigate("/");
       } else {
         alert(data.error || "❌ Đăng nhập thất bại!");
