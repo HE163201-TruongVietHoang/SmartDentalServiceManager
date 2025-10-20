@@ -119,4 +119,15 @@ async function deleteUser(userId) {
     .input('userId', sql.Int, userId)
     .query(`DELETE FROM dbo.Users WHERE userId = @userId`);
 }
-module.exports = { findUserByEmail, setOtpForUser,updatePassword, createUser };
+module.exports = { 
+  findUserByEmail, 
+  setOtpForUser,
+  updatePassword, 
+  createUser,
+  getUsers,
+  findUserById,
+  updateUser,
+  changeUserRole,
+  setUserActive,
+  deleteUser
+};
