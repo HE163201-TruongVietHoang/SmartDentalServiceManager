@@ -116,6 +116,7 @@ function SignIn() {
               placeholder="Nhập mật khẩu"
             />
           </div>
+
           <button
             type="submit"
             style={{
@@ -134,6 +135,36 @@ function SignIn() {
           >
             Đăng nhập
           </button>
+
+          {/* 🔽 Đăng ký tài khoản */}
+          <p style={{ textAlign: "center", marginTop: "15px" }}>
+            Bạn chưa có tài khoản?{" "}
+            <span
+              onClick={() => navigate("/signup")}
+              style={{
+                color: "#2563eb",
+                cursor: "pointer",
+                fontWeight: "bold",
+              }}
+            >
+              Đăng ký ngay
+            </span>
+          </p>
+
+          {/* ✅ QUÊN MẬT KHẨU */}
+          <p style={{ textAlign: "center", marginTop: "5px" }}>
+            <span
+              onClick={() => navigate("/reset-password")}
+              style={{
+                color: "#d97706",
+                cursor: "pointer",
+                fontWeight: "bold",
+                textDecoration: "underline",
+              }}
+            >
+              Quên mật khẩu?
+            </span>
+          </p>
         </form>
       </div>
     </div>
