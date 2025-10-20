@@ -31,8 +31,10 @@ import Header from "../components/home/Header/Header";
 import Footer from "../components/home/Footer/Footer";
 import Feedback from "../components/home/Feedback/Feedback";
 import Slider from "react-slick";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
+  const navigate = useNavigate();
   return (
     <div>
       {/* Header */}
@@ -61,6 +63,7 @@ export default function Home() {
                     borderColor: "#2ECCB6",
                     color: "#fff",
                   }}
+                  onClick={() => navigate("/signin")}
                 >
                   Đặt lịch ngay
                 </button>
