@@ -1,4 +1,4 @@
-const { login, refreshToken, changePassword, requestPasswordReset, resetPassword, registerUser  } = require('../services/authService');
+const { login, refreshToken, changePassword, requestPasswordReset, resetPassword, registerUser, listUsers, getUser, editUser, updateRole, toggleUserActive, removeUser } = require('../services/authService');
 
 async function loginController(req, res) {
   try {
@@ -68,4 +68,84 @@ async function registerController(req, res) {
     res.status(400).json({ error: err.message });
   }
 }
-module.exports = { loginController, refreshTokenController, changePasswordController, requestPasswordResetController, resetPasswordController ,registerController};
+// --- Admin / account management controllers ---
+async function listUsersController(req, res) {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
+    const search = req.query.search || '';
+    const data = await listUsers({ page, pageSize, search });
+    res.json(data);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+async function getUserController(req, res) {
+  try {
+    const userId = parseInt(req.params.id);
+    const user = await getUser(userId);
+    res.json(user);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+async function editUserController(req, res) {
+  try {
+    const userId = parseInt(req.params.id);
+    const payload = req.body;
+    const result = await editUser(userId, payload);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+async function updateRoleController(req, res) {
+  try {
+    const userId = parseInt(req.params.id);
+    const { roleId } = req.body;
+    const result = await updateRole(userId, roleId);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+async function toggleUserActiveController(req, res) {
+  try {
+    const userId = parseInt(req.params.id);
+    const { isActive } = req.body;
+    const result = await toggleUserActive(userId, isActive);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+async function deleteUserController(req, res) {
+  try {
+    const userId = parseInt(req.params.id);
+    const result = await removeUser(userId);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+module.exports = { 
+  loginController, 
+  refreshTokenController, 
+  changePasswordController, 
+  requestPasswordResetController, 
+  resetPasswordController,
+  registerController,
+  listUsersController,
+  getUserController,
+  editUserController,
+  updateRoleController,
+  toggleUserActiveController,
+  deleteUserController
+};
+

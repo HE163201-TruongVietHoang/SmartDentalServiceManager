@@ -46,4 +46,88 @@ async function createUser({ username, email, password, fullName, phone, gender, 
       SELECT SCOPE_IDENTITY() AS userId;`); // trả về userId mới tạo
   return result.recordset[0];
 }
-module.exports = { findUserByEmail, setOtpForUser,updatePassword, createUser };
+
+async function getUsers({ page = 1, pageSize = 10, search = '' }) {
+  const pool = await getPool();
+  const offset = (page - 1) * pageSize;
+
+  // basic search on username, email or fullName
+  const searchPattern = `%${search}%`;
+
+  const result = await pool.request()
+    .input('search', sql.NVarChar, searchPattern)
+    .input('offset', sql.Int, offset)
+    .input('pageSize', sql.Int, pageSize)
+    .query(`SELECT u.userId, u.username, u.email, u.fullName, u.phone, u.gender, u.dob, u.address, u.roleId, r.roleName, u.isActive
+            FROM dbo.Users u
+            JOIN dbo.Roles r ON u.roleId = r.roleId
+            WHERE u.username LIKE @search OR u.email LIKE @search OR u.fullName LIKE @search
+            ORDER BY u.userId DESC
+            OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY`);
+
+  const countResult = await pool.request()
+    .input('search', sql.NVarChar, searchPattern)
+    .query(`SELECT COUNT(*) AS total FROM dbo.Users WHERE username LIKE @search OR email LIKE @search OR fullName LIKE @search`);
+
+  return { users: result.recordset, total: countResult.recordset[0].total };
+}
+
+async function findUserById(userId) {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('userId', sql.Int, userId)
+    .query(`SELECT u.userId, u.username, u.email, u.fullName, u.phone, u.gender, u.dob, u.address, u.roleId, r.roleName, u.isActive
+            FROM dbo.Users u
+            JOIN dbo.Roles r ON u.roleId = r.roleId
+            WHERE u.userId = @userId`);
+  return result.recordset[0];
+}
+
+async function updateUser(userId, { username, fullName, phone, gender, dob, address, roleId }) {
+  const pool = await getPool();
+  await pool.request()
+    .input('userId', sql.Int, userId)
+    .input('username', sql.NVarChar, username)
+    .input('fullName', sql.NVarChar, fullName)
+    .input('phone', sql.NVarChar, phone)
+    .input('gender', sql.NVarChar, gender)
+    .input('dob', sql.Date, dob)
+    .input('address', sql.NVarChar, address)
+    .input('roleId', sql.Int, roleId)
+    .query(`UPDATE dbo.Users SET username = @username, fullName = @fullName, phone = @phone, gender = @gender, dob = @dob, address = @address, roleId = @roleId WHERE userId = @userId`);
+}
+
+async function changeUserRole(userId, roleId) {
+  const pool = await getPool();
+  await pool.request()
+    .input('userId', sql.Int, userId)
+    .input('roleId', sql.Int, roleId)
+    .query(`UPDATE dbo.Users SET roleId = @roleId WHERE userId = @userId`);
+}
+
+async function setUserActive(userId, isActive) {
+  const pool = await getPool();
+  await pool.request()
+    .input('userId', sql.Int, userId)
+    .input('isActive', sql.Bit, isActive ? 1 : 0)
+    .query(`UPDATE dbo.Users SET isActive = @isActive WHERE userId = @userId`);
+}
+
+async function deleteUser(userId) {
+  const pool = await getPool();
+  await pool.request()
+    .input('userId', sql.Int, userId)
+    .query(`DELETE FROM dbo.Users WHERE userId = @userId`);
+}
+module.exports = { 
+  findUserByEmail, 
+  setOtpForUser,
+  updatePassword, 
+  createUser,
+  getUsers,
+  findUserById,
+  updateUser,
+  changeUserRole,
+  setUserActive,
+  deleteUser
+};
