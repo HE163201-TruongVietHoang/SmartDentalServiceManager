@@ -15,6 +15,7 @@ import Prescription from "./components/doctor/PrescribeMedication";
 import DiagnosisPlan from "./components/doctor/DiagnosisPlan";
 import TreatmentProgress from "./components/doctor/TreatmentProgress";
 import ServicesPage from "./pages/Service/Service";
+import ResetPassword from "./pages/Account/ResetPassword";
 
 // 🔐 Trang đăng nhập / đăng ký
 import SignIn from "./pages/Account/SignIn";
@@ -45,6 +46,7 @@ function App() {
         {/* 🔑 Trang tài khoản */}
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/admin/users" element={<UserManagement />} />
       </Routes>
     </Router>

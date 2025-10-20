@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function SignUp() {
-  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [fullName, setFullName] = useState(""); // ✅ Đổi từ name → fullName
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -21,16 +22,17 @@ function SignUp() {
       const response = await fetch("http://localhost:5000/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, password }),
+        body: JSON.stringify({ username, fullName, email, phone, password }), // ✅ Gửi fullName thay vì name
       });
 
       const data = await response.json();
+      console.log("📌 RESPONSE:", data);
 
       if (response.ok) {
-        alert("✅ " + data.message);
-        navigate("/signin"); // 👉 Chuyển về trang đăng nhập sau khi thành công
+        alert("✅ " + (data.message || "Đăng ký thành công!"));
+        navigate("/signin");
       } else {
-        alert("⚠️ " + data.message);
+        alert("⚠️ " + (data.error || data.message || "Đăng ký thất bại!"));
       }
     } catch (error) {
       console.error("Lỗi kết nối:", error);
@@ -41,7 +43,7 @@ function SignUp() {
   return (
     <div
       style={{
-        backgroundColor: "#87CEEB", // xanh da trời
+        backgroundColor: "#87CEEB",
         height: "100vh",
         display: "flex",
         justifyContent: "center",
@@ -69,14 +71,15 @@ function SignUp() {
           Đăng ký tài khoản
         </h2>
         <form onSubmit={handleSubmit}>
+          {/* ✅ Username */}
           <div style={{ marginBottom: "15px" }}>
-            <label style={{ fontWeight: "bold", color: "#333" }}>Họ tên:</label>
+            <label style={{ fontWeight: "bold", color: "#333" }}>Tên:</label>
             <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
-              placeholder="Nhập họ tên"
+              placeholder="Nhập username"
               style={{
                 width: "100%",
                 padding: "10px",
@@ -87,6 +90,28 @@ function SignUp() {
             />
           </div>
 
+          {/* ✅ Full Name */}
+          <div style={{ marginBottom: "15px" }}>
+            <label style={{ fontWeight: "bold", color: "#333" }}>
+              Họ và tên:
+            </label>
+            <input
+              type="text"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+              placeholder="Nhập đầy đủ họ tên"
+              style={{
+                width: "100%",
+                padding: "10px",
+                border: "1px solid #ccc",
+                borderRadius: "8px",
+                marginTop: "5px",
+              }}
+            />
+          </div>
+
+          {/* ✅ Email */}
           <div style={{ marginBottom: "15px" }}>
             <label style={{ fontWeight: "bold", color: "#333" }}>Email:</label>
             <input
@@ -105,6 +130,7 @@ function SignUp() {
             />
           </div>
 
+          {/* ✅ Phone */}
           <div style={{ marginBottom: "15px" }}>
             <label style={{ fontWeight: "bold", color: "#333" }}>
               Số điện thoại:
@@ -125,6 +151,7 @@ function SignUp() {
             />
           </div>
 
+          {/* ✅ Password */}
           <div style={{ marginBottom: "15px" }}>
             <label style={{ fontWeight: "bold", color: "#333" }}>
               Mật khẩu:
@@ -145,6 +172,7 @@ function SignUp() {
             />
           </div>
 
+          {/* ✅ Confirm Password */}
           <div style={{ marginBottom: "20px" }}>
             <label style={{ fontWeight: "bold", color: "#333" }}>
               Xác nhận mật khẩu:
@@ -170,7 +198,7 @@ function SignUp() {
             style={{
               width: "100%",
               padding: "12px",
-              backgroundColor: "#10b981", // xanh lá nhẹ
+              backgroundColor: "#10b981",
               color: "white",
               border: "none",
               borderRadius: "8px",
@@ -183,6 +211,20 @@ function SignUp() {
           >
             Đăng ký
           </button>
+
+          <p style={{ textAlign: "center", marginTop: "15px" }}>
+            Đã có tài khoản?{" "}
+            <span
+              onClick={() => navigate("/signin")}
+              style={{
+                color: "#2563eb",
+                cursor: "pointer",
+                fontWeight: "bold",
+              }}
+            >
+              Đăng nhập ngay
+            </span>
+          </p>
         </form>
       </div>
     </div>
