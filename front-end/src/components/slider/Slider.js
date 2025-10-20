@@ -77,7 +77,9 @@ function CustomSlider() {
   ];
 
   return (
-    <div style={{ maxWidth: "1000px", margin: "40px auto", position: "relative" }}>
+    <div
+      style={{ maxWidth: "1000px", margin: "40px auto", position: "relative" }}
+    >
       <Slider {...settings}>
         {images.map((src, index) => (
           <div key={index}>
