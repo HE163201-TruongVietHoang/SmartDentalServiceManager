@@ -9,7 +9,7 @@ router.post('/request-reset-password', requestPasswordResetController);
 router.post('/reset-password', resetPasswordController);
 router.post('/register', registerController);
 
-// Account management (require authentication; consider role-based check in future)
+// Account management (require authentication)
 const { listUsersController, getUserController, editUserController, updateRoleController, toggleUserActiveController, deleteUserController } = require('../controllers/authController');
 router.get('/users', authMiddleware, listUsersController);
 router.get('/users/:id', authMiddleware, getUserController);

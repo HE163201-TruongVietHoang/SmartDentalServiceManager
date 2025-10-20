@@ -178,4 +178,6 @@ async function removeUser(userId) {
   return { message: 'Xóa người dùng thành công' };
 }
 
-module.exports = { login, refreshToken , changePassword, requestPasswordReset, resetPassword ,registerUser};
+module.exports = { login, refreshToken , changePassword, requestPasswordReset, resetPassword ,registerUser,
+  listUsers, getUser, editUser, updateRole, toggleUserActive, removeUser
+};
