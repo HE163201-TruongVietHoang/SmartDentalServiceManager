@@ -104,7 +104,7 @@ export default function Header() {
             className="fas fa-tooth me-2"
             style={{ color: "#2ECCB6", fontSize: "1.4rem" }}
           ></i>
-          SmileCare
+          Smart Dental Clinic
         </a>
 
         <button
@@ -121,25 +121,23 @@ export default function Header() {
 
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto">
-            {["Dịch vụ", "Về chúng tôi", "Đánh giá", "Liên hệ"].map(
-              (item, i) => (
-                <li key={i} className="nav-item">
-                  <a
-                    className="nav-link"
-                    href="#"
-                    style={{
-                      color: "#333",
-                      fontWeight: 500,
-                      transition: "color 0.3s",
-                    }}
-                    onMouseEnter={(e) => (e.target.style.color = "#2ECCB6")}
-                    onMouseLeave={(e) => (e.target.style.color = "#333")}
-                  >
-                    {item}
-                  </a>
-                </li>
-              )
-            )}
+            {["Dịch vụ", "Về chúng tôi", "Liên hệ"].map((item, i) => (
+              <li key={i} className="nav-item">
+                <a
+                  className="nav-link"
+                  href="#"
+                  style={{
+                    color: "#333",
+                    fontWeight: 500,
+                    transition: "color 0.3s",
+                  }}
+                  onMouseEnter={(e) => (e.target.style.color = "#2ECCB6")}
+                  onMouseLeave={(e) => (e.target.style.color = "#333")}
+                >
+                  {item}
+                </a>
+              </li>
+            ))}
           </ul>
 
           <button

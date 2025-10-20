@@ -266,6 +266,82 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Contact Section */}
+      <section
+        id="contact"
+        className="py-5"
+        style={{ backgroundColor: "#f0fffa", borderTop: "1px solid #e5e5e5" }}
+      >
+        <div className="container-lg">
+          <div className="text-center mb-5">
+            <h2 className="fw-bold mb-3" style={{ color: "#2ECCB6" }}>
+              Liên hệ với chúng tôi
+            </h2>
+            <p className="text-muted lead">
+              Chúng tôi luôn sẵn sàng hỗ trợ bạn mọi lúc, mọi nơi.
+            </p>
+          </div>
+
+          <div className="row g-4">
+            {[
+              {
+                icon: "fa-phone",
+                title: "Điện thoại",
+                text: "(+84) 123 456 789",
+              },
+              {
+                icon: "fa-map-marker-alt",
+                title: "Địa chỉ",
+                text: "123 Hoà Lạc, TP.HN",
+              },
+              {
+                icon: "fa-envelope",
+                title: "Email",
+                text: "sdcms@gmail.com",
+              },
+            ].map((item, i) => (
+              <div key={i} className="col-md-6 col-lg-4">
+                <div
+                  className="card h-100 border-0 shadow-sm text-center p-4"
+                  style={{
+                    borderRadius: "15px",
+                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = "translateY(-5px)";
+                    e.currentTarget.style.boxShadow =
+                      "0 8px 20px rgba(46, 204, 182, 0.3)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow =
+                      "0 4px 12px rgba(0,0,0,0.05)";
+                  }}
+                >
+                  <div
+                    className="d-flex align-items-center justify-content-center mb-3"
+                    style={{
+                      width: "70px",
+                      height: "70px",
+                      margin: "0 auto",
+                      borderRadius: "50%",
+                      backgroundColor: "#E8FAF6",
+                    }}
+                  >
+                    <i
+                      className={`fas ${item.icon}`}
+                      style={{ color: "#2ECCB6", fontSize: "2rem" }}
+                    ></i>
+                  </div>
+                  <h5 className="fw-bold mb-2">{item.title}</h5>
+                  <p className="text-muted small mb-0">{item.text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Footer */}
       <Footer />
     </div>

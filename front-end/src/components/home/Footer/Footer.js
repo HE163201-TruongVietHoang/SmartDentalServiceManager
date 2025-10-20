@@ -39,7 +39,7 @@ export default function Footer() {
                 className="fas fa-tooth me-2"
                 style={{ color: "#2ECCB6", fontSize: "1.2rem" }}
               ></i>
-              SmileCare
+              Smart Dental Clinic
             </h5>
             <p className="small text-muted">
               Chăm sóc nụ cười của bạn là ưu tiên của chúng tôi.
@@ -82,9 +82,7 @@ export default function Footer() {
 
         <hr style={{ borderTop: "1px solid #e5e5e5" }} />
         <div className="text-center small text-muted mt-3">
-          <p className="mb-0">
-            &copy; 2025 SmileCare. Tất cả quyền được bảo lưu.
-          </p>
+          <p className="mb-0">&copy; 2025 Smart Dental Clinic.</p>
         </div>
       </div>
     </footer>
