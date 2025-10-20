@@ -87,8 +87,18 @@
 // export default Header;
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
+  const navigate = useNavigate();
+
+  const handleScroll = (sectionId) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <nav
       className="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm"
@@ -97,7 +107,7 @@ export default function Header() {
       <div className="container-lg">
         <a
           className="navbar-brand fw-bold fs-4 d-flex align-items-center"
-          href="#home"
+          href="/"
           style={{ color: "#2ECCB6", textDecoration: "none" }}
         >
           <i
@@ -121,23 +131,53 @@ export default function Header() {
 
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto">
-            {["Dịch vụ", "Về chúng tôi", "Liên hệ"].map((item, i) => (
-              <li key={i} className="nav-item">
-                <a
-                  className="nav-link"
-                  href="#"
-                  style={{
-                    color: "#333",
-                    fontWeight: 500,
-                    transition: "color 0.3s",
-                  }}
-                  onMouseEnter={(e) => (e.target.style.color = "#2ECCB6")}
-                  onMouseLeave={(e) => (e.target.style.color = "#333")}
-                >
-                  {item}
-                </a>
-              </li>
-            ))}
+            <li className="nav-item">
+              <a
+                className="nav-link"
+                href="/service"
+                // onClick={(e) => {
+                //   e.preventDefault();
+                //   handleScroll("services"); // Cuộn đến section dịch vụ
+                // }}
+                style={{ color: "#333", fontWeight: 500 }}
+                onMouseEnter={(e) => (e.target.style.color = "#2ECCB6")}
+                onMouseLeave={(e) => (e.target.style.color = "#333")}
+              >
+                Dịch vụ
+              </a>
+            </li>
+
+            {/* <li className="nav-item">
+              <a
+                className="nav-link"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleScroll("about"); // Cuộn đến section "Về chúng tôi"
+                }}
+                style={{ color: "#333", fontWeight: 500 }}
+                onMouseEnter={(e) => (e.target.style.color = "#2ECCB6")}
+                onMouseLeave={(e) => (e.target.style.color = "#333")}
+              >
+                Về chúng tôi
+              </a>
+            </li> */}
+
+            <li className="nav-item">
+              <a
+                className="nav-link"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleScroll("contact"); // Cuộn đến phần liên hệ
+                }}
+                style={{ color: "#333", fontWeight: 500 }}
+                onMouseEnter={(e) => (e.target.style.color = "#2ECCB6")}
+                onMouseLeave={(e) => (e.target.style.color = "#333")}
+              >
+                Liên hệ
+              </a>
+            </li>
           </ul>
 
           <button
@@ -149,6 +189,7 @@ export default function Header() {
               color: "#fff",
               fontWeight: "500",
             }}
+            onClick={() => navigate("/signin")}
           >
             Đặt lịch
           </button>
