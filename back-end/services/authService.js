@@ -1,8 +1,8 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { findUserByEmail, setOtpForUser, updatePassword, createUser } = require('../access/userAccess');
-const { getUsers, findUserById, updateUser, changeUserRole, setUserActive, deleteUser } = require('../access/userAccess');
+const { findUserByEmail, setOtpForUser, updatePassword, createUser, updateUserProfile, getUserSessions, logoutSession, logoutAllSessions } = require('../access/userAccess');
+const { getUsers, findUserById, updateUser, changeUserRole, setUserActive, deleteUser, getUserById } = require('../access/userAccess');
 const { getActiveSessions, createSession, deactivateSession, findSessionByRefreshToken, deactivateAllSessionsByUser } = require('../access/sessionAccess');
 const {getPool,sql} = require('../config/db');
 const MAX_SESSIONS = 3;
@@ -177,7 +177,30 @@ async function removeUser(userId) {
   await deleteUser(userId);
   return { message: 'Xóa người dùng thành công' };
 }
+async function getProfile(userId) {
+  const user = await getUserById(userId);
+  if (!user) throw new Error("Không tìm thấy người dùng");
+  return user;
+}
+const updateProfile = async (userId, data) => {
+  return await updateUserProfile(userId, data);
+};
 
+const fetchDevices = async (userId, currentToken) => {
+  const sessions = await getUserSessions(userId);
+  return sessions.map(s => ({
+    ...s,
+    isCurrentDevice: s.jwtToken === currentToken
+  }));
+};
+
+const logoutDevice = async (sessionId) => {
+  return await logoutSession(sessionId);
+};
+
+const logoutAllDevices = async (userId) => {
+  return await logoutAllSessions(userId);
+};
 module.exports = { login, refreshToken , changePassword, requestPasswordReset, resetPassword ,registerUser,
-  listUsers, getUser, editUser, updateRole, toggleUserActive, removeUser
+  listUsers, getUser, editUser, updateRole, toggleUserActive, removeUser, getProfile, updateProfile, fetchDevices, logoutDevice, logoutAllDevices
 };

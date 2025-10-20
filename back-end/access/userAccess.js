@@ -11,6 +11,28 @@ async function findUserByEmail(email) {
             WHERE u.email = @email`);
   return result.recordset[0];
 }
+async function getUserById(userId) {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input("userId", sql.Int, userId)
+    .query(`
+      SELECT 
+      u.userId,
+      u.fullName,
+      u.email,
+      u.phone,
+      u.gender,
+      u.dob,
+      u.address,
+      r.roleName,
+      u.createdAt
+    FROM Users u
+    JOIN Roles r ON u.roleId = r.roleId
+    WHERE u.userId = @userId
+    `);
+
+  return result.recordset[0];
+}
 async function setOtpForUser(userId, otpCode, expiresAt) {
   const pool = await getPool();
   await pool.request()
@@ -119,6 +141,52 @@ async function deleteUser(userId) {
     .input('userId', sql.Int, userId)
     .query(`DELETE FROM dbo.Users WHERE userId = @userId`);
 }
+
+const updateUserProfile = async (userId, data) => {
+  const { fullName, phone, gender, dob, address } = data;
+  const pool = await getPool();
+  await pool.request()
+    .input('userId', sql.Int, userId)
+    .input('fullName', sql.NVarChar, fullName)
+    .input('phone', sql.NVarChar, phone)
+    .input('gender', sql.NVarChar, gender)
+    .input('dob', sql.Date, dob)
+    .input('address', sql.NVarChar, address)
+    .query(`
+      UPDATE Users
+      SET fullName=@fullName, phone=@phone, gender=@gender, dob=@dob, address=@address, updatedAt=GETDATE()
+      WHERE userId=@userId
+    `);
+};
+
+// Lấy các session active của user
+const getUserSessions = async (userId) => {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('userId', sql.Int, userId)
+    .query(`
+      SELECT sessionId, jwtToken, userAgent, ipAddress, isActive, createdAt 
+      FROM UserSessions 
+      WHERE userId=@userId AND isActive=1
+    `);
+  return result.recordset;
+};
+
+// Logout 1 session
+const logoutSession = async (sessionId) => {
+  const pool = await getPool();
+  await pool.request()
+    .input('sessionId', sql.Int, sessionId)
+    .query(`UPDATE UserSessions SET isActive=0 WHERE sessionId=@sessionId`);
+};
+
+// Logout tất cả session của user
+const logoutAllSessions = async (userId) => {
+  const pool = await getPool();
+  await pool.request()
+    .input('userId', sql.Int, userId)
+    .query(`UPDATE UserSessions SET isActive=0 WHERE userId=@userId`);
+};
 module.exports = { 
   findUserByEmail, 
   setOtpForUser,
@@ -129,5 +197,10 @@ module.exports = {
   updateUser,
   changeUserRole,
   setUserActive,
-  deleteUser
+  deleteUser,
+  getUserById,
+  updateUserProfile,
+  getUserSessions,
+  logoutSession,
+  logoutAllSessions
 };

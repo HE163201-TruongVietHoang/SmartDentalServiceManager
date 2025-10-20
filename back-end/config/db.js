@@ -20,9 +20,9 @@ async function getPool() {
       const pool = new sql.ConnectionPool(config);
       poolPromise = pool.connect();
       await poolPromise;
-      console.log("✅ SQL Server connected");
+      console.log(" SQL Server connected");
     } catch (err) {
-      console.error("❌ Database Connection Failed:", err);
+      console.error(" Database Connection Failed:", err);
       throw err;
     }
   }

@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -15,26 +17,42 @@ function SignIn() {
       });
 
       const data = await res.json();
+
       if (res.ok) {
-        console.log("✅ Đăng nhập thành công:", data);
+        console.log("Đăng nhập thành công:", data);
+
+        // Lưu token & role vào localStorage
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("role", data.user?.role);
+
         alert(data.message || "Đăng nhập thành công!");
-        // ❌ Tạm thời chưa chuyển trang để xem log
-        // window.location.href = "/doctor/home";
+
+        // ✅ Điều hướng theo role
+        const role = data.user?.role;
+        if (role === "Patient") {
+          navigate("/"); // về trang home
+        } else if (role === "Doctor") {
+          navigate("/doctor/home");
+        } else if (role === "Admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/"); // fallback
+        }
       } else {
-        console.warn("❌ Đăng nhập thất bại:", data);
+        console.warn(" Đăng nhập thất bại:", data);
         alert(data.message || "Đăng nhập thất bại!");
       }
     } catch (error) {
       console.error("Lỗi kết nối:", error);
-      alert("❌ Lỗi máy chủ hoặc không thể kết nối!");
+      alert(" Lỗi máy chủ hoặc không thể kết nối!");
     }
   };
-
 
   return (
     <div
       style={{
-        backgroundColor: "#87CEEB", // xanh da trời
+        backgroundColor: "#87CEEB",
         height: "100vh",
         display: "flex",
         justifyContent: "center",
