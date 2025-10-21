@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,13 +18,19 @@ function SignIn() {
 
       const data = await res.json();
       if (res.ok) {
-        console.log("✅ Đăng nhập thành công:", data);
-        alert(data.message || "Đăng nhập thành công!");
-        // ❌ Tạm thời chưa chuyển trang để xem log
-        // window.location.href = "/doctor/home";
+        alert(data.message || "✅ Đăng nhập thành công!");
+
+        // ✅ Lưu token vào LocalStorage
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        // ✅ Điều hướng theo ROLE
+        if (data.user.role === "Admin") navigate("/admin/dashboard");
+        else if (data.user.role === "Doctor") navigate("/doctor/home");
+        else if (data.user.role === "Patient") navigate("/");
+        else navigate("/");
       } else {
-        console.warn("❌ Đăng nhập thất bại:", data);
-        alert(data.message || "Đăng nhập thất bại!");
+        alert(data.error || "❌ Đăng nhập thất bại!");
       }
     } catch (error) {
       console.error("Lỗi kết nối:", error);
@@ -30,11 +38,10 @@ function SignIn() {
     }
   };
 
-
   return (
     <div
       style={{
-        backgroundColor: "#87CEEB", // xanh da trời
+        backgroundColor: "#87CEEB",
         height: "100vh",
         display: "flex",
         justifyContent: "center",
@@ -98,6 +105,7 @@ function SignIn() {
               placeholder="Nhập mật khẩu"
             />
           </div>
+
           <button
             type="submit"
             style={{
@@ -116,6 +124,36 @@ function SignIn() {
           >
             Đăng nhập
           </button>
+
+          {/* 🔽 Đăng ký tài khoản */}
+          <p style={{ textAlign: "center", marginTop: "15px" }}>
+            Bạn chưa có tài khoản?{" "}
+            <span
+              onClick={() => navigate("/signup")}
+              style={{
+                color: "#2563eb",
+                cursor: "pointer",
+                fontWeight: "bold",
+              }}
+            >
+              Đăng ký ngay
+            </span>
+          </p>
+
+          {/* ✅ QUÊN MẬT KHẨU */}
+          <p style={{ textAlign: "center", marginTop: "5px" }}>
+            <span
+              onClick={() => navigate("/reset-password")}
+              style={{
+                color: "#d97706",
+                cursor: "pointer",
+                fontWeight: "bold",
+                textDecoration: "underline",
+              }}
+            >
+              Quên mật khẩu?
+            </span>
+          </p>
         </form>
       </div>
     </div>
