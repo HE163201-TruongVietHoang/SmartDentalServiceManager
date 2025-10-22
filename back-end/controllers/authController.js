@@ -1,4 +1,22 @@
-const { login, refreshToken, changePassword, requestPasswordReset, resetPassword, registerUser, listUsers, getUser, editUser, updateRole, toggleUserActive, removeUser, getProfile , updateProfile, fetchDevices, logoutDevice, logoutAllDevices} = require('../services/authService');
+const { 
+  login, 
+  refreshToken, 
+  changePassword, 
+  requestPasswordReset, 
+  resetPassword, 
+  registerUser, 
+  listUsers, 
+  getUser, 
+  editUser, 
+  updateRole, 
+  toggleUserActive, 
+  removeUser, 
+  getProfile , 
+  updateProfile, 
+  fetchDevices, 
+  logoutDevice, 
+  logoutAllDevices
+} = require('../services/authService');
 
 async function loginController(req, res) {
   try {

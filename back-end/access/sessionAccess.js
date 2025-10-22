@@ -55,4 +55,10 @@ async function deactivateAllSessionsByUser(userId) {
     .input('userId', sql.Int, userId)
     .query(`UPDATE dbo.UserSessions SET isActive = 0 WHERE userId = @userId AND isActive = 1`);
 }
-module.exports = { getActiveSessions, createSession, deactivateSession, findSessionByRefreshToken, deactivateAllSessionsByUser };
+module.exports = {
+  getActiveSessions,
+  createSession,
+  deactivateSession,
+  findSessionByRefreshToken,
+  deactivateAllSessionsByUser
+};

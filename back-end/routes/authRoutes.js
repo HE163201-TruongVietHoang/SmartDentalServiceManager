@@ -1,6 +1,18 @@
 const express = require('express');
 const router = express.Router();
-const { loginController,refreshTokenController,changePasswordController,requestPasswordResetController,resetPasswordController,registerController, profileController, updateProfileController,getDevicesController, logoutDeviceController, logoutAllDevicesController } = require('../controllers/authController');
+const { 
+    loginController,
+    refreshTokenController,
+    changePasswordController,
+    requestPasswordResetController,
+    resetPasswordController,
+    registerController, 
+    profileController, 
+    updateProfileController,
+    getDevicesController, 
+    logoutDeviceController, 
+    logoutAllDevicesController 
+} = require('../controllers/authController');
 const {authMiddleware} = require("../middlewares/authMiddleware");
 const authorizeRoles = require("../middlewares/roleMiddleware");
 router.post('/login', loginController);
