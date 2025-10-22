@@ -25,7 +25,7 @@ function SignIn() {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("role", data.user?.role);
-
+        localStorage.setItem("sessionId", data.sessionId);
         alert(data.message || "Đăng nhập thành công!");
 
         // ✅ Điều hướng theo role

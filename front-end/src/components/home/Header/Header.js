@@ -5,93 +5,161 @@ export default function Header() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
+  const token = localStorage.getItem("token");
+  const sessionId = localStorage.getItem("sessionId");
+
   useEffect(() => {
-    // Lấy user từ localStorage (sau khi login)
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
   const handleScroll = (sectionId) => {
     const section = document.getElementById(sectionId);
-    if (section) {
-      section.scrollIntoView({ behavior: "smooth" });
+    if (section) section.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // 🔹 Logout session hiện tại
+  const handleLogout = async () => {
+    const token = localStorage.getItem("token");
+    const sessionId = localStorage.getItem("sessionId"); // phải chắc chắn có sessionId
+
+    if (!token || !sessionId) {
+      localStorage.clear();
+      window.location.href = "/signin";
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/auth/devices/${sessionId}/logout`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+        }
+      );
+
+      if (!res.ok) {
+        const data = await res.json();
+        console.error(data.message || "Logout thất bại");
+      }
+
+    } catch (err) {
+      console.error("Lỗi khi logout:", err);
+    } finally {
+      // Luôn clear token, sessionId và user sau logout
+      localStorage.removeItem("token");
+      localStorage.removeItem("sessionId");
+      localStorage.removeItem("user");
+      localStorage.removeItem("role");
+      window.location.href = "/signin";
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setUser(null);
-    navigate("/"); // Quay lại trang chính
+  const renderDropdown = () => {
+    if (!user) return null;
+
+    return (
+      <div className="dropdown ms-3">
+        <button
+          className="btn dropdown-toggle"
+          type="button"
+          id="dropdownMenuButton"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          style={{
+            borderRadius: "25px",
+            backgroundColor: "#2ECCB6",
+            color: "#fff",
+            fontWeight: "500",
+            border: "none",
+            padding: "8px 16px",
+          }}
+        >
+          Xin chào, {user.fullName}
+        </button>
+        <ul
+          className="dropdown-menu dropdown-menu-end shadow-sm"
+          aria-labelledby="dropdownMenuButton"
+        >
+
+          {user.role === "Patient" && (
+            <>
+              <li>
+                <button
+                  className="dropdown-item"
+                  onClick={() => navigate("/patient/profile")}
+                >
+                  Hồ sơ cá nhân
+                </button>
+              </li>
+              <li>
+                <button
+                  className="dropdown-item"
+                  onClick={() => navigate("/patient/appointments")}
+                >
+                  Lịch hẹn của tôi
+                </button>
+              </li>
+              <li><hr className="dropdown-divider" /></li>
+            </>
+          )}
+          <li>
+            <button
+              className="dropdown-item"
+              onClick={() => navigate("/change-password")}
+            >
+              Đổi mật khẩu
+            </button>
+          </li>
+          <li>
+            <button
+              className="dropdown-item text-danger"
+              onClick={handleLogout}
+            >
+              Đăng xuất
+            </button>
+          </li>
+        </ul>
+      </div>
+    );
   };
 
   return (
-    <nav
-      className="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm"
-      style={{ padding: "12px 0" }}
-    >
+    <nav className="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm" style={{ padding: "12px 0" }}>
       <div className="container-lg">
-        {/* Logo */}
         <a
           className="navbar-brand fw-bold fs-4 d-flex align-items-center"
           href="/"
           style={{ color: "#2ECCB6", textDecoration: "none" }}
         >
-          <i
-            className="fas fa-tooth me-2"
-            style={{ color: "#2ECCB6", fontSize: "1.4rem" }}
-          ></i>
+          <i className="fas fa-tooth me-2" style={{ color: "#2ECCB6", fontSize: "1.4rem" }}></i>
           Smart Dental Clinic
         </a>
 
-        {/* Toggle button (mobile) */}
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
+        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
           <span className="navbar-toggler-icon"></span>
         </button>
 
-        {/* Menu */}
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
-              <a
-                className="nav-link"
-                href="/service"
-                style={{ color: "#333", fontWeight: 500 }}
-                onMouseEnter={(e) => (e.target.style.color = "#2ECCB6")}
-                onMouseLeave={(e) => (e.target.style.color = "#333")}
-              >
-                Dịch vụ
-              </a>
+              <a className="nav-link" href="/service" style={{ color: "#333", fontWeight: 500 }}
+                onMouseEnter={(e) => e.target.style.color = "#2ECCB6"}
+                onMouseLeave={(e) => e.target.style.color = "#333"}
+              >Dịch vụ</a>
             </li>
-
             <li className="nav-item">
-              <a
-                className="nav-link"
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleScroll("contact");
-                }}
-                style={{ color: "#333", fontWeight: 500 }}
-                onMouseEnter={(e) => (e.target.style.color = "#2ECCB6")}
-                onMouseLeave={(e) => (e.target.style.color = "#333")}
-              >
-                Liên hệ
-              </a>
+              <a className="nav-link" href="#" style={{ color: "#333", fontWeight: 500 }}
+                onClick={(e) => { e.preventDefault(); handleScroll("contact"); }}
+                onMouseEnter={(e) => e.target.style.color = "#2ECCB6"}
+                onMouseLeave={(e) => e.target.style.color = "#333"}
+              >Liên hệ</a>
             </li>
           </ul>
 
-          {/* Nếu chưa đăng nhập */}
           {!user ? (
             <button
               className="btn ms-3 px-4"
@@ -100,68 +168,13 @@ export default function Header() {
                 backgroundColor: "#2ECCB6",
                 borderColor: "#2ECCB6",
                 color: "#fff",
-                fontWeight: "500",
+                fontWeight: 500,
               }}
               onClick={() => navigate("/signin")}
             >
               Đặt lịch
             </button>
-          ) : (
-            <>
-              {/* Nếu là patient → hiển thị dropdown */}
-              {user.role === "Patient" && (
-                <div className="dropdown ms-3">
-                  <button
-                    className="btn dropdown-toggle"
-                    type="button"
-                    id="dropdownMenuButton"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                    style={{
-                      borderRadius: "25px",
-                      backgroundColor: "#2ECCB6",
-                      color: "#fff",
-                      fontWeight: "500",
-                      border: "none",
-                      padding: "8px 16px",
-                    }}
-                  >
-                    Xin chào, {user.fullName}
-                  </button>
-                  <ul
-                    className="dropdown-menu dropdown-menu-end shadow-sm"
-                    aria-labelledby="dropdownMenuButton"
-                  >
-                    <li>
-                      <button
-                        className="dropdown-item"
-                        onClick={() => navigate("/patient/profile")}
-                      >
-                        Hồ sơ cá nhân
-                      </button>
-                    </li>
-                    <li>
-                      <button
-                        className="dropdown-item"
-                        onClick={() => navigate("/patient/appointments")}
-                      >
-                        Lịch hẹn của tôi
-                      </button>
-                    </li>
-                    <li><hr className="dropdown-divider" /></li>
-                    <li>
-                      <button
-                        className="dropdown-item text-danger"
-                        onClick={handleLogout}
-                      >
-                        Đăng xuất
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              )}
-            </>
-          )}
+          ) : renderDropdown()}
         </div>
       </div>
     </nav>

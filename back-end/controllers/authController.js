@@ -12,7 +12,12 @@ async function loginController(req, res) {
       message: "Đăng nhập thành công",
       token: result.jwtToken,
       refreshToken: result.refreshToken,
-      user: { userId: result.user.userId, fullName: result.user.fullName, role: result.user.roleName }
+      sessionId: result.sessionId,
+      user: {
+        userId: result.user.userId,
+        fullName: result.user.fullName,
+        roleName: result.user.roleName
+      }
     });
   } catch (err) {
     res.status(400).json({ error: err.message });

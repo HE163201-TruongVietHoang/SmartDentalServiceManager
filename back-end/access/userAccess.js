@@ -57,7 +57,6 @@ async function updatePassword(userId, hashedPassword) {
     );
 }
 
-// ✅ ROLEID MẶC ĐỊNH = 4 KHI NGƯỜI DÙNG TỰ ĐĂNG KÝ
 async function createUser({
   username,
   email,
@@ -69,8 +68,7 @@ async function createUser({
   address,
 }) {
   const pool = await getPool();
-  const defaultRoleId = 4; // 👈 ROLE mặc định cho Public User
-
+  const defaultRoleId = 4; 
   const result = await pool
     .request()
     .input("username", sql.NVarChar, username)
@@ -81,7 +79,7 @@ async function createUser({
     .input("gender", sql.NVarChar, gender ?? null)
     .input("dob", sql.Date, dob ?? null)
     .input("address", sql.NVarChar, address ?? null)
-    .input("roleId", sql.Int, defaultRoleId) // ✅ FORCE ROLE = 4
+    .input("roleId", sql.Int, defaultRoleId) 
     .query(`INSERT INTO dbo.Users
       (username, email, password, fullName, phone, gender, dob, address, roleId)
       VALUES (@username, @email, @password, @fullName, @phone, @gender, @dob, @address, @roleId);

@@ -9,10 +9,10 @@ router.post('/change-password', authMiddleware, changePasswordController);
 router.post('/request-reset-password', requestPasswordResetController);
 router.post('/reset-password', resetPasswordController);
 router.post('/register', registerController);
-router.get("/profile", authMiddleware, profileController);
+router.get("/profile", authMiddleware,authorizeRoles("Patient"), profileController);
 
 // Ví dụ: route chỉ cho doctor truy cập
-router.get("/doctor/profile", authMiddleware, authorizeRoles("doctor"), profileController);
+router.get("/doctor/profile", authMiddleware, authorizeRoles("Doctor"), profileController);
 router.put('/profile', authMiddleware,  updateProfileController);
 
 router.get('/devices', authMiddleware, getDevicesController);

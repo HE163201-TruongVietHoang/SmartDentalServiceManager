@@ -13,9 +13,9 @@ async function getActiveSessions(userId) {
 async function createSession({ userId, jwtToken, refreshToken, ip, device }) {
   const pool = await getPool();
   const now = new Date();
-  const expiresAt = new Date(now.getTime() + 24*60*60*1000); // access token 1 ngày
+  const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 1 ngày
 
-  await pool.request()
+  const result = await pool.request()
     .input('userId', sql.Int, userId)
     .input('jwtToken', sql.NVarChar, jwtToken)
     .input('refreshToken', sql.NVarChar, refreshToken)
@@ -24,9 +24,14 @@ async function createSession({ userId, jwtToken, refreshToken, ip, device }) {
     .input('isActive', sql.Bit, 1)
     .input('createdAt', sql.DateTime, now)
     .input('expiresAt', sql.DateTime, expiresAt)
-    .query(`INSERT INTO dbo.UserSessions 
-      (userId, jwtToken, refreshToken, ipAddress, userAgent, isActive, createdAt, expiresAt)
-      VALUES (@userId, @jwtToken, @refreshToken, @ipAddress, @userAgent, @isActive, @createdAt, @expiresAt)`);
+    .query(`
+      INSERT INTO dbo.UserSessions
+        (userId, jwtToken, refreshToken, ipAddress, userAgent, isActive, createdAt, expiresAt)
+      OUTPUT INSERTED.sessionId
+      VALUES (@userId, @jwtToken, @refreshToken, @ipAddress, @userAgent, @isActive, @createdAt, @expiresAt)
+    `);
+
+  return result.recordset[0].sessionId; // trả về sessionId
 }
 
 async function deactivateSession(sessionId) {

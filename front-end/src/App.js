@@ -24,6 +24,7 @@ import UserManagement from "./pages/Admin/UserManagement";
 import PatientProfile from "./pages/profile/PatientProfile";
 import DoctorProfile from "./pages/profile/DoctorProfile";
 import AdminProfile from "./pages/profile/AdminProfile";
+import ChangePassword from "./pages/Account/ChangePassword";
 function App() {
   return (
     <Router>
@@ -44,7 +45,7 @@ function App() {
 
         {/* Trang Home */}
         <Route path="/service" element={<ServicesPage />} />
-
+        <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/patient/profile" element={<PatientProfile />} />
         <Route path="/doctor/profile" element={<DoctorProfile />} />
         <Route path="/admin/profile" element={<AdminProfile />} />
