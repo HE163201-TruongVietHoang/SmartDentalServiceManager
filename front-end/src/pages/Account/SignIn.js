@@ -17,24 +17,34 @@ function SignIn() {
       });
 
       const data = await res.json();
-      if (res.ok) {
-        alert(data.message || "✅ Đăng nhập thành công!");
 
-        // ✅ Lưu token vào LocalStorage
+      if (res.ok) {
+        console.log("Đăng nhập thành công:", data);
+
+        // Lưu token & role vào localStorage
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("role", data.user?.role);
+        localStorage.setItem("sessionId", data.sessionId);
+        alert(data.message || "Đăng nhập thành công!");
+        const role = data.user?.role;
+        if (role === "Patient") {
+          navigate("/"); // về trang home
+        } else if (role === "Doctor") {
+          navigate("/doctor/home");
+        } else if (role === "Admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/"); // fallback
+        }
 
-        // ✅ Điều hướng theo ROLE
-        if (data.user.role === "Admin") navigate("/admin/dashboard");
-        else if (data.user.role === "Doctor") navigate("/doctor/home");
-        else if (data.user.role === "Patient") navigate("/");
-        else navigate("/");
       } else {
-        alert(data.error || "❌ Đăng nhập thất bại!");
+        console.warn(" Đăng nhập thất bại:", data);
+        alert(data.message || "Đăng nhập thất bại!");
       }
     } catch (error) {
       console.error("Lỗi kết nối:", error);
-      alert("❌ Lỗi máy chủ hoặc không thể kết nối!");
+      alert(" Lỗi máy chủ hoặc không thể kết nối!");
     }
   };
 

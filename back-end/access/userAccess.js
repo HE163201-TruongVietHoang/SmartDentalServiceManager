@@ -11,6 +11,29 @@ async function findUserByEmail(email) {
   return result.recordset[0];
 }
 
+async function getUserById(userId) {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input("userId", sql.Int, userId)
+    .query(`
+      SELECT 
+      u.userId,
+      u.fullName,
+      u.email,
+      u.phone,
+      u.gender,
+      u.dob,
+      u.address,
+      r.roleName,
+      u.createdAt
+    FROM Users u
+    JOIN Roles r ON u.roleId = r.roleId
+    WHERE u.userId = @userId
+    `);
+
+  return result.recordset[0];
+}
+
 async function setOtpForUser(userId, otpCode, expiresAt) {
   const pool = await getPool();
   await pool
@@ -34,7 +57,6 @@ async function updatePassword(userId, hashedPassword) {
     );
 }
 
-// ✅ ROLEID MẶC ĐỊNH = 4 KHI NGƯỜI DÙNG TỰ ĐĂNG KÝ
 async function createUser({
   username,
   email,
@@ -46,8 +68,7 @@ async function createUser({
   address,
 }) {
   const pool = await getPool();
-  const defaultRoleId = 4; // 👈 ROLE mặc định cho Public User
-
+  const defaultRoleId = 4; 
   const result = await pool
     .request()
     .input("username", sql.NVarChar, username)
@@ -58,7 +79,7 @@ async function createUser({
     .input("gender", sql.NVarChar, gender ?? null)
     .input("dob", sql.Date, dob ?? null)
     .input("address", sql.NVarChar, address ?? null)
-    .input("roleId", sql.Int, defaultRoleId) // ✅ FORCE ROLE = 4
+    .input("roleId", sql.Int, defaultRoleId) 
     .query(`INSERT INTO dbo.Users
       (username, email, password, fullName, phone, gender, dob, address, roleId)
       VALUES (@username, @email, @password, @fullName, @phone, @gender, @dob, @address, @roleId);
@@ -149,6 +170,53 @@ async function deleteUser(userId) {
     .query(`DELETE FROM dbo.Users WHERE userId = @userId`);
 }
 
+
+const updateUserProfile = async (userId, data) => {
+  const { fullName, phone, gender, dob, address } = data;
+  const pool = await getPool();
+  await pool.request()
+    .input('userId', sql.Int, userId)
+    .input('fullName', sql.NVarChar, fullName)
+    .input('phone', sql.NVarChar, phone)
+    .input('gender', sql.NVarChar, gender)
+    .input('dob', sql.Date, dob)
+    .input('address', sql.NVarChar, address)
+    .query(`
+      UPDATE Users
+      SET fullName=@fullName, phone=@phone, gender=@gender, dob=@dob, address=@address, updatedAt=GETDATE()
+      WHERE userId=@userId
+    `);
+};
+
+// Lấy các session active của user
+const getUserSessions = async (userId) => {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('userId', sql.Int, userId)
+    .query(`
+      SELECT sessionId, jwtToken, userAgent, ipAddress, isActive, createdAt 
+      FROM UserSessions 
+      WHERE userId=@userId AND isActive=1
+    `);
+  return result.recordset;
+};
+
+// Logout 1 session
+const logoutSession = async (sessionId) => {
+  const pool = await getPool();
+  await pool.request()
+    .input('sessionId', sql.Int, sessionId)
+    .query(`UPDATE UserSessions SET isActive=0 WHERE sessionId=@sessionId`);
+};
+
+// Logout tất cả session của user
+const logoutAllSessions = async (userId) => {
+  const pool = await getPool();
+  await pool.request()
+    .input('userId', sql.Int, userId)
+    .query(`UPDATE UserSessions SET isActive=0 WHERE userId=@userId`);
+};
+
 module.exports = {
   findUserByEmail,
   setOtpForUser,
@@ -160,4 +228,9 @@ module.exports = {
   changeUserRole,
   setUserActive,
   deleteUser,
+  getUserById,
+  updateUserProfile,
+  getUserSessions,
+  logoutSession,
+  logoutAllSessions
 };

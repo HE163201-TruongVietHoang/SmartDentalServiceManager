@@ -1,42 +1,127 @@
-import React, { useState, useEffect } from "react";
+// import React from "react";
+// import { Link } from "react-router-dom";
+
+// function Header() {
+//   return (
+//     <header
+//       style={{
+//         background: "#007bff",
+//         color: "white",
+//         padding: "15px 30px",
+//         display: "flex",
+//         justifyContent: "space-between",
+//         alignItems: "center",
+//       }}
+//     >
+//       {/* Logo / Tên hệ thống */}
+//       <div>
+//         <h1 style={{ margin: 0, fontSize: "20px" }}>
+//           Smart Dental Service Manager
+//         </h1>
+//       </div>
+
+//       {/* Menu chính */}
+//       <nav style={{ flexGrow: 1, marginLeft: "50px" }}>
+//         <Link
+//           to="/"
+//           style={{
+//             color: "white",
+//             marginRight: "20px",
+//             textDecoration: "none",
+//           }}
+//         >
+//           Trang chủ
+//         </Link>
+//         <Link
+//           to="/services"
+//           style={{
+//             color: "white",
+//             marginRight: "20px",
+//             textDecoration: "none",
+//           }}
+//         >
+//           Dịch vụ
+//         </Link>
+//         <Link to="/contact" style={{ color: "white", textDecoration: "none" }}>
+//           Liên hệ
+//         </Link>
+//       </nav>
+
+//       {/* Nút Sign In / Sign Up */}
+//       <div>
+//         <Link to="/signin">
+//           <button
+//             style={{
+//               marginRight: "10px",
+//               padding: "8px 16px",
+//               backgroundColor: "#0056b3",
+//               border: "none",
+//               borderRadius: "5px",
+//               color: "white",
+//               cursor: "pointer",
+//             }}
+//           >
+//             Sign In
+//           </button>
+//         </Link>
+
+//         <Link to="/signup">
+//           <button
+//             style={{
+//               padding: "8px 16px",
+//               backgroundColor: "#28a745",
+//               border: "none",
+//               borderRadius: "5px",
+//               color: "white",
+//               cursor: "pointer",
+//             }}
+//           >
+//             Sign Up
+//           </button>
+//         </Link>
+//       </div>
+//     </header>
+//   );
+// }
+
+// export default Header;
+
+import React from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Header() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [showDropdown, setShowDropdown] = useState(false);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+  const handleScroll = (sectionId) => {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth" });
     }
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    alert("👋 Đăng xuất thành công!");
-    navigate("/signin");
   };
 
   return (
-    <nav
-      className="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm"
-      style={{ padding: "12px 0" }}
-    >
+    <nav className="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm" style={{ padding: "12px 0" }}>
       <div className="container-lg">
         <a
           className="navbar-brand fw-bold fs-4 d-flex align-items-center"
           href="/"
           style={{ color: "#2ECCB6", textDecoration: "none" }}
         >
-          <i
-            className="fas fa-tooth me-2"
-            style={{ color: "#2ECCB6", fontSize: "1.4rem" }}
-          ></i>
+          <i className="fas fa-tooth me-2" style={{ color: "#2ECCB6", fontSize: "1.4rem" }}></i>
           Smart Dental Clinic
         </a>
+
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
 
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto">
@@ -44,7 +129,13 @@ export default function Header() {
               <a
                 className="nav-link"
                 href="/service"
+                // onClick={(e) => {
+                //   e.preventDefault();
+                //   handleScroll("services"); // Cuộn đến section dịch vụ
+                // }}
                 style={{ color: "#333", fontWeight: 500 }}
+                onMouseEnter={(e) => (e.target.style.color = "#2ECCB6")}
+                onMouseLeave={(e) => (e.target.style.color = "#333")}
               >
                 Dịch vụ
               </a>
@@ -52,102 +143,33 @@ export default function Header() {
             <li className="nav-item">
               <a
                 className="nav-link"
-                href="#contact"
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleScroll("contact"); // Cuộn đến phần liên hệ
+                }}
                 style={{ color: "#333", fontWeight: 500 }}
+                onMouseEnter={(e) => (e.target.style.color = "#2ECCB6")}
+                onMouseLeave={(e) => (e.target.style.color = "#333")}
               >
                 Liên hệ
               </a>
             </li>
           </ul>
 
-          {/* ✅ Nếu CHƯA ĐĂNG NHẬP */}
-          {!user && (
-            <div>
-              <button
-                className="btn ms-3 px-3"
-                style={{
-                  borderRadius: "25px",
-                  backgroundColor: "#2ECCB6",
-                  color: "white",
-                  fontWeight: "500",
-                }}
-                onClick={() => navigate("/signin")}
-              >
-                Đăng nhập
-              </button>
-              <button
-                className="btn ms-2 px-3"
-                style={{
-                  borderRadius: "25px",
-                  border: "1px solid #2ECCB6",
-                  color: "#2ECCB6",
-                  fontWeight: "500",
-                }}
-                onClick={() => navigate("/signup")}
-              >
-                Đăng ký
-              </button>
-            </div>
-          )}
-
-          {/* ✅ Nếu ĐÃ ĐĂNG NHẬP VỚI ROLE = PATIENT */}
-          {user && user.role === "Patient" && (
-            <div className="ms-4 position-relative">
-              <div
-                style={{
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-                onClick={() => setShowDropdown(!showDropdown)}
-              >
-                <i
-                  className="fas fa-user-circle"
-                  style={{ fontSize: "1.8rem", color: "#2ECCB6" }}
-                ></i>
-                <span style={{ fontWeight: "bold", color: "#333" }}>
-                  {user.fullName}
-                </span>
-              </div>
-
-              {/* Dropdown */}
-              {showDropdown && (
-                <div
-                  className="position-absolute shadow-sm p-2 bg-white rounded"
-                  style={{
-                    right: 0,
-                    marginTop: "5px",
-                    width: "180px",
-                    zIndex: 10,
-                  }}
-                >
-                  <p
-                    style={{
-                      padding: "8px 12px",
-                      margin: 0,
-                      cursor: "pointer",
-                    }}
-                    onClick={() => navigate("/profile")}
-                  >
-                    👤 Thông tin tài khoản
-                  </p>
-                  <hr style={{ margin: "5px 0" }} />
-                  <p
-                    style={{
-                      padding: "8px 12px",
-                      margin: 0,
-                      cursor: "pointer",
-                      color: "red",
-                    }}
-                    onClick={handleLogout}
-                  >
-                    🚪 Đăng xuất
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+          <button
+            className="btn ms-3 px-4"
+            style={{
+              borderRadius: "25px",
+              backgroundColor: "#2ECCB6",
+              borderColor: "#2ECCB6",
+              color: "#fff",
+              fontWeight: "500",
+            }}
+            onClick={() => navigate("/signin")}
+          >
+            Đặt lịch
+          </button>
         </div>
       </div>
     </nav>

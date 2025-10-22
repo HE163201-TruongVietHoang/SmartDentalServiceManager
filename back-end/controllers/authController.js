@@ -1,4 +1,22 @@
-const { login, refreshToken, changePassword, requestPasswordReset, resetPassword, registerUser, listUsers, getUser, editUser, updateRole, toggleUserActive, removeUser } = require('../services/authService');
+const { 
+  login, 
+  refreshToken, 
+  changePassword, 
+  requestPasswordReset, 
+  resetPassword, 
+  registerUser, 
+  listUsers, 
+  getUser, 
+  editUser, 
+  updateRole, 
+  toggleUserActive, 
+  removeUser, 
+  getProfile , 
+  updateProfile, 
+  fetchDevices, 
+  logoutDevice, 
+  logoutAllDevices
+} = require('../services/authService');
 
 async function loginController(req, res) {
   try {
@@ -12,13 +30,27 @@ async function loginController(req, res) {
       message: "Đăng nhập thành công",
       token: result.jwtToken,
       refreshToken: result.refreshToken,
-      user: { userId: result.user.userId, fullName: result.user.fullName, role: result.user.roleName }
+      sessionId: result.sessionId,
+      user: {
+        userId: result.user.userId,
+        fullName: result.user.fullName,
+        roleName: result.user.roleName
+      }
     });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 }
 
+async function profileController(req, res) {
+  try {
+    const userId = req.user.userId;
+    const user = await getProfile(userId);
+    res.json(user);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
 async function refreshTokenController(req, res) {
   try {
     const { refreshToken: oldRefreshToken } = req.body;
@@ -132,13 +164,55 @@ async function deleteUserController(req, res) {
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
+} 
+async function updateProfileController(req, res) {
+  try {
+    await updateProfile(req.user.userId, req.body);
+    res.json({ message: 'Cập nhật hồ sơ thành công' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Lỗi server' });
+  }
 }
 
-module.exports = { 
-  loginController, 
-  refreshTokenController, 
-  changePasswordController, 
-  requestPasswordResetController, 
+async function getDevicesController(req, res) {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    const devices = await fetchDevices(req.user.userId, token);
+    res.json(devices);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Lỗi server' });
+  }
+}
+
+async function logoutDeviceController(req, res) {
+  try {
+    const { sessionId } = req.params;
+    await logoutDevice(sessionId);
+    res.json({ message: 'Đăng xuất thiết bị thành công' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Lỗi server' });
+  }
+}
+
+async function logoutAllDevicesController(req, res) {
+  try {
+    await logoutAllDevices(req.user.userId);
+    res.json({ message: 'Đăng xuất tất cả thiết bị thành công' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Lỗi server' });
+  }
+}
+
+module.exports = {
+  loginController,
+  profileController,
+  refreshTokenController,
+  changePasswordController,
+  requestPasswordResetController,
   resetPasswordController,
   registerController,
   listUsersController,
@@ -146,6 +220,10 @@ module.exports = {
   editUserController,
   updateRoleController,
   toggleUserActiveController,
-  deleteUserController
+  deleteUserController,
+  updateProfileController,
+  getDevicesController,
+  logoutDeviceController,
+  logoutAllDevicesController
 };
 

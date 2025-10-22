@@ -1,3 +1,4 @@
+
 const nodemailer = require("nodemailer"); // ✅ Thêm Nodemailer
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -7,6 +8,11 @@ const {
   setOtpForUser,
   updatePassword,
   createUser,
+  updateUserProfile,
+  getUserSessions,
+  logoutSession,
+  logoutAllSessions,
+  getUserById
 } = require("../access/userAccess");
 const {
   getUsers,
@@ -24,11 +30,12 @@ const {
   deactivateAllSessionsByUser,
 } = require("../access/sessionAccess");
 const { getPool, sql } = require("../config/db");
+const { get } = require("jquery");
 const MAX_SESSIONS = 3;
 
 function generateAccessToken(user) {
   return jwt.sign(
-    { userId: user.userId, role: user.roleName },
+    { userId: user.userId, roleName: user.roleName },
     process.env.JWT_SECRET,
     { expiresIn: "1d" }
   );
@@ -46,6 +53,7 @@ async function login({ email, password, ip, device }) {
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new Error("Sai mật khẩu");
 
+  // Giới hạn số session
   const activeSessions = await getActiveSessions(user.userId);
   if (activeSessions.length >= MAX_SESSIONS) {
     await deactivateSession(activeSessions[0].sessionId);
@@ -54,7 +62,7 @@ async function login({ email, password, ip, device }) {
   const jwtToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken();
 
-  await createSession({
+  const sessionId = await createSession({
     userId: user.userId,
     jwtToken,
     refreshToken,
@@ -62,7 +70,7 @@ async function login({ email, password, ip, device }) {
     device,
   });
 
-  return { jwtToken, refreshToken, user };
+  return { jwtToken, refreshToken, user, sessionId };
 }
 
 // Refresh token
@@ -97,9 +105,7 @@ async function changePassword({ userId, oldPassword, newPassword }) {
     .input("password", sql.NVarChar, hashedPassword)
     .query(`UPDATE dbo.Users SET password = @password WHERE userId = @userId`);
 
-  await deactivateAllSessionsByUser(userId);
-
-  return { message: "Đổi mật khẩu thành công. Tất cả thiết bị đã bị logout." };
+  return { message: "Đổi mật khẩu thành công." };
 }
 
 async function sendOtpEmail(email, otp) {
@@ -233,6 +239,30 @@ async function removeUser(userId) {
   await deleteUser(userId);
   return { message: "Xóa người dùng thành công" };
 }
+async function getProfile(userId) {
+  const user = await getUserById(userId);
+  if (!user) throw new Error("Không tìm thấy người dùng");
+  return user;
+}
+const updateProfile = async (userId, data) => {
+  return await updateUserProfile(userId, data);
+};
+
+const fetchDevices = async (userId, currentToken) => {
+  const sessions = await getUserSessions(userId);
+  return sessions.map(s => ({
+    ...s,
+    isCurrentDevice: s.jwtToken === currentToken
+  }));
+};
+
+const logoutDevice = async (sessionId) => {
+  return await logoutSession(sessionId);
+};
+
+const logoutAllDevices = async (userId) => {
+  return await logoutAllSessions(userId);
+};
 
 module.exports = {
   login,
@@ -247,4 +277,9 @@ module.exports = {
   updateRole,
   toggleUserActive,
   removeUser,
+  getProfile,
+  updateProfile,
+  fetchDevices,
+  logoutDevice,
+  logoutAllDevices
 };

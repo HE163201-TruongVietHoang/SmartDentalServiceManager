@@ -6,7 +6,7 @@ import Home from "./pages/Home";
 
 // 👨‍⚕️ Trang cho Doctor
 import HomeDoctor from "./pages/HomeDoctor";
-import Profile from "./components/doctor/Profile";
+// import Profile from "./components/doctor/Profile";
 import Appointments from "./components/doctor/Appointments";
 import PatientRecords from "./components/doctor/PatientRecords";
 import Schedule from "./components/doctor/Schedule";
@@ -21,7 +21,10 @@ import ResetPassword from "./pages/Account/ResetPassword";
 import SignIn from "./pages/Account/SignIn";
 import SignUp from "./pages/Account/SignUp";
 import UserManagement from "./pages/Admin/UserManagement";
-
+import PatientProfile from "./pages/profile/PatientProfile";
+import DoctorProfile from "./pages/profile/DoctorProfile";
+import AdminProfile from "./pages/profile/AdminProfile";
+import ChangePassword from "./pages/Account/ChangePassword";
 function App() {
   return (
     <Router>
@@ -31,7 +34,7 @@ function App() {
 
         {/* 👨‍⚕️ Trang dành riêng cho Doctor */}
         <Route path="/doctor/home" element={<HomeDoctor />} />
-        <Route path="/doctor/profile" element={<Profile />} />
+        {/* <Route path="/doctor/profile" element={<DoctorProfile />} /> */}
         <Route path="/doctor/appointments" element={<Appointments />} />
         <Route path="/doctor/patients" element={<PatientRecords />} />
         <Route path="/doctor/schedule" element={<Schedule />} />
@@ -42,7 +45,10 @@ function App() {
 
         {/* Trang Home */}
         <Route path="/service" element={<ServicesPage />} />
-
+        <Route path="/change-password" element={<ChangePassword />} />
+        <Route path="/patient/profile" element={<PatientProfile />} />
+        <Route path="/doctor/profile" element={<DoctorProfile />} />
+        <Route path="/admin/profile" element={<AdminProfile />} />
         {/* 🔑 Trang tài khoản */}
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
