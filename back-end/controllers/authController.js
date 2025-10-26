@@ -106,7 +106,8 @@ async function listUsersController(req, res) {
     const page = parseInt(req.query.page) || 1;
     const pageSize = parseInt(req.query.pageSize) || 10;
     const search = req.query.search || '';
-    const data = await listUsers({ page, pageSize, search });
+    const roleId = req.query.roleId ? parseInt(req.query.roleId) : undefined;
+    const data = await listUsers({ page, pageSize, search, roleId });
     res.json(data);
   } catch (err) {
     res.status(400).json({ error: err.message });

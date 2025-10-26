@@ -206,7 +206,7 @@ async function registerUser({
 
 // ----- Account management services -----
 async function listUsers({ page = 1, pageSize = 10, search = "" }) {
-  const data = await getUsers({ page, pageSize, search });
+  const data = await getUsers({ page, pageSize, search, roleId: arguments[0]?.roleId });
   return data;
 }
 
