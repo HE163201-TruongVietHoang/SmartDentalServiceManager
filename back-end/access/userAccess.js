@@ -87,29 +87,41 @@ async function createUser({
   return result.recordset[0];
 }
 
-async function getUsers({ page = 1, pageSize = 10, search = "" }) {
+async function getUsers({ page = 1, pageSize = 10, search = "", roleId }) {
   const pool = await getPool();
   const offset = (page - 1) * pageSize;
   const searchPattern = `%${search}%`;
 
-  const result = await pool
-    .request()
+  let whereClause = '(u.username LIKE @search OR u.email LIKE @search OR u.fullName LIKE @search)';
+  if (roleId !== undefined) {
+    whereClause += ' AND u.roleId = @roleId';
+  }
+
+  const request = pool.request()
     .input("search", sql.NVarChar, searchPattern)
     .input("offset", sql.Int, offset)
-    .input("pageSize", sql.Int, pageSize)
-    .query(`SELECT u.userId, u.username, u.email, u.fullName, u.phone, u.gender, u.dob, u.address, u.roleId, r.roleName, u.isActive
+    .input("pageSize", sql.Int, pageSize);
+  if (roleId !== undefined) {
+    request.input("roleId", sql.Int, roleId);
+  }
+
+  const result = await request.query(`SELECT u.userId, u.username, u.email, u.fullName, u.phone, u.gender, u.dob, u.address, u.roleId, r.roleName, u.isActive
             FROM dbo.Users u
             JOIN dbo.Roles r ON u.roleId = r.roleId
-            WHERE u.username LIKE @search OR u.email LIKE @search OR u.fullName LIKE @search
+            WHERE ${whereClause}
             ORDER BY u.userId DESC
             OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY`);
 
-  const countResult = await pool
-    .request()
-    .input("search", sql.NVarChar, searchPattern)
-    .query(
-      `SELECT COUNT(*) AS total FROM dbo.Users WHERE username LIKE @search OR email LIKE @search OR fullName LIKE @search`
-    );
+  // Count query
+  let countWhereClause = '(username LIKE @search OR email LIKE @search OR fullName LIKE @search)';
+  const countRequest = pool.request().input("search", sql.NVarChar, searchPattern);
+  if (roleId !== undefined) {
+    countWhereClause += ' AND roleId = @roleId';
+    countRequest.input("roleId", sql.Int, roleId);
+  }
+  const countResult = await countRequest.query(
+    `SELECT COUNT(*) AS total FROM dbo.Users WHERE ${countWhereClause}`
+  );
 
   return { users: result.recordset, total: countResult.recordset[0].total };
 }
@@ -117,10 +129,12 @@ async function getUsers({ page = 1, pageSize = 10, search = "" }) {
 async function findUserById(userId) {
   const pool = await getPool();
   const result = await pool.request().input("userId", sql.Int, userId)
-    .query(`SELECT u.userId, u.username, u.email, u.fullName, u.phone, u.gender, u.dob, u.address, u.roleId, r.roleName, u.isActive
-            FROM dbo.Users u
-            JOIN dbo.Roles r ON u.roleId = r.roleId
-            WHERE u.userId = @userId`);
+    .query(`SELECT 
+      u.*, 
+      r.roleName
+    FROM dbo.Users u
+    JOIN dbo.Roles r ON u.roleId = r.roleId
+    WHERE u.userId = @userId`);
   return result.recordset[0];
 }
 
