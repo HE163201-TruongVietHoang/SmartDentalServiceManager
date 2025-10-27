@@ -30,6 +30,7 @@ function SignIn() {
         // ✅ Điều hướng theo role
         const roleName = data.user?.roleName;
         if (roleName === "Patient") {
+
           navigate("/"); // về trang home
         } else if (roleName === "Doctor") {
           navigate("/doctor/home");
@@ -38,6 +39,7 @@ function SignIn() {
         } else {
           navigate("/"); // fallback
         }
+
       } else {
         console.warn(" Đăng nhập thất bại:", data);
         alert(data.message || "Đăng nhập thất bại!");
