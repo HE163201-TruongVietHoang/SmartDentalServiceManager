@@ -27,6 +27,7 @@ import AdminProfile from "./pages/profile/AdminProfile";
 import ChangePassword from "./pages/Account/ChangePassword";
 import DoctorRatingTestPage from "./pages/Test/DoctorRatingTestPage";
 import ServiceRatingTestPage from "./pages/Test/ServiceRatingTestPage";
+import Service from "./components/staff/page/servirce";
 function App() {
   return (
     <Router>
@@ -57,8 +58,17 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/admin/users" element={<UserManagement />} />
 
-        <Route path="/test/doctor-rating/:doctorId" element={<DoctorRatingTestPage />} />
-        <Route path="/test/service-rating/:serviceId" element={<ServiceRatingTestPage />} />
+        {/* Trang Staff */}
+        <Route path="/staff/services" element={<Service />} />
+
+        <Route
+          path="/test/doctor-rating/:doctorId"
+          element={<DoctorRatingTestPage />}
+        />
+        <Route
+          path="/test/service-rating/:serviceId"
+          element={<ServiceRatingTestPage />}
+        />
       </Routes>
     </Router>
   );
