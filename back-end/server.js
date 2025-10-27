@@ -4,6 +4,7 @@ const cors = require("cors");
 const db = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const authMiddleware = require("./middlewares/authMiddleware");
+const materialRoutes = require("./routes/materialRoutes");
 const { getPool } = require("./config/db");
 
 const app = express();
@@ -12,6 +13,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/materials", materialRoutes);
 getPool();
 // Start server
 const PORT = process.env.PORT || 5000;
