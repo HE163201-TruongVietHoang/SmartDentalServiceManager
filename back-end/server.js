@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const db = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
-const authMiddleware = require("./middlewares/authMiddleware");
+const scheduleRoutes = require("./routes/scheduleRoutes");
 const { getPool } = require("./config/db");
 
 const app = express();
@@ -12,6 +12,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/schedules", scheduleRoutes);
 getPool();
 // Start server
 const PORT = process.env.PORT || 5000;

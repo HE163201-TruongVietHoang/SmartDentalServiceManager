@@ -130,7 +130,7 @@ async function sendOtpEmail(email, otp) {
     `,
   });
 
-  console.log("✅ Email OTP đã gửi tới: ", email);
+  console.log(" Email OTP đã gửi tới: ", email);
 }
 // ==========================================
 
@@ -174,7 +174,6 @@ async function resetPassword({ email, otpCode, newPassword }) {
 }
 
 async function registerUser({
-  username,
   email,
   password,
   fullName,
@@ -190,7 +189,6 @@ async function registerUser({
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const user = await createUser({
-    username,
     email,
     password: hashedPassword,
     fullName,

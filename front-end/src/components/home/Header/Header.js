@@ -53,7 +53,6 @@ export default function Header() {
       localStorage.removeItem("token");
       localStorage.removeItem("sessionId");
       localStorage.removeItem("user");
-      localStorage.removeItem("role");
       window.location.href = "/signin";
     }
   };
@@ -85,16 +84,8 @@ export default function Header() {
           aria-labelledby="dropdownMenuButton"
         >
 
-          {user.role === "Patient" && (
+          {user.roleName === "Patient" && (
             <>
-              <li>
-                <button
-                  className="dropdown-item"
-                  onClick={() => navigate("/patient/profile")}
-                >
-                  Hồ sơ cá nhân
-                </button>
-              </li>
               <li>
                 <button
                   className="dropdown-item"
@@ -106,6 +97,14 @@ export default function Header() {
               <li><hr className="dropdown-divider" /></li>
             </>
           )}
+          <li>
+                <button
+                  className="dropdown-item"
+                  onClick={() => navigate("/profile")}
+                >
+                  Hồ sơ cá nhân
+                </button>
+              </li>
           <li>
             <button
               className="dropdown-item"

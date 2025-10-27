@@ -24,17 +24,16 @@ function SignIn() {
         // Lưu token & role vào localStorage
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
-        localStorage.setItem("role", data.user?.role);
         localStorage.setItem("sessionId", data.sessionId);
         alert(data.message || "Đăng nhập thành công!");
 
         // ✅ Điều hướng theo role
-        const role = data.user?.role;
-        if (role === "Patient") {
+        const roleName = data.user?.roleName;
+        if (roleName === "Patient") {
           navigate("/"); // về trang home
-        } else if (role === "Doctor") {
+        } else if (roleName === "Doctor") {
           navigate("/doctor/home");
-        } else if (role === "Admin") {
+        } else if (roleName === "Admin") {
           navigate("/admin/dashboard");
         } else {
           navigate("/"); // fallback

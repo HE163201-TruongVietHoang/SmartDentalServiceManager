@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 
 function EditModal({ user, onSave, onClose }) {
   const [formData, setFormData] = useState({
-    username: user.username || '',
     fullName: user.fullName || '',
     phone: user.phone || '',
     gender: user.gender || '',
@@ -45,16 +44,7 @@ function EditModal({ user, onSave, onClose }) {
       }}>
         <h2>Chỉnh sửa người dùng</h2>
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 10 }}>
-            <label>Username:</label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              style={{ width: '100%', padding: 5 }}
-            />
-          </div>
+          {/* Username removed (DB no longer has username) */}
           <div style={{ marginBottom: 10 }}>
             <label>Họ tên:</label>
             <input
@@ -235,7 +225,6 @@ function UsersTable({ onRefresh }) {
         <thead>
           <tr>
             <th>ID</th>
-            <th>Username</th>
             <th>Email</th>
             <th>Full name</th>
             <th>Role</th>
@@ -247,7 +236,6 @@ function UsersTable({ onRefresh }) {
           {users.map(u => (
             <tr key={u.userId}>
               <td>{u.userId}</td>
-              <td>{u.username}</td>
               <td>{u.email}</td>
               <td>{u.fullName}</td>
               <td>{u.roleName}</td>
