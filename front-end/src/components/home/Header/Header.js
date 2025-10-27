@@ -1,153 +1,179 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Header() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
-  const [showDropdown, setShowDropdown] = useState(false);
+
+  const token = localStorage.getItem("token");
+  const sessionId = localStorage.getItem("sessionId");
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    alert("👋 Đăng xuất thành công!");
-    navigate("/signin");
+  const handleScroll = (sectionId) => {
+    const section = document.getElementById(sectionId);
+    if (section) section.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // 🔹 Logout session hiện tại
+  const handleLogout = async () => {
+    const token = localStorage.getItem("token");
+    const sessionId = localStorage.getItem("sessionId"); // phải chắc chắn có sessionId
+
+    if (!token || !sessionId) {
+      localStorage.clear();
+      window.location.href = "/signin";
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/auth/devices/${sessionId}/logout`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+        }
+      );
+
+      if (!res.ok) {
+        const data = await res.json();
+        console.error(data.message || "Logout thất bại");
+      }
+
+    } catch (err) {
+      console.error("Lỗi khi logout:", err);
+    } finally {
+      // Luôn clear token, sessionId và user sau logout
+      localStorage.removeItem("token");
+      localStorage.removeItem("sessionId");
+      localStorage.removeItem("user");
+      window.location.href = "/signin";
+    }
+  };
+
+  const renderDropdown = () => {
+    if (!user) return null;
+
+    return (
+      <div className="dropdown ms-3">
+        <button
+          className="btn dropdown-toggle"
+          type="button"
+          id="dropdownMenuButton"
+          data-bs-toggle="dropdown"
+          aria-expanded="false"
+          style={{
+            borderRadius: "25px",
+            backgroundColor: "#2ECCB6",
+            color: "#fff",
+            fontWeight: "500",
+            border: "none",
+            padding: "8px 16px",
+          }}
+        >
+          Xin chào, {user.fullName}
+        </button>
+        <ul
+          className="dropdown-menu dropdown-menu-end shadow-sm"
+          aria-labelledby="dropdownMenuButton"
+        >
+
+          {user.roleName === "Patient" && (
+            <>
+              <li>
+                <button
+                  className="dropdown-item"
+                  onClick={() => navigate("/patient/appointments")}
+                >
+                  Lịch hẹn của tôi
+                </button>
+              </li>
+              <li><hr className="dropdown-divider" /></li>
+            </>
+          )}
+          <li>
+                <button
+                  className="dropdown-item"
+                  onClick={() => navigate("/profile")}
+                >
+                  Hồ sơ cá nhân
+                </button>
+              </li>
+          <li>
+            <button
+              className="dropdown-item"
+              onClick={() => navigate("/change-password")}
+            >
+              Đổi mật khẩu
+            </button>
+          </li>
+          <li>
+            <button
+              className="dropdown-item text-danger"
+              onClick={handleLogout}
+            >
+              Đăng xuất
+            </button>
+          </li>
+        </ul>
+      </div>
+    );
   };
 
   return (
-    <nav
-      className="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm"
-      style={{ padding: "12px 0" }}
-    >
+    <nav className="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm" style={{ padding: "12px 0" }}>
       <div className="container-lg">
         <a
           className="navbar-brand fw-bold fs-4 d-flex align-items-center"
           href="/"
           style={{ color: "#2ECCB6", textDecoration: "none" }}
         >
-          <i
-            className="fas fa-tooth me-2"
-            style={{ color: "#2ECCB6", fontSize: "1.4rem" }}
-          ></i>
+          <i className="fas fa-tooth me-2" style={{ color: "#2ECCB6", fontSize: "1.4rem" }}></i>
           Smart Dental Clinic
         </a>
+
+        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span className="navbar-toggler-icon"></span>
+        </button>
 
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
-              <a
-                className="nav-link"
-                href="/service"
-                style={{ color: "#333", fontWeight: 500 }}
-              >
-                Dịch vụ
-              </a>
+              <a className="nav-link" href="/service" style={{ color: "#333", fontWeight: 500 }}
+                onMouseEnter={(e) => e.target.style.color = "#2ECCB6"}
+                onMouseLeave={(e) => e.target.style.color = "#333"}
+              >Dịch vụ</a>
             </li>
             <li className="nav-item">
-              <a
-                className="nav-link"
-                href="#contact"
-                style={{ color: "#333", fontWeight: 500 }}
-              >
-                Liên hệ
-              </a>
+              <a className="nav-link" href="#" style={{ color: "#333", fontWeight: 500 }}
+                onClick={(e) => { e.preventDefault(); handleScroll("contact"); }}
+                onMouseEnter={(e) => e.target.style.color = "#2ECCB6"}
+                onMouseLeave={(e) => e.target.style.color = "#333"}
+              >Liên hệ</a>
             </li>
           </ul>
 
-          {/* ✅ Nếu CHƯA ĐĂNG NHẬP */}
-          {!user && (
-            <div>
-              <button
-                className="btn ms-3 px-3"
-                style={{
-                  borderRadius: "25px",
-                  backgroundColor: "#2ECCB6",
-                  color: "white",
-                  fontWeight: "500",
-                }}
-                onClick={() => navigate("/signin")}
-              >
-                Đăng nhập
-              </button>
-              <button
-                className="btn ms-2 px-3"
-                style={{
-                  borderRadius: "25px",
-                  border: "1px solid #2ECCB6",
-                  color: "#2ECCB6",
-                  fontWeight: "500",
-                }}
-                onClick={() => navigate("/signup")}
-              >
-                Đăng ký
-              </button>
-            </div>
-          )}
-
-          {/* ✅ Nếu ĐÃ ĐĂNG NHẬP VỚI ROLE = PATIENT */}
-          {user && user.role === "Patient" && (
-            <div className="ms-4 position-relative">
-              <div
-                style={{
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-                onClick={() => setShowDropdown(!showDropdown)}
-              >
-                <i
-                  className="fas fa-user-circle"
-                  style={{ fontSize: "1.8rem", color: "#2ECCB6" }}
-                ></i>
-                <span style={{ fontWeight: "bold", color: "#333" }}>
-                  {user.fullName}
-                </span>
-              </div>
-
-              {/* Dropdown */}
-              {showDropdown && (
-                <div
-                  className="position-absolute shadow-sm p-2 bg-white rounded"
-                  style={{
-                    right: 0,
-                    marginTop: "5px",
-                    width: "180px",
-                    zIndex: 10,
-                  }}
-                >
-                  <p
-                    style={{
-                      padding: "8px 12px",
-                      margin: 0,
-                      cursor: "pointer",
-                    }}
-                    onClick={() => navigate("/profile")}
-                  >
-                    👤 Thông tin tài khoản
-                  </p>
-                  <hr style={{ margin: "5px 0" }} />
-                  <p
-                    style={{
-                      padding: "8px 12px",
-                      margin: 0,
-                      cursor: "pointer",
-                      color: "red",
-                    }}
-                    onClick={handleLogout}
-                  >
-                    🚪 Đăng xuất
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+          {!user ? (
+            <button
+              className="btn ms-3 px-4"
+              style={{
+                borderRadius: "25px",
+                backgroundColor: "#2ECCB6",
+                borderColor: "#2ECCB6",
+                color: "#fff",
+                fontWeight: 500,
+              }}
+              onClick={() => navigate("/signin")}
+            >
+              Đặt lịch
+            </button>
+          ) : renderDropdown()}
         </div>
       </div>
     </nav>
