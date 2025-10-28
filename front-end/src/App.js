@@ -19,8 +19,8 @@ import ServicesPage from "./pages/Service/Service";
 import ResetPassword from "./pages/Account/ResetPassword";
 
 
-import ScheduleRequests from "./pages/manageclinic/ScheduleRequests";
-import ScheduleRequestDetail from "./pages/manageclinic/ScheduleRequestDetail";
+import ScheduleRequests from "./pages/Manageclinic/ScheduleRequests";
+import ScheduleRequestDetail from "./pages/Manageclinic/ScheduleRequestDetail";
 // 🔐 Trang đăng nhập / đăng ký
 import SignIn from "./pages/Account/SignIn";
 import SignUp from "./pages/Account/SignUp";
