@@ -19,40 +19,39 @@ async function createScheduleRequest(doctorId, note) {
 async function createSchedule({ requestId, doctorId, roomId, workDate, startTime, endTime }) {
   const pool = await getPool();
 
-  // Chuẩn hóa giờ
-  let sStart, sEnd;
-  try {
-    sStart = normalizeTime(startTime);
-    sEnd = normalizeTime(endTime);
-  } catch (err) {
-    throw new Error(`Invalid schedule time: ${err.message}`);
-  }
+  let sStart = normalizeTime(startTime);
+  let sEnd = normalizeTime(endTime);
 
-  if (!sStart) throw new Error("startTime is required and must be valid");
-  if (!sEnd) throw new Error("endTime is required and must be valid");
+  if (!sStart || !sEnd) throw new Error("startTime or endTime invalid");
+
+  // Nếu end = "00:00:00", coi là 24:00 cùng ngày -> insert 23:59:59
+  const isEndMidnight = sEnd === "00:00:00";
+  if (isEndMidnight) {
+    sEnd = "23:59:59";
+  }
 
   console.debug("createSchedule - normalized times", { sStart, sEnd });
 
   if (sEnd < sStart) {
-    console.log("Detected overnight schedule. Splitting into 2 parts.");
-
-    // Convert workDate sang Date object
+    // Ca overnight, tách 2 ngày
     const currentDate = new Date(workDate);
     const nextDate = new Date(currentDate);
     nextDate.setDate(currentDate.getDate() + 1);
 
+    // Hôm nay: start -> 23:59:59
     await pool.request()
       .input("requestId", sql.Int, requestId)
       .input("doctorId", sql.Int, doctorId)
       .input("roomId", sql.Int, roomId)
       .input("workDate", sql.Date, workDate)
       .input("startTime", sql.NVarChar, sStart)
-      .input("endTime", sql.NVarChar, "00:00:00")
+      .input("endTime", sql.NVarChar, "23:59:59")
       .query(`
         INSERT INTO Schedules (requestId, doctorId, roomId, workDate, startTime, endTime, status)
-        VALUES (@requestId, @doctorId, @roomId, @workDate, CAST(@startTime AS TIME), CAST(@endTime AS TIME), 'Pending')
+        VALUES (@requestId,@doctorId,@roomId,@workDate,CAST(@startTime AS TIME),CAST(@endTime AS TIME),'Pending')
       `);
 
+    // Ngày mai: 00:00:00 -> sEnd
     await pool.request()
       .input("requestId", sql.Int, requestId)
       .input("doctorId", sql.Int, doctorId)
@@ -62,10 +61,11 @@ async function createSchedule({ requestId, doctorId, roomId, workDate, startTime
       .input("endTime", sql.NVarChar, sEnd)
       .query(`
         INSERT INTO Schedules (requestId, doctorId, roomId, workDate, startTime, endTime, status)
-        VALUES (@requestId, @doctorId, @roomId, @workDate, CAST(@startTime AS TIME), CAST(@endTime AS TIME), 'Pending')
+        VALUES (@requestId,@doctorId,@roomId,@workDate,CAST(@startTime AS TIME),CAST(@endTime AS TIME),'Pending')
       `);
 
   } else {
+    // Ca bình thường trong ngày
     await pool.request()
       .input("requestId", sql.Int, requestId)
       .input("doctorId", sql.Int, doctorId)
@@ -75,10 +75,11 @@ async function createSchedule({ requestId, doctorId, roomId, workDate, startTime
       .input("endTime", sql.NVarChar, sEnd)
       .query(`
         INSERT INTO Schedules (requestId, doctorId, roomId, workDate, startTime, endTime, status)
-        VALUES (@requestId, @doctorId, @roomId, @workDate, CAST(@startTime AS TIME), CAST(@endTime AS TIME), 'Pending')
+        VALUES (@requestId,@doctorId,@roomId,@workDate,CAST(@startTime AS TIME),CAST(@endTime AS TIME),'Pending')
       `);
   }
 }
+
 
 
 
