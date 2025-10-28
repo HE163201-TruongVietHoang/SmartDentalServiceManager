@@ -57,7 +57,6 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/admin/users" element={<UserManagement />} />
-
         {/* Trang Staff */}
         <Route path="/staff/services" element={<Service />} />
 

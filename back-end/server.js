@@ -6,6 +6,7 @@ const db = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const ratingRoutes = require("./routes/ratingRoutes");
 const roleRoutes = require("./routes/roleRoutes");
+const serviceRoutes = require("./routes/staff/serviceRoutes");
 const authMiddleware = require("./middlewares/authMiddleware");
 const { getPool } = require("./config/db");
 
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/rating", ratingRoutes);
 app.use("/api/roles", roleRoutes);
+app.use("/api/services", serviceRoutes);
 getPool();
 // Start server
 const PORT = process.env.PORT || 5000;
