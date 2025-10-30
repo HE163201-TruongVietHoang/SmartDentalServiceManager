@@ -3,7 +3,7 @@
 // Mỗi hàm chỉ nhận request, gọi service tương ứng và trả JSON response.
 // Note: validate input ở controller trước khi gọi service (cơ bản).
 
-const materialService = require("../services/materialService");
+const materialService = require("../access/materialService");
 
 /**
  * GET /api/materials

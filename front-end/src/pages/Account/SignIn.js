@@ -30,16 +30,18 @@ function SignIn() {
         // ✅ Điều hướng theo role
         const roleName = data.user?.roleName;
         if (roleName === "Patient") {
-
-          navigate("/"); // về trang home
+          navigate("/"); // Trang chính của bệnh nhân
         } else if (roleName === "Doctor") {
           navigate("/doctor/home");
+        } else if (roleName === "Nurse") {
+          navigate("/nurse/materials"); // quản lý vật tư
+        } else if (roleName === "ClinicManager") {
+          navigate("/manager/dashboard"); // thống kê, báo cáo
+        } else if (roleName === "Receptionist") {
+          navigate("/receptionist/appointments"); // đặt lịch, quản lý lịch
         } else if (roleName === "Admin") {
-          navigate("/admin/dashboard");
-        } else {
-          navigate("/"); // fallback
+          navigate("/admin/settings"); // trang cài đặt quản trị
         }
-
       } else {
         console.warn(" Đăng nhập thất bại:", data);
         alert(data.message || "Đăng nhập thất bại!");
