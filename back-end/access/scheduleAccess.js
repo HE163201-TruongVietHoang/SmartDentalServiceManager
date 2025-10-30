@@ -1,0 +1,309 @@
+const { getPool } = require("../config/db");
+const sql = require("mssql");
+const { normalizeTime} = require("../utils/timeUtils");
+
+async function createScheduleRequest(doctorId, note) {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input("doctorId", sql.Int, doctorId)
+    .input("note", sql.NVarChar, note)
+    .query(`
+      INSERT INTO ScheduleRequests (doctorId, note)
+      OUTPUT INSERTED.requestId
+      VALUES (@doctorId, @note)
+    `);
+
+  return result.recordset[0].requestId;
+}
+
+async function createSchedule({ requestId, doctorId, roomId, workDate, startTime, endTime }) {
+  const pool = await getPool();
+
+  // Chuẩn hóa giờ
+  let sStart, sEnd;
+  try {
+    sStart = normalizeTime(startTime);
+    sEnd = normalizeTime(endTime);
+  } catch (err) {
+    throw new Error(`Invalid schedule time: ${err.message}`);
+  }
+
+  if (!sStart) throw new Error("startTime is required and must be valid");
+  if (!sEnd) throw new Error("endTime is required and must be valid");
+
+  console.debug("createSchedule - normalized times", { sStart, sEnd });
+
+  if (sEnd < sStart) {
+    console.log("Detected overnight schedule. Splitting into 2 parts.");
+
+    // Convert workDate sang Date object
+    const currentDate = new Date(workDate);
+    const nextDate = new Date(currentDate);
+    nextDate.setDate(currentDate.getDate() + 1);
+
+    await pool.request()
+      .input("requestId", sql.Int, requestId)
+      .input("doctorId", sql.Int, doctorId)
+      .input("roomId", sql.Int, roomId)
+      .input("workDate", sql.Date, workDate)
+      .input("startTime", sql.NVarChar, sStart)
+      .input("endTime", sql.NVarChar, "00:00:00")
+      .query(`
+        INSERT INTO Schedules (requestId, doctorId, roomId, workDate, startTime, endTime, status)
+        VALUES (@requestId, @doctorId, @roomId, @workDate, CAST(@startTime AS TIME), CAST(@endTime AS TIME), 'Pending')
+      `);
+
+    await pool.request()
+      .input("requestId", sql.Int, requestId)
+      .input("doctorId", sql.Int, doctorId)
+      .input("roomId", sql.Int, roomId)
+      .input("workDate", sql.Date, nextDate)
+      .input("startTime", sql.NVarChar, "00:00:00")
+      .input("endTime", sql.NVarChar, sEnd)
+      .query(`
+        INSERT INTO Schedules (requestId, doctorId, roomId, workDate, startTime, endTime, status)
+        VALUES (@requestId, @doctorId, @roomId, @workDate, CAST(@startTime AS TIME), CAST(@endTime AS TIME), 'Pending')
+      `);
+
+  } else {
+    await pool.request()
+      .input("requestId", sql.Int, requestId)
+      .input("doctorId", sql.Int, doctorId)
+      .input("roomId", sql.Int, roomId)
+      .input("workDate", sql.Date, workDate)
+      .input("startTime", sql.NVarChar, sStart)
+      .input("endTime", sql.NVarChar, sEnd)
+      .query(`
+        INSERT INTO Schedules (requestId, doctorId, roomId, workDate, startTime, endTime, status)
+        VALUES (@requestId, @doctorId, @roomId, @workDate, CAST(@startTime AS TIME), CAST(@endTime AS TIME), 'Pending')
+      `);
+  }
+}
+
+
+
+async function hasOverlappingSchedule(doctorId, workDate, startTime, endTime) {
+  const pool = await getPool();
+
+  const sStart = normalizeTime(startTime);
+  const sEnd = normalizeTime(endTime);
+
+  if (!sStart || !sEnd) throw new Error("startTime hoặc endTime không hợp lệ");
+
+  const isOvernight = sEnd < sStart;
+
+  const result = await pool.request()
+    .input("doctorId", sql.Int, doctorId)
+    .input("workDate", sql.Date, workDate)
+    .input("startTime", sql.NVarChar, sStart)
+    .input("endTime", sql.NVarChar, sEnd)
+    .query(`
+      SELECT TOP 1 *
+      FROM Schedules s
+      WHERE s.doctorId = @doctorId
+        AND s.status IN ('Pending','Approved')
+        AND (
+          (
+            @endTime > @startTime
+            AND s.workDate = @workDate
+            AND CAST(s.startTime AS TIME) < CAST(@endTime AS TIME)
+            AND CAST(s.endTime AS TIME) > CAST(@startTime AS TIME)
+          )
+
+          OR (
+            @endTime < @startTime
+            AND (
+              (s.workDate = @workDate
+                AND CAST(s.endTime AS TIME) > CAST(@startTime AS TIME)
+                AND s.endTime > s.startTime)
+              OR (s.workDate = DATEADD(DAY, 1, @workDate)
+                AND CAST(s.startTime AS TIME) < CAST(@endTime AS TIME))
+              OR (
+                s.endTime <= s.startTime
+                AND (
+                  (s.workDate = @workDate AND CAST(@startTime AS TIME) < CAST(s.endTime AS TIME))
+                  OR (s.workDate = DATEADD(DAY, -1, @workDate) AND CAST(@endTime AS TIME) > CAST(s.startTime AS TIME))
+                )
+              )
+            )
+          )
+        )
+    `);
+
+  return result.recordset[0] || null;
+}
+
+
+async function getScheduleRequests(page = 1, limit = 10) {
+  const pool = await getPool();
+  const offset = (page - 1) * limit;
+
+  const result = await pool.request().query(`
+    SELECT 
+      sr.requestId,
+      sr.doctorId,
+      u.fullName AS doctorName,
+      sr.note,
+      sr.createdAt,
+      sr.status
+    FROM ScheduleRequests sr
+    LEFT JOIN Users u ON sr.doctorId = u.userId
+    ORDER BY sr.createdAt DESC
+    OFFSET ${offset} ROWS FETCH NEXT ${limit} ROWS ONLY;
+  `);
+
+  const countResult = await pool.request().query(`
+    SELECT COUNT(*) AS total FROM ScheduleRequests;
+  `);
+
+  const requests = result.recordset;
+  const total = countResult.recordset[0].total;
+
+  return { requests, total };
+}
+
+
+async function getScheduleRequestById(requestId) {
+  const pool = await getPool();
+
+  const reqResult = await pool
+    .request()
+    .input("requestId", sql.Int, requestId)
+    .query(`
+      SELECT sr.requestId, sr.doctorId, u.fullName AS doctorName, sr.note, sr.createdAt, sr.status
+      FROM ScheduleRequests sr
+      LEFT JOIN Users u ON sr.doctorId = u.userId
+      WHERE sr.requestId = @requestId
+    `);
+
+  const schedulesResult = await pool
+    .request()
+    .input("requestId", sql.Int, requestId)
+    .query(`
+      SELECT scheduleId, doctorId, roomId, workDate, startTime, endTime, status
+      FROM Schedules
+      WHERE requestId = @requestId
+    `);
+
+  return { request: reqResult.recordset[0], schedules: schedulesResult.recordset };
+}
+
+async function approveScheduleRequest(requestId, adminId) {
+  const pool = await getPool();
+  await pool
+    .request()
+    .input('requestId', sql.Int, requestId)
+    .input('adminId', sql.Int, adminId)
+    .query(`
+      UPDATE ScheduleRequests SET status = 'Approved' WHERE requestId = @requestId;
+      UPDATE Schedules SET status = 'Approved' WHERE requestId = @requestId;
+    `);
+}
+
+async function rejectScheduleRequest(requestId, adminId, reason = null) {
+  const pool = await getPool();
+  await pool
+    .request()
+    .input('requestId', sql.Int, requestId)
+    .input('adminId', sql.Int, adminId)
+    .input('reason', sql.NVarChar, reason)
+    .query(`
+      UPDATE ScheduleRequests SET status = 'Rejected' WHERE requestId = @requestId;
+      UPDATE Schedules SET status = 'Rejected' WHERE requestId = @requestId;
+    `);
+}
+
+async function getDoctorSchedules(doctorId) {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input("doctorId", sql.Int, doctorId)
+    .query(`
+      SELECT 
+        s.scheduleId,
+        s.workDate,
+        s.startTime,
+        s.endTime,
+        s.status,
+        r.roomId,
+        r.roomName,
+        sr.note,
+        sr.createdAt AS requestCreatedAt
+      FROM Schedules s
+      LEFT JOIN Rooms r ON s.roomId = r.roomId
+      LEFT JOIN ScheduleRequests sr ON s.requestId = sr.requestId
+      WHERE s.doctorId = @doctorId
+      ORDER BY s.workDate DESC, s.startTime ASC
+    `);
+  return result.recordset;
+}
+function formatDateToYMD(date) {
+  if (!date) return null;
+  return new Date(date).toISOString().split("T")[0];
+}
+async function getScheduleDetailByDoctor(scheduleId, doctorId) {
+  const pool = await getPool();
+
+  const query = `
+    SELECT 
+      s.scheduleId,
+      s.workDate,
+      s.startTime,
+      s.endTime,
+      s.status,
+      s.doctorId,
+      r.roomId,
+      r.roomName
+    FROM Schedules s
+    JOIN Rooms r ON s.roomId = r.roomId
+    WHERE s.scheduleId = @scheduleId AND s.doctorId = @doctorId
+  `;
+
+  const scheduleResult = await pool
+    .request()
+    .input("scheduleId", sql.Int, scheduleId)
+    .input("doctorId", sql.Int, doctorId)
+    .query(query);
+
+  if (scheduleResult.recordset.length === 0) return null;
+
+  const schedule = scheduleResult.recordset[0];
+
+  const slotsResult = await pool
+    .request()
+    .input("scheduleId", sql.Int, scheduleId)
+    .query(`
+      SELECT slotId, startTime, endTime, isBooked
+      FROM Slots
+      WHERE scheduleId = @scheduleId
+      ORDER BY startTime ASC
+    `);
+
+  return {
+    scheduleId: schedule.scheduleId,
+    workDate: formatDateToYMD(schedule.workDate),
+    startTime: normalizeTime(schedule.startTime),
+    endTime: normalizeTime(schedule.endTime),
+    status: schedule.status,
+    room: {
+      roomId: schedule.roomId,
+      roomName: schedule.roomName,
+    },
+    slots: slotsResult.recordset.map(s => ({
+      slotId: s.slotId,
+      startTime: normalizeTime(s.startTime),
+      endTime: normalizeTime(s.endTime),
+      isBooked: !!s.isBooked,
+    })),
+  };
+}
+module.exports = {
+  createScheduleRequest,
+  createSchedule,
+  hasOverlappingSchedule,
+  getScheduleRequests,
+  getScheduleRequestById,
+  approveScheduleRequest,
+  rejectScheduleRequest,
+  getDoctorSchedules,
+  getScheduleDetailByDoctor
+};

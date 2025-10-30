@@ -1,12 +1,5 @@
-import React from 'react';
+import ProfileView from "../../components//profile/ProfileView";
 
-function Profile() {
-  return (
-    <div>
-      <h2>Doctor Profile</h2>
-      <p>This component is under development.</p>
-    </div>
-  );
+export default function DoctorProfile() {
+  return <ProfileView role="Bác sĩ" />;
 }
-
-export default Profile;

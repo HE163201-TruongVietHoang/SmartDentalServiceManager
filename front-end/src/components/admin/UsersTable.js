@@ -1,134 +1,9 @@
 import React, { useEffect, useState } from 'react';
-
-function EditModal({ user, onSave, onClose }) {
-  const [formData, setFormData] = useState({
-    username: user.username || '',
-    fullName: user.fullName || '',
-    phone: user.phone || '',
-    gender: user.gender || '',
-    dob: user.dob ? user.dob.split('T')[0] : '',
-    address: user.address || '',
-    roleId: user.roleId || 1
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(formData);
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 8,
-        width: '80%',
-        maxWidth: 500
-      }}>
-        <h2>Chỉnh sửa người dùng</h2>
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 10 }}>
-            <label>Username:</label>
-            <input
-              type="text"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              style={{ width: '100%', padding: 5 }}
-            />
-          </div>
-          <div style={{ marginBottom: 10 }}>
-            <label>Họ tên:</label>
-            <input
-              type="text"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
-              style={{ width: '100%', padding: 5 }}
-            />
-          </div>
-          <div style={{ marginBottom: 10 }}>
-            <label>Số điện thoại:</label>
-            <input
-              type="text"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              style={{ width: '100%', padding: 5 }}
-            />
-          </div>
-          <div style={{ marginBottom: 10 }}>
-            <label>Giới tính:</label>
-            <select
-              name="gender"
-              value={formData.gender}
-              onChange={handleChange}
-              style={{ width: '100%', padding: 5 }}
-            >
-              <option value="Nam">Nam</option>
-              <option value="Nữ">Nữ</option>
-            </select>
-          </div>
-          <div style={{ marginBottom: 10 }}>
-            <label>Ngày sinh:</label>
-            <input
-              type="date"
-              name="dob"
-              value={formData.dob}
-              onChange={handleChange}
-              style={{ width: '100%', padding: 5 }}
-            />
-          </div>
-          <div style={{ marginBottom: 10 }}>
-            <label>Địa chỉ:</label>
-            <input
-              type="text"
-              name="address"
-              value={formData.address}
-              onChange={handleChange}
-              style={{ width: '100%', padding: 5 }}
-            />
-          </div>
-          <div style={{ marginBottom: 10 }}>
-            <label>Vai trò:</label>
-            <select
-              name="roleId"
-              value={formData.roleId}
-              onChange={handleChange}
-              style={{ width: '100%', padding: 5 }}
-            >
-              <option value={1}>Admin</option>
-              <option value={2}>Doctor</option>
-              <option value={3}>Patient</option>
-            </select>
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-            <button type="button" onClick={onClose}>Hủy</button>
-            <button type="submit">Lưu</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
+import Table from '../common/Table';
+import Button from '../common/Button';
+import Pagination from '../common/Pagination';
+import SearchBar from '../common/SearchBar';
+import EditModal from './EditModal';
 
 function UsersTable({ onRefresh }) {
   const [users, setUsers] = useState([]);
@@ -137,15 +12,32 @@ function UsersTable({ onRefresh }) {
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
   const [editingUser, setEditingUser] = useState(null);
+  const [roles, setRoles] = useState([]);
+  const [roleId, setRoleId] = useState('');
+
+  useEffect(() => {
+    fetchRoles();
+  }, []);
 
   useEffect(() => {
     fetchUsers();
-  }, [page, search]);
+  }, [page, search, roleId]);
+
+  async function fetchRoles() {
+    try {
+      const res = await fetch('http://localhost:5000/api/roles');
+      const data = await res.json();
+      setRoles(data || []);
+    } catch (err) {
+      setRoles([]);
+    }
+  }
 
   async function fetchUsers() {
     try {
       const token = localStorage.getItem('token');
-      const q = `?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}`;
+      let q = `?page=${page}&pageSize=${pageSize}&search=${encodeURIComponent(search)}`;
+      if (roleId) q += `&roleId=${roleId}`;
       const res = await fetch(`http://localhost:5000/api/auth/users${q}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -227,57 +119,53 @@ function UsersTable({ onRefresh }) {
   const totalPages = Math.ceil(total / pageSize) || 1;
 
   return (
-    <div>
-      <div style={{ marginBottom: 12 }}>
-        <input placeholder="Tìm kiếm" value={search} onChange={e => setSearch(e.target.value)} />
-      </div>
-      <table border="1" cellPadding="6" style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Full name</th>
-            <th>Role</th>
-            <th>Active</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map(u => (
-            <tr key={u.userId}>
-              <td>{u.userId}</td>
-              <td>{u.username}</td>
-              <td>{u.email}</td>
-              <td>{u.fullName}</td>
-              <td>{u.roleName}</td>
-              <td>{u.isActive ? 'Yes' : 'No'}</td>
-              <td>
-                <button onClick={() => handleEdit(u.userId)}>Edit</button>
-                <button 
-                  onClick={() => toggleActive(u.userId, !u.isActive)} 
-                  style={{ marginLeft: 8 }}
-                >
-                  {u.isActive ? 'Deactivate' : 'Activate'}
-                </button>
-                <button 
-                  onClick={() => doDelete(u.userId)} 
-                  style={{ marginLeft: 8 }}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
+
+    <div className="container-fluid p-0">
+      <div className="d-flex align-items-center mb-3 gap-2">
+        <SearchBar value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm kiếm người dùng..." />
+        <select className="form-select" style={{ maxWidth: 200 }} value={roleId} onChange={e => { setRoleId(e.target.value); setPage(1); }}>
+          <option value="">Tất cả vai trò</option>
+          {roles.map(r => (
+            <option key={r.roleId} value={r.roleId}>{r.roleName}</option>
           ))}
-        </tbody>
-      </table>
-
-      <div style={{ marginTop: 12 }}>
-        <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Prev</button>
-        <span style={{ margin: '0 8px' }}>{page} / {totalPages}</span>
-        <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>Next</button>
+        </select>
       </div>
-
+      <Table
+        columns={["ID", "Username", "Email", "Full name", "Role", "Active", "Actions"]}
+        data={[]}
+      >
+        {users.map(u => (
+          <tr key={u.userId}>
+            <td>{u.userId}</td>
+            <td>{u.username}</td>
+            <td>{u.email}</td>
+            <td>{u.fullName}</td>
+            <td>{u.roleName}</td>
+            <td>{u.isActive ? (
+              <span className="badge bg-success">Yes</span>
+            ) : (
+              <span className="badge bg-secondary">No</span>
+            )}</td>
+            <td>
+              <Button size="sm" variant="warning" onClick={() => handleEdit(u.userId)}>
+                <i className="fa fa-edit me-1"></i>Edit
+              </Button>
+              <Button size="sm" variant={u.isActive ? "secondary" : "success"} onClick={() => toggleActive(u.userId, !u.isActive)} className="ms-2">
+                {u.isActive ? 'Deactivate' : 'Activate'}
+              </Button>
+              <Button size="sm" variant="danger" onClick={() => doDelete(u.userId)} className="ms-2">
+                <i className="fa fa-trash me-1"></i>Delete
+              </Button>
+            </td>
+          </tr>
+        ))}
+      </Table>
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        onPrev={() => setPage(p => p - 1)}
+        onNext={() => setPage(p => p + 1)}
+      />
       {editingUser && (
         <EditModal
           user={editingUser}
