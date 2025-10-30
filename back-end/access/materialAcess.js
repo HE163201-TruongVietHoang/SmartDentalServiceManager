@@ -6,6 +6,19 @@
 const { getPool, sql } = require("../config/db");
 
 module.exports = {
+  async addNewMaterial({ materialName, unit, unitPrice }) {
+    const pool = await getPool();
+    await pool
+      .request()
+      .input("materialName", sql.NVarChar(100), materialName)
+      .input("unit", sql.NVarChar(50), unit)
+      .input("unitPrice", sql.Decimal(18, 2), unitPrice).query(`
+      INSERT INTO Materials (materialName, unit, unitPrice, stockQuantity, createdAt, updatedAt)
+      VALUES (@materialName, @unit, @unitPrice, 0, GETDATE(), GETDATE())
+    `);
+    return { message: "Thêm vật tư mới thành công!" };
+  },
+
   /**
    * getAllMaterials
    * Dành cho: Admin

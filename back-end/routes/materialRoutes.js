@@ -4,13 +4,19 @@ const controller = require("../controllers/materialController");
 const authorizeRoles = require("../middlewares/roleMiddleware");
 const { authMiddleware } = require("../middlewares/authMiddleware");
 
-// ================== CLINIC MANAGER ==================
 router.get(
   "/",
   authMiddleware,
   authorizeRoles("ClinicManager"),
   controller.getAllMaterials
 );
+router.post(
+  "/add",
+  authMiddleware,
+  authorizeRoles("ClinicManager"),
+  controller.addNewMaterial
+);
+
 router.get(
   "/transactions",
   authMiddleware,
@@ -30,7 +36,6 @@ router.get(
   controller.getMaterialUsageReport
 );
 
-// ================== NURSE ==================
 router.get(
   "/appointments",
   authMiddleware,
