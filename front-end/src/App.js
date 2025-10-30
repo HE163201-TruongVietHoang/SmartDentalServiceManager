@@ -21,6 +21,7 @@ import ResetPassword from "./pages/Account/ResetPassword";
 
 import ScheduleRequests from "./pages/Manageclinic/ScheduleRequests";
 import ScheduleRequestDetail from "./pages/Manageclinic/ScheduleRequestDetail";
+
 // 🔐 Trang đăng nhập / đăng ký
 import SignIn from "./pages/Account/SignIn";
 import SignUp from "./pages/Account/SignUp";
@@ -31,6 +32,10 @@ import AdminProfile from "./components/admin/AdminProfile";
 import ChangePassword from "./pages/Account/ChangePassword";
 import DoctorRatingTestPage from "./pages/Test/DoctorRatingTestPage";
 import ServiceRatingTestPage from "./pages/Test/ServiceRatingTestPage";
+
+import NurseMaterialPage from "./pages/Nurse/NurseMaterialPage";
+
+import MaterialClinicPage from "./pages/manageclinic/MaterialClinicPage";
 function App() {
   return (
     <Router>
@@ -49,10 +54,20 @@ function App() {
         <Route path="/doctor/diagnosis" element={<DiagnosisPlan />} />
         <Route path="/doctor/progress" element={<TreatmentProgress />} />
         <Route path="/doctor/create-schedule" element={<ScheduleRequest />} />
-
+        <Route
+          path="/test/doctor-rating/:doctorId"
+          element={<DoctorRatingTestPage />}
+        />
+        <Route
+          path="/test/service-rating/:serviceId"
+          element={<ServiceRatingTestPage />}
+        />
 
         <Route path="/schedule-requests" element={<ScheduleRequests />} />
-        <Route path="/schedule-requests/:id" element={<ScheduleRequestDetail />} />
+        <Route
+          path="/schedule-requests/:id"
+          element={<ScheduleRequestDetail />}
+        />
         {/* Trang Home */}
         <Route path="/service" element={<ServicesPage />} />
         <Route path="/change-password" element={<ChangePassword />} />
@@ -64,9 +79,10 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/admin/users" element={<UserManagement />} />
-
-        <Route path="/test/doctor-rating/:doctorId" element={<DoctorRatingTestPage />} />
-        <Route path="/test/service-rating/:serviceId" element={<ServiceRatingTestPage />} />
+        {/*clinic Manager*/}
+        <Route path="/manager/dashboard" element={<MaterialClinicPage />} />
+        {/*clinic Manager*/}
+        <Route path="/nurse/materials" element={<NurseMaterialPage />} />
       </Routes>
     </Router>
   );

@@ -2,52 +2,67 @@ const express = require("express");
 const router = express.Router();
 const controller = require("../controllers/materialController");
 const authorizeRoles = require("../middlewares/roleMiddleware");
+const { authMiddleware } = require("../middlewares/authMiddleware");
 
-// =============== CLINIC MANAGER =================
-// Lấy danh sách vật tư
-router.get("/", authorizeRoles("ClinicManager"), controller.getAllMaterials);
+router.get(
+  "/",
+  authMiddleware,
+  authorizeRoles("ClinicManager"),
+  controller.getAllMaterials
+);
+router.post(
+  "/add",
+  authMiddleware,
+  authorizeRoles("ClinicManager"),
+  controller.addNewMaterial
+);
 
-// Lấy lịch sử giao dịch
 router.get(
   "/transactions",
+  authMiddleware,
   authorizeRoles("ClinicManager"),
   controller.getAllTransactions
 );
-
-// Nhập kho (IMPORT)
 router.post(
   "/import",
+  authMiddleware,
   authorizeRoles("ClinicManager"),
   controller.importMaterial
 );
-
-// Báo cáo sử dụng vật tư
 router.get(
   "/report",
+  authMiddleware,
   authorizeRoles("ClinicManager"),
   controller.getMaterialUsageReport
 );
 
-// =============== NURSE =================
-// Y tá lấy vật tư (USE)
-router.post("/use", authorizeRoles("Nurse"), controller.useMaterial);
-
-// Y tá hoàn vật tư (RETURN)
-router.post("/return", authorizeRoles("Nurse"), controller.returnMaterial);
-
-// Y tá ghi nhận vật tư thực tế đã dùng
-router.post("/used", authorizeRoles("Nurse"), controller.addUsedMaterial);
-
-// Lấy danh sách ca khám hôm nay
 router.get(
   "/appointments",
+  authMiddleware,
   authorizeRoles("Nurse"),
   controller.getTodayAppointments
 );
-
-// Lấy vật tư định mức cho 1 dịch vụ
+router.post(
+  "/use",
+  authMiddleware,
+  authorizeRoles("Nurse"),
+  controller.useMaterial
+);
+router.post(
+  "/return",
+  authMiddleware,
+  authorizeRoles("Nurse"),
+  controller.returnMaterial
+);
+router.post(
+  "/used",
+  authMiddleware,
+  authorizeRoles("Nurse"),
+  controller.addUsedMaterial
+);
 router.get(
   "/service/:serviceId",
+  authMiddleware,
   authorizeRoles("Nurse"),
   controller.getMaterialsByService
 );

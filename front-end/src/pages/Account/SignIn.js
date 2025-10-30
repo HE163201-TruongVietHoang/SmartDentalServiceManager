@@ -34,9 +34,9 @@ function SignIn() {
         } else if (roleName === "Doctor") {
           navigate("/doctor/home");
         } else if (roleName === "Nurse") {
-          navigate("/nurse/materials"); // quản lý vật tư
+          navigate("/nurse/materials");
         } else if (roleName === "ClinicManager") {
-          navigate("/manager/dashboard"); // thống kê, báo cáo
+          navigate("/manager/dashboard");
         } else if (roleName === "Receptionist") {
           navigate("/receptionist/appointments"); // đặt lịch, quản lý lịch
         } else if (roleName === "Admin") {
