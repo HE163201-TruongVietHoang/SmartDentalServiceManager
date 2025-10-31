@@ -35,7 +35,7 @@ import StaffLayout from "./pages/ClinicManager/ClinicManagerLayout";
 import Service from "./pages/ClinicManager/Services";
 import NurseMaterialPage from "./pages/Nurse/NurseMaterialPage";
 
-import MaterialClinicPage from "./pages/manageclinic/MaterialClinicPage";
+import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
 function App() {
   return (
     <Router>
@@ -79,16 +79,24 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/admin/users" element={<UserManagement />} />
-        {/*clinic Manager*/}
-        <Route path="/manager/dashboard" element={<MaterialClinicPage />} />
+
         {/*clinic Manager*/}
         <Route path="/nurse/materials" element={<NurseMaterialPage />} />
 
+        {/* Clinic Manager */}
         <Route
-          path="/staff/services"
+          path="/clinicmanager/services"
           element={
             <StaffLayout>
               <Service />
+            </StaffLayout>
+          }
+        />
+        <Route
+          path="/clinicmanager/material"
+          element={
+            <StaffLayout>
+              <MaterialClinicPage />
             </StaffLayout>
           }
         />

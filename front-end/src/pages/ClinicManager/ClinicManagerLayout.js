@@ -9,9 +9,13 @@ function StaffLayout({ children }) {
     {
       name: "Quản lý dịch vụ",
       icon: <FaServicestack />,
-      path: "/staff/services",
+      path: "/clinicmanager/services",
     },
-    { name: "Quản lý khuyến mãi", icon: <FaTags />, path: "/staff/promotions" },
+    {
+      name: "Quản lý vật tư",
+      icon: <FaTags />,
+      path: "/clinicmanager/material",
+    },
   ];
 
   return (
@@ -27,7 +31,7 @@ function StaffLayout({ children }) {
         }}
       >
         {/* Logo / Title */}
-        <h4 className="text-center mb-4 fw-bold">Staff Panel</h4>
+        <h4 className="text-center mb-4 fw-bold">Clinic Manager</h4>
 
         {/* Menu */}
         <ul className="nav nav-pills flex-column mb-auto">
