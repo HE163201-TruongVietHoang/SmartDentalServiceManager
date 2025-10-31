@@ -149,9 +149,7 @@ async function requestPasswordReset(email) {
 
   const otp = generateOtp();
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
-  expiresAt.setHours(expiresAt.getHours() + 7);
   await setOtpForUser(user.userId, otp, expiresAt);
-
   await sendOtpEmail(email, otp);
 
   return { message: "Mã OTP đã được gửi tới email" };
@@ -185,7 +183,7 @@ async function verifyAccountOtp(userId, otp) {
 
   if (user.otpCode !== otp) throw new Error("OTP không hợp lệ");
 
-  if (new Date() > new Date(user.otpExpiresAt)) throw new Error("OTP đã hết hạn");
+  if (new Date() > user.otpExpiresAt) throw new Error("OTP đã hết hạn");
 
   await activateUser(userId);
 
@@ -224,8 +222,7 @@ async function registerUser({
   }
   const hashedPassword = await bcrypt.hash(password, 10);
   const otpCode = generateOtp();
-  const otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
-  otpExpiresAt.setHours(otpExpiresAt.getHours() + 7);
+  const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
   const user = await createUser({
     email,
     password: hashedPassword,
