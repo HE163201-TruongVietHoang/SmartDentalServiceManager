@@ -4,7 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const {
-  findUserByEmail,
+  findUserByEmailOrPhone,
   setOtpForUser,
   updatePassword,
   createUser,
@@ -12,15 +12,17 @@ const {
   getUserSessions,
   logoutSession,
   logoutAllSessions,
-  getUserById
-} = require("../access/userAccess");
-const {
+  getUserById,
   getUsers,
   findUserById,
   updateUser,
   changeUserRole,
   setUserActive,
   deleteUser,
+  findUserByPhone,
+  findUserByEmail,
+  verifyUserOtp,
+  activateUser
 } = require("../access/userAccess");
 const {
   getActiveSessions,
@@ -32,7 +34,8 @@ const {
 const { getPool, sql } = require("../config/db");
 const { get } = require("jquery");
 const MAX_SESSIONS = 3;
-
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phoneRegex = /^(0|\+84)(\d{9})$/;
 function generateAccessToken(user) {
   return jwt.sign(
     { userId: user.userId, roleName: user.roleName },
@@ -46,10 +49,11 @@ function generateRefreshToken() {
 }
 
 // Login
-async function login({ email, password, ip, device }) {
-  const user = await findUserByEmail(email);
-  if (!user) throw new Error("Tài khoản không tồn tại");
-
+async function login({ identifier, password, ip, device }) {
+  const user = await findUserByEmailOrPhone(identifier);
+  if (!user) throw new Error("Email hoặc số điện thoại không tồn tại");
+  if (!user.isActive) throw new Error("Tài khoản đã bị vô hiệu hóa");
+  if (!user.isVerify) throw new Error("Tài khoản chưa xác minh");
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new Error("Sai mật khẩu");
 
@@ -120,9 +124,9 @@ async function sendOtpEmail(email, otp) {
   await transporter.sendMail({
     from: `"Smart Dental Clinic" <${process.env.SMTP_EMAIL}>`,
     to: email,
-    subject: "🔐 Mã OTP khôi phục mật khẩu",
+    subject: "🔐 Mã OTP",
     html: `
-      <h2>Mã OTP khôi phục mật khẩu</h2>
+      <h2>Mã OTP</h2>
       <p>Mã OTP của bạn là: <b style="font-size:22px">${otp}</b></p>
       <p>Mã này chỉ có hiệu lực trong <b>10 phút</b>. Không chia sẻ mã này với bất kỳ ai.</p>
       <br>
@@ -140,13 +144,12 @@ function generateOtp() {
 
 // Bước 1: Yêu cầu reset password
 async function requestPasswordReset(email) {
-  const user = await findUserByEmail(email);
+  const user = await findUserByEmailOrPhone(email);
   if (!user) throw new Error("Email không tồn tại");
 
   const otp = generateOtp();
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
   await setOtpForUser(user.userId, otp, expiresAt);
-
   await sendOtpEmail(email, otp);
 
   return { message: "Mã OTP đã được gửi tới email" };
@@ -154,7 +157,7 @@ async function requestPasswordReset(email) {
 
 // Bước 2: Reset password bằng OTP
 async function resetPassword({ email, otpCode, newPassword }) {
-  const user = await findUserByEmail(email);
+  const user = await findUserByEmailOrPhone(email);
   if (!user) throw new Error("Email không tồn tại");
 
   if (!user.otpCode || user.otpCode !== otpCode) {
@@ -172,6 +175,20 @@ async function resetPassword({ email, otpCode, newPassword }) {
 
   return { message: "Đổi mật khẩu thành công, tất cả thiết bị đã bị logout" };
 }
+async function verifyAccountOtp(userId, otp) {
+  const user = await verifyUserOtp(userId, otp);
+  if (!user) throw new Error("Người dùng không tồn tại");
+
+  if (user.isVerify) throw new Error("Tài khoản đã được xác minh");
+
+  if (user.otpCode !== otp) throw new Error("OTP không hợp lệ");
+
+  if (new Date() > user.otpExpiresAt) throw new Error("OTP đã hết hạn");
+
+  await activateUser(userId);
+
+  return { message: "Xác minh tài khoản thành công" };
+}
 
 async function registerUser({
   email,
@@ -183,11 +200,29 @@ async function registerUser({
   address,
   roleId,
 }) {
-  const existingUser = await findUserByEmail(email);
-  if (existingUser) throw new Error("Email đã được sử dụng");
+  if (!email || !emailRegex.test(email)) {
+    throw new Error("Email không hợp lệ");
+  }
 
+  if (!phone || !phoneRegex.test(phone)) {
+    throw new Error("Số điện thoại không hợp lệ");
+  }
+
+  if (!password || password.length < 6) {
+    throw new Error("Mật khẩu phải có ít nhất 6 ký tự");
+  }
+  const emailExists = await findUserByEmail(email);
+  if (emailExists) {
+    throw new Error("Email đã được sử dụng");
+  }
+
+  const phoneExists = await findUserByPhone(phone);
+  if (phoneExists) {
+    throw new Error("Số điện thoại đã được sử dụng");
+  }
   const hashedPassword = await bcrypt.hash(password, 10);
-
+  const otpCode = generateOtp();
+  const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
   const user = await createUser({
     email,
     password: hashedPassword,
@@ -198,8 +233,11 @@ async function registerUser({
     address,
     roleId,
   });
+  await setOtpForUser(user.userId, otpCode, otpExpiresAt);
 
-  return { message: "Đăng ký thành công", userId: user.userId };
+  // Gửi OTP qua email hoặc SMS
+  await sendOtpEmail(email, otpCode);
+  return { message: "Đăng ký thành công, vui lòng nhập OTP để xác minh tài khoản", userId: user.userId };
 }
 
 // ----- Account management services -----
@@ -279,5 +317,6 @@ module.exports = {
   updateProfile,
   fetchDevices,
   logoutDevice,
-  logoutAllDevices
+  logoutAllDevices,
+  verifyAccountOtp
 };

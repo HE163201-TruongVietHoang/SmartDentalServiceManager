@@ -12,7 +12,7 @@ async function findAvailableRoom(workDate, startTime, endTime) {
   let parsedDate;
   if (typeof workDate === "string") {
     const [day, month, year] = workDate.split("-");
-    parsedDate = new Date(`${year}-${month}-${day}`);
+    parsedDate = new Date(`${day}-${month}-${year}`);
   } else if (workDate instanceof Date) {
     parsedDate = workDate;
   } else {
