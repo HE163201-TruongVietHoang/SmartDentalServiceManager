@@ -1,21 +1,59 @@
-const sql = require("mssql");
-const { getPool } = require("../config/db");
 
+const { getPool } = require("../config/db");
+const sql = require("mssql");
+
+async function findUserByEmailOrPhone(identifier) {
+  const pool = await getPool();
+  const result = await pool
+    .request()
+    .input("identifier", sql.NVarChar, identifier)
+    .query(`
+      SELECT 
+        u.userId, u.fullName, u.password, u.roleId, 
+        r.roleName, u.otpCode, u.otpExpiresAt, 
+        u.isActive, u.isVerify, u.email, u.phone
+      FROM dbo.Users u
+      JOIN dbo.Roles r ON u.roleId = r.roleId
+      WHERE u.email = @identifier OR u.phone = @identifier
+    `);
+  return result.recordset[0];
+}
+async function activateUser(userId) {
+  const pool = await getPool();
+  await pool.request()
+    .input("userId", sql.Int, userId)
+    .query(`
+      UPDATE dbo.Users
+      SET isActive = 1, isVerify = 1, otpCode = NULL, otpExpiresAt = NULL
+      WHERE userId = @userId
+    `);
+}
 async function findUserByEmail(email) {
   const pool = await getPool();
   const result = await pool
     .request()
     .input("email", sql.NVarChar, email)
-    .query(
-      `SELECT u.userId, u.fullName, u.password, u.roleId, r.roleName, u.otpCode, u.otpExpiresAt
-           FROM dbo.Users u
-           JOIN dbo.Roles r ON u.roleId = r.roleId
-           WHERE u.email = @email`
-    );
-
+    .query(`
+      SELECT userId, email
+      FROM dbo.Users
+      WHERE email = @email
+    `);
   return result.recordset[0];
 }
 
+// 🔍 Kiểm tra phone tồn tại
+async function findUserByPhone(phone) {
+  const pool = await getPool();
+  const result = await pool
+    .request()
+    .input("phone", sql.NVarChar, phone)
+    .query(`
+      SELECT userId, phone
+      FROM dbo.Users
+      WHERE phone = @phone
+    `);
+  return result.recordset[0];
+}
 async function getUserById(userId) {
   const pool = await getPool();
   const result = await pool
@@ -54,32 +92,51 @@ async function updatePassword(userId, hashedPassword) {
     );
 }
 
-async function createUser({
-  email,
-  password,
-  fullName,
-  phone,
-  gender,
-  dob,
-  address,
-}) {
+
+async function createUser({ email, password, fullName, phone, gender, dob, address}) {
   const pool = await getPool();
-  const defaultRoleId = 6;
+
+  const roleResult = await pool
+    .request()
+    .input("roleName", sql.NVarChar, "Patient")
+    .query(`SELECT roleId FROM dbo.Roles WHERE roleName = @roleName`);
+
+  if (roleResult.recordset.length === 0) {
+    throw new Error("Role 'Patient' not found in Roles table.");
+  }
+
+  const roleId = roleResult.recordset[0].roleId;
+
   const result = await pool
     .request()
     .input("email", sql.NVarChar, email)
     .input("password", sql.NVarChar, password)
     .input("fullName", sql.NVarChar, fullName)
     .input("phone", sql.NVarChar, phone)
-    .input("gender", sql.NVarChar, gender ?? null)
-    .input("dob", sql.Date, dob ?? null)
-    .input("address", sql.NVarChar, address ?? null)
-    .input("roleId", sql.Int, defaultRoleId)
-    .query(
-      `INSERT INTO dbo.Users (email, password, fullName, phone, gender, dob, address, roleId)
-           VALUES (@email, @password, @fullName, @phone, @gender, @dob, @address, @roleId);
-           SELECT SCOPE_IDENTITY() AS userId;`
-    );
+    .input("gender", sql.NVarChar, gender)
+    .input("dob", sql.Date, dob)
+    .input("address", sql.NVarChar, address)
+    .input("roleId", sql.Int, roleId)
+    .input("isActive", sql.Bit, true)
+    .input("isVerify", sql.Bit, false)
+    .query(`
+      INSERT INTO dbo.Users (email, password, fullName, phone, gender, dob, address, roleId)
+      VALUES (@email, @password, @fullName, @phone, @gender, @dob, @address, @roleId);
+      SELECT SCOPE_IDENTITY() AS userId;
+    `);
+
+  return result.recordset[0];
+}
+async function verifyUserOtp(userId, otpCode) {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input("userId", sql.Int, userId)
+    .input("otpCode", sql.NVarChar, otpCode)
+    .query(`
+      SELECT otpCode, otpExpiresAt, isVerify
+      FROM dbo.Users
+      WHERE userId = @userId
+    `);
 
   return result.recordset[0];
 }
@@ -230,7 +287,8 @@ const logoutAllSessions = async (userId) => {
 };
 
 module.exports = {
-  findUserByEmail,
+  findUserByEmailOrPhone,
+  activateUser,
   setOtpForUser,
   updatePassword,
   createUser,
@@ -245,4 +303,8 @@ module.exports = {
   getUserSessions,
   logoutSession,
   logoutAllSessions,
-};
+  findUserByEmail,
+  findUserByPhone,
+  verifyUserOtp
+}
+
