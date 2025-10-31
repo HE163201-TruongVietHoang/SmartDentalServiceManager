@@ -8,7 +8,7 @@ const ratingRoutes = require("./routes/ratingRoutes");
 const roleRoutes = require("./routes/roleRoutes");
 const scheduleRoutes = require("./routes/scheduleRoutes");
 const authMiddleware = require("./middlewares/authMiddleware");
-
+const serviceStaffRoutes = require("./routes/serviceStaffRoutes");
 const materialRoutes = require("./routes/materialRoutes");
 
 const { getPool } = require("./config/db");
@@ -26,6 +26,7 @@ app.use("/api/materials", materialRoutes);
 app.use("/api/rating", ratingRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api/schedules", scheduleRoutes);
+app.use("/api/services", serviceStaffRoutes);
 
 getPool();
 // Start server

@@ -18,8 +18,8 @@ import ScheduleRequest from "./components/doctor/ScheduleRequest";
 import ServicesPage from "./pages/Service/Service";
 import ResetPassword from "./pages/Account/ResetPassword";
 
-import ScheduleRequests from "./pages/Manageclinic/ScheduleRequests";
-import ScheduleRequestDetail from "./pages/Manageclinic/ScheduleRequestDetail";
+import ScheduleRequests from "./pages/manageclinic/ScheduleRequests";
+import ScheduleRequestDetail from "./pages/manageclinic/ScheduleRequestDetail";
 
 // 🔐 Trang đăng nhập / đăng ký
 import SignIn from "./pages/Account/SignIn";
@@ -31,7 +31,8 @@ import AdminProfile from "./components/admin/AdminProfile";
 import ChangePassword from "./pages/Account/ChangePassword";
 import DoctorRatingTestPage from "./pages/Test/DoctorRatingTestPage";
 import ServiceRatingTestPage from "./pages/Test/ServiceRatingTestPage";
-
+import StaffLayout from "./pages/ClinicManager/ClinicManagerLayout";
+import Service from "./pages/ClinicManager/Services";
 import NurseMaterialPage from "./pages/Nurse/NurseMaterialPage";
 
 import MaterialClinicPage from "./pages/manageclinic/MaterialClinicPage";
@@ -82,6 +83,15 @@ function App() {
         <Route path="/manager/dashboard" element={<MaterialClinicPage />} />
         {/*clinic Manager*/}
         <Route path="/nurse/materials" element={<NurseMaterialPage />} />
+
+        <Route
+          path="/staff/services"
+          element={
+            <StaffLayout>
+              <Service />
+            </StaffLayout>
+          }
+        />
       </Routes>
     </Router>
   );
