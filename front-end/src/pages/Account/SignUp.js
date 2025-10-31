@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function SignUp() {
-  const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState(""); // ✅ Đổi từ name → fullName
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -22,7 +21,7 @@ function SignUp() {
       const response = await fetch("http://localhost:5000/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, fullName, email, phone, password }), // ✅ Gửi fullName thay vì name
+        body: JSON.stringify({ fullName, email, phone, password }), // ✅ Gửi fullName thay vì name
       });
 
       const data = await response.json();
@@ -71,24 +70,7 @@ function SignUp() {
           Đăng ký tài khoản
         </h2>
         <form onSubmit={handleSubmit}>
-          {/* ✅ Username */}
-          <div style={{ marginBottom: "15px" }}>
-            <label style={{ fontWeight: "bold", color: "#333" }}>Tên:</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              placeholder="Nhập username"
-              style={{
-                width: "100%",
-                padding: "10px",
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                marginTop: "5px",
-              }}
-            />
-          </div>
+          {/* Username removed (DB no longer has username) */}
 
           {/* ✅ Full Name */}
           <div style={{ marginBottom: "15px" }}>

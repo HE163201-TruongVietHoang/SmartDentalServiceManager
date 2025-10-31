@@ -119,6 +119,7 @@ function UsersTable({ onRefresh }) {
   const totalPages = Math.ceil(total / pageSize) || 1;
 
   return (
+
     <div className="container-fluid p-0">
       <div className="d-flex align-items-center mb-3 gap-2">
         <SearchBar value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm kiếm người dùng..." />

@@ -24,20 +24,24 @@ function SignIn() {
         // Lưu token & role vào localStorage
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
-        localStorage.setItem("role", data.user?.role);
         localStorage.setItem("sessionId", data.sessionId);
         alert(data.message || "Đăng nhập thành công!");
-        const role = data.user?.role;
-        if (role === "Patient") {
-          navigate("/"); // về trang home
-        } else if (role === "Doctor") {
-          navigate("/doctor/home");
-        } else if (role === "Admin") {
-          navigate("/admin/dashboard");
-        } else {
-          navigate("/"); // fallback
-        }
 
+        // ✅ Điều hướng theo role
+        const roleName = data.user?.roleName;
+        if (roleName === "Patient") {
+          navigate("/"); // Trang chính của bệnh nhân
+        } else if (roleName === "Doctor") {
+          navigate("/doctor/home");
+        } else if (roleName === "Nurse") {
+          navigate("/nurse/materials");
+        } else if (roleName === "ClinicManager") {
+          navigate("/manager/dashboard");
+        } else if (roleName === "Receptionist") {
+          navigate("/receptionist/appointments"); // đặt lịch, quản lý lịch
+        } else if (roleName === "Admin") {
+          navigate("/admin/settings"); // trang cài đặt quản trị
+        }
       } else {
         console.warn(" Đăng nhập thất bại:", data);
         alert(data.message || "Đăng nhập thất bại!");

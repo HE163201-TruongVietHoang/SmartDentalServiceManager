@@ -6,20 +6,27 @@ const db = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const ratingRoutes = require("./routes/ratingRoutes");
 const roleRoutes = require("./routes/roleRoutes");
-const serviceRoutes = require("./routes/staff/serviceRoutes");
+const scheduleRoutes = require("./routes/scheduleRoutes");
 const authMiddleware = require("./middlewares/authMiddleware");
-const { getPool } = require("./config/db");
 
+const materialRoutes = require("./routes/materialRoutes");
+
+const { getPool } = require("./config/db");
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
 // Routes
 
 app.use("/api/auth", authRoutes);
+
+app.use("/api/materials", materialRoutes);
+
 app.use("/api/rating", ratingRoutes);
 app.use("/api/roles", roleRoutes);
-app.use("/api/services", serviceRoutes);
+app.use("/api/schedules", scheduleRoutes);
+
 getPool();
 // Start server
 const PORT = process.env.PORT || 5000;
