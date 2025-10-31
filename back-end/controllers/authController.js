@@ -15,16 +15,18 @@ const {
   updateProfile, 
   fetchDevices, 
   logoutDevice, 
-  logoutAllDevices
+  logoutAllDevices,
+  sendVerificationOtp,
+  verifyAccountOtp
 } = require('../services/authService');
 
 async function loginController(req, res) {
   try {
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     const device = req.headers['user-agent'] || '';
 
-    const result = await login({ email, password, ip, device });
+    const result = await login({ identifier, password, ip, device });
 
     res.json({
       message: "Đăng nhập thành công",
@@ -208,6 +210,16 @@ async function logoutAllDevicesController(req, res) {
   }
 }
 
+// Xác minh OTP
+async function verifyOtp(req, res) {
+  try {
+    const { userId, otp } = req.body;
+    const result = await verifyAccountOtp(userId, otp);
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
 module.exports = {
   loginController,
   profileController,
@@ -225,6 +237,7 @@ module.exports = {
   updateProfileController,
   getDevicesController,
   logoutDeviceController,
-  logoutAllDevicesController
+  logoutAllDevicesController,
+  verifyOtp
 };
 
