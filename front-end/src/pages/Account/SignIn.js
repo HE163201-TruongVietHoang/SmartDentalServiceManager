@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function SignIn() {
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState(""); // email hoặc phone
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
@@ -13,7 +13,7 @@ function SignIn() {
       const res = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier, password }),
       });
 
       const data = await res.json();
@@ -22,33 +22,34 @@ function SignIn() {
         console.log("Đăng nhập thành công:", data);
 
         // Lưu token & role vào localStorage
-        localStorage.setItem("token", data.token);
+        localStorage.setItem("token", data.token || data.jwtToken);
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("sessionId", data.sessionId);
+
         alert(data.message || "Đăng nhập thành công!");
 
-        // ✅ Điều hướng theo role
+        // Điều hướng theo role
         const roleName = data.user?.roleName;
         if (roleName === "Patient") {
-          navigate("/"); // Trang chính của bệnh nhân
+          navigate("/");
         } else if (roleName === "Doctor") {
           navigate("/doctor/home");
         } else if (roleName === "Nurse") {
           navigate("/nurse/materials");
         } else if (roleName === "ClinicManager") {
-          navigate("/manager/dashboard");
+          navigate("/clinicmanager/material");
         } else if (roleName === "Receptionist") {
-          navigate("/receptionist/appointments"); // đặt lịch, quản lý lịch
+          navigate("/receptionist/appointments");
         } else if (roleName === "Admin") {
-          navigate("/admin/settings"); // trang cài đặt quản trị
+          navigate("/admin/settings");
         }
       } else {
-        console.warn(" Đăng nhập thất bại:", data);
-        alert(data.message || "Đăng nhập thất bại!");
+        console.warn("Đăng nhập thất bại:", data);
+        alert(data.error || "Đăng nhập thất bại!");
       }
     } catch (error) {
       console.error("Lỗi kết nối:", error);
-      alert(" Lỗi máy chủ hoặc không thể kết nối!");
+      alert("Lỗi máy chủ hoặc không thể kết nối!");
     }
   };
 
@@ -84,11 +85,13 @@ function SignIn() {
         </h2>
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: "15px" }}>
-            <label style={{ fontWeight: "bold", color: "#333" }}>Email:</label>
+            <label style={{ fontWeight: "bold", color: "#333" }}>
+              Email hoặc SĐT:
+            </label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
               required
               style={{
                 width: "100%",
@@ -97,7 +100,7 @@ function SignIn() {
                 borderRadius: "8px",
                 marginTop: "5px",
               }}
-              placeholder="Nhập email của bạn"
+              placeholder="Nhập email hoặc số điện thoại"
             />
           </div>
           <div style={{ marginBottom: "20px" }}>
@@ -139,7 +142,6 @@ function SignIn() {
             Đăng nhập
           </button>
 
-          {/* 🔽 Đăng ký tài khoản */}
           <p style={{ textAlign: "center", marginTop: "15px" }}>
             Bạn chưa có tài khoản?{" "}
             <span
@@ -154,7 +156,6 @@ function SignIn() {
             </span>
           </p>
 
-          {/* ✅ QUÊN MẬT KHẨU */}
           <p style={{ textAlign: "center", marginTop: "5px" }}>
             <span
               onClick={() => navigate("/reset-password")}

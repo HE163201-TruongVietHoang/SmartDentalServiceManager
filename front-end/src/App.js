@@ -24,6 +24,7 @@ import ScheduleRequestDetail from "./pages/manageclinic/ScheduleRequestDetail";
 // 🔐 Trang đăng nhập / đăng ký
 import SignIn from "./pages/Account/SignIn";
 import SignUp from "./pages/Account/SignUp";
+import VerifyOtp from "./pages/Account/VerifyOTP";
 import UserManagement from "./pages/Admin/UserManagement";
 import PatientProfile from "./components/patient/PatientProfile";
 import DoctorProfile from "./components/doctor/DoctorProfile";
@@ -77,6 +78,7 @@ function App() {
         {/* 🔑 Trang tài khoản */}
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
+        <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/admin/users" element={<UserManagement />} />
 

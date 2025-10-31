@@ -1,216 +1,260 @@
+// src/pages/SignUp.jsx
 import React, { useState } from "react";
+import Header from "../../components/home/Header/Header";
+import Footer from "../../components/home/Footer/Footer";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
-function SignUp() {
-  const [fullName, setFullName] = useState(""); // ✅ Đổi từ name → fullName
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+export default function SignUp() {
   const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    address: "",
+    gender: "",
+    dob: "",
+    password: "",
+    confirmPassword: "",
+  });
+  const [isConfirmed, setIsConfirmed] = useState(false);
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (password !== confirmPassword) {
-      alert("❌ Mật khẩu xác nhận không khớp!");
+    // Validation
+    if (!isConfirmed) {
+      alert("❌ Vui lòng xác nhận thông tin đầy đủ và chính xác!");
+      return;
+    }
+    if (!formData.gender) {
+      alert("❌ Vui lòng chọn giới tính!");
+      return;
+    }
+    if (!formData.address.trim()) {
+      alert("❌ Vui lòng nhập địa chỉ!");
+      return;
+    }
+    if (formData.password !== formData.confirmPassword) {
+      alert("❌ Mật khẩu và xác nhận mật khẩu không khớp!");
       return;
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName, email, phone, password }), // ✅ Gửi fullName thay vì name
+      const res = await axios.post("http://localhost:5000/api/auth/register", {
+        fullName: formData.fullName,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        gender: formData.gender,
+        dob: formData.dob,
+        password: formData.password,
+        roleId: 3, // default Patient
+        isActive: true,
       });
 
-      const data = await response.json();
-      console.log("📌 RESPONSE:", data);
+      // Backend không trả về user, nên lưu email vào localStorage để Verify OTP dùng
+      localStorage.setItem(
+        "signupUser",
+        JSON.stringify({ email: formData.email })
+      );
 
-      if (response.ok) {
-        alert("✅ " + (data.message || "Đăng ký thành công!"));
-        navigate("/signin");
+      alert("✅ Đăng ký thành công! Vui lòng xác nhận OTP.");
+      navigate("/verify-otp");
+    } catch (err) {
+      console.error(err);
+      if (err.response?.data?.error) {
+        alert("❌ Lỗi đăng ký: " + err.response.data.error);
       } else {
-        alert("⚠️ " + (data.error || data.message || "Đăng ký thất bại!"));
+        alert("❌ Có lỗi xảy ra khi đăng ký!");
       }
-    } catch (error) {
-      console.error("Lỗi kết nối:", error);
-      alert("❌ Lỗi máy chủ hoặc không thể kết nối!");
     }
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: "#87CEEB",
-        height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        fontFamily: "Arial, sans-serif",
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: "white",
-          padding: "40px 30px",
-          borderRadius: "12px",
-          boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
-          width: "100%",
-          maxWidth: "450px",
-        }}
+    <div>
+      <Header />
+      <section
+        className="py-5"
+        style={{ backgroundColor: "#f0fffa", minHeight: "80vh" }}
       >
-        <h2
-          style={{
-            textAlign: "center",
-            marginBottom: "20px",
-            color: "#2563eb",
-          }}
-        >
-          Đăng ký tài khoản
-        </h2>
-        <form onSubmit={handleSubmit}>
-          {/* Username removed (DB no longer has username) */}
-
-          {/* ✅ Full Name */}
-          <div style={{ marginBottom: "15px" }}>
-            <label style={{ fontWeight: "bold", color: "#333" }}>
-              Họ và tên:
-            </label>
-            <input
-              type="text"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-              placeholder="Nhập đầy đủ họ tên"
-              style={{
-                width: "100%",
-                padding: "10px",
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                marginTop: "5px",
-              }}
-            />
+        <div className="container-lg">
+          <div className="row justify-content-center">
+            <div className="col-lg-6">
+              <div
+                className="card shadow-sm p-4"
+                style={{ borderRadius: "15px", border: "none" }}
+              >
+                <h2
+                  className="fw-bold mb-4 text-center"
+                  style={{ color: "#2ECCB6" }}
+                >
+                  Đăng ký tài khoản
+                </h2>
+                <form onSubmit={handleSubmit}>
+                  {/* Các input giống code cũ */}
+                  {/* Full Name */}
+                  <div className="mb-3">
+                    <label className="form-label">Họ và tên</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="fullName"
+                      value={formData.fullName}
+                      onChange={handleChange}
+                      placeholder="Nguyễn Văn A"
+                      required
+                      style={{ borderRadius: "10px" }}
+                    />
+                  </div>
+                  {/* Email */}
+                  <div className="mb-3">
+                    <label className="form-label">Email</label>
+                    <input
+                      type="email"
+                      className="form-control"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="example@gmail.com"
+                      required
+                      style={{ borderRadius: "10px" }}
+                    />
+                  </div>
+                  {/* Phone */}
+                  <div className="mb-3">
+                    <label className="form-label">Số điện thoại</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      placeholder="0987654321"
+                      required
+                      style={{ borderRadius: "10px" }}
+                    />
+                  </div>
+                  {/* Address */}
+                  <div className="mb-3">
+                    <label className="form-label">Địa chỉ</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      placeholder="Số nhà, đường, quận/huyện, thành phố"
+                      required
+                      style={{ borderRadius: "10px" }}
+                    />
+                  </div>
+                  {/* Gender */}
+                  <div className="mb-3">
+                    <label className="form-label">Giới tính</label>
+                    <select
+                      className="form-select"
+                      name="gender"
+                      value={formData.gender}
+                      onChange={handleChange}
+                      required
+                      style={{ borderRadius: "10px" }}
+                    >
+                      <option value="">Chọn giới tính</option>
+                      <option value="Male">Nam</option>
+                      <option value="Female">Nữ</option>
+                      <option value="Other">Khác</option>
+                    </select>
+                  </div>
+                  {/* DOB */}
+                  <div className="mb-3">
+                    <label className="form-label">Ngày sinh</label>
+                    <input
+                      type="date"
+                      className="form-control"
+                      name="dob"
+                      value={formData.dob}
+                      onChange={handleChange}
+                      required
+                      style={{ borderRadius: "10px" }}
+                    />
+                  </div>
+                  {/* Password */}
+                  <div className="mb-3">
+                    <label className="form-label">Mật khẩu</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="********"
+                      required
+                      style={{ borderRadius: "10px" }}
+                    />
+                  </div>
+                  {/* Confirm Password */}
+                  <div className="mb-3">
+                    <label className="form-label">Xác nhận mật khẩu</label>
+                    <input
+                      type="password"
+                      className="form-control"
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleChange}
+                      placeholder="********"
+                      required
+                      style={{ borderRadius: "10px" }}
+                    />
+                  </div>
+                  {/* Checkbox xác nhận */}
+                  <div className="mb-3 form-check">
+                    <input
+                      type="checkbox"
+                      className="form-check-input"
+                      checked={isConfirmed}
+                      onChange={(e) => setIsConfirmed(e.target.checked)}
+                      id="confirmCheck"
+                    />
+                    <label className="form-check-label" htmlFor="confirmCheck">
+                      Tôi đã điền đầy đủ và chính xác thông tin
+                    </label>
+                  </div>
+                  {/* Submit button */}
+                  <button
+                    type="submit"
+                    className="btn btn-lg w-100 fw-bold"
+                    style={{
+                      backgroundColor: isConfirmed ? "#2ECCB6" : "#94d3b4",
+                      borderColor: "#2ECCB6",
+                      color: "#fff",
+                      borderRadius: "10px",
+                      cursor: isConfirmed ? "pointer" : "not-allowed",
+                    }}
+                    disabled={!isConfirmed}
+                  >
+                    Đăng ký
+                  </button>
+                </form>
+                <p className="mt-3 text-center text-muted">
+                  Đã có tài khoản?{" "}
+                  <span
+                    style={{ color: "#2ECCB6", cursor: "pointer" }}
+                    onClick={() => navigate("/signin")}
+                  >
+                    Đăng nhập
+                  </span>
+                </p>
+              </div>
+            </div>
           </div>
-
-          {/* ✅ Email */}
-          <div style={{ marginBottom: "15px" }}>
-            <label style={{ fontWeight: "bold", color: "#333" }}>Email:</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="Nhập email của bạn"
-              style={{
-                width: "100%",
-                padding: "10px",
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                marginTop: "5px",
-              }}
-            />
-          </div>
-
-          {/* ✅ Phone */}
-          <div style={{ marginBottom: "15px" }}>
-            <label style={{ fontWeight: "bold", color: "#333" }}>
-              Số điện thoại:
-            </label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              required
-              placeholder="Nhập số điện thoại"
-              style={{
-                width: "100%",
-                padding: "10px",
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                marginTop: "5px",
-              }}
-            />
-          </div>
-
-          {/* ✅ Password */}
-          <div style={{ marginBottom: "15px" }}>
-            <label style={{ fontWeight: "bold", color: "#333" }}>
-              Mật khẩu:
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="Nhập mật khẩu"
-              style={{
-                width: "100%",
-                padding: "10px",
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                marginTop: "5px",
-              }}
-            />
-          </div>
-
-          {/* ✅ Confirm Password */}
-          <div style={{ marginBottom: "20px" }}>
-            <label style={{ fontWeight: "bold", color: "#333" }}>
-              Xác nhận mật khẩu:
-            </label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              placeholder="Nhập lại mật khẩu"
-              style={{
-                width: "100%",
-                padding: "10px",
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                marginTop: "5px",
-              }}
-            />
-          </div>
-
-          <button
-            type="submit"
-            style={{
-              width: "100%",
-              padding: "12px",
-              backgroundColor: "#10b981",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              fontWeight: "bold",
-              cursor: "pointer",
-              transition: "background-color 0.3s",
-            }}
-            onMouseOver={(e) => (e.target.style.backgroundColor = "#059669")}
-            onMouseOut={(e) => (e.target.style.backgroundColor = "#10b981")}
-          >
-            Đăng ký
-          </button>
-
-          <p style={{ textAlign: "center", marginTop: "15px" }}>
-            Đã có tài khoản?{" "}
-            <span
-              onClick={() => navigate("/signin")}
-              style={{
-                color: "#2563eb",
-                cursor: "pointer",
-                fontWeight: "bold",
-              }}
-            >
-              Đăng nhập ngay
-            </span>
-          </p>
-        </form>
-      </div>
+        </div>
+      </section>
+      <Footer />
     </div>
   );
 }
-
-export default SignUp;
