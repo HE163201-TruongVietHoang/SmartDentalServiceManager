@@ -1,9 +1,9 @@
-// src/pages/SignUp.jsx
 import React, { useState } from "react";
 import Header from "../../components/home/Header/Header";
 import Footer from "../../components/home/Footer/Footer";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -18,6 +18,9 @@ export default function SignUp() {
     confirmPassword: "",
   });
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,7 +29,6 @@ export default function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
     if (!isConfirmed) {
       alert("❌ Vui lòng xác nhận thông tin đầy đủ và chính xác!");
       return;
@@ -45,6 +47,7 @@ export default function SignUp() {
     }
 
     try {
+      setLoading(true);
       const res = await axios.post("http://localhost:5000/api/auth/register", {
         fullName: formData.fullName,
         email: formData.email,
@@ -57,37 +60,59 @@ export default function SignUp() {
         isActive: true,
       });
 
-      // Backend không trả về user, nên lưu email vào localStorage để Verify OTP dùng
+      const userData = res.data?.user || res.data;
+
       localStorage.setItem(
         "signupUser",
-        JSON.stringify({ email: formData.email })
+        JSON.stringify({
+          userId: userData?.userId || null,
+          email: userData?.email || formData.email,
+        })
       );
-
-      alert("✅ Đăng ký thành công! Vui lòng xác nhận OTP.");
       navigate("/verify-otp");
     } catch (err) {
       console.error(err);
-      if (err.response?.data?.error) {
-        alert("❌ Lỗi đăng ký: " + err.response.data.error);
-      } else {
-        alert("❌ Có lỗi xảy ra khi đăng ký!");
-      }
+      alert(
+        "❌ Lỗi đăng ký: " +
+          (err.response?.data?.error || "Vui lòng thử lại sau.")
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div>
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+        backgroundColor: "#f0fffa",
+        fontFamily: "Inter, sans-serif",
+      }}
+    >
       <Header />
+
       <section
-        className="py-5"
-        style={{ backgroundColor: "#f0fffa", minHeight: "80vh" }}
+        style={{
+          flex: 1,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: "40px 0",
+        }}
       >
         <div className="container-lg">
           <div className="row justify-content-center">
             <div className="col-lg-6">
               <div
                 className="card shadow-sm p-4"
-                style={{ borderRadius: "15px", border: "none" }}
+                style={{
+                  borderRadius: "20px",
+                  border: "none",
+                  backgroundColor: "#fff",
+                  boxShadow: "0 6px 20px rgba(0, 0, 0, 0.1)",
+                }}
               >
                 <h2
                   className="fw-bold mb-4 text-center"
@@ -95,9 +120,9 @@ export default function SignUp() {
                 >
                   Đăng ký tài khoản
                 </h2>
+
                 <form onSubmit={handleSubmit}>
-                  {/* Các input giống code cũ */}
-                  {/* Full Name */}
+                  {/* Họ và tên */}
                   <div className="mb-3">
                     <label className="form-label">Họ và tên</label>
                     <input
@@ -111,6 +136,7 @@ export default function SignUp() {
                       style={{ borderRadius: "10px" }}
                     />
                   </div>
+
                   {/* Email */}
                   <div className="mb-3">
                     <label className="form-label">Email</label>
@@ -125,7 +151,8 @@ export default function SignUp() {
                       style={{ borderRadius: "10px" }}
                     />
                   </div>
-                  {/* Phone */}
+
+                  {/* Số điện thoại */}
                   <div className="mb-3">
                     <label className="form-label">Số điện thoại</label>
                     <input
@@ -139,7 +166,8 @@ export default function SignUp() {
                       style={{ borderRadius: "10px" }}
                     />
                   </div>
-                  {/* Address */}
+
+                  {/* Địa chỉ */}
                   <div className="mb-3">
                     <label className="form-label">Địa chỉ</label>
                     <input
@@ -153,7 +181,8 @@ export default function SignUp() {
                       style={{ borderRadius: "10px" }}
                     />
                   </div>
-                  {/* Gender */}
+
+                  {/* Giới tính */}
                   <div className="mb-3">
                     <label className="form-label">Giới tính</label>
                     <select
@@ -170,7 +199,8 @@ export default function SignUp() {
                       <option value="Other">Khác</option>
                     </select>
                   </div>
-                  {/* DOB */}
+
+                  {/* Ngày sinh */}
                   <div className="mb-3">
                     <label className="form-label">Ngày sinh</label>
                     <input
@@ -183,34 +213,63 @@ export default function SignUp() {
                       style={{ borderRadius: "10px" }}
                     />
                   </div>
-                  {/* Password */}
-                  <div className="mb-3">
+
+                  {/* Mật khẩu */}
+                  <div className="mb-3 position-relative">
                     <label className="form-label">Mật khẩu</label>
                     <input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       className="form-control"
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
                       placeholder="********"
                       required
-                      style={{ borderRadius: "10px" }}
+                      style={{ borderRadius: "10px", paddingRight: "40px" }}
                     />
+                    <span
+                      onClick={() => setShowPassword(!showPassword)}
+                      style={{
+                        position: "absolute",
+                        right: "12px",
+                        top: "38px",
+                        cursor: "pointer",
+                        color: "#666",
+                      }}
+                    >
+                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </span>
                   </div>
-                  {/* Confirm Password */}
-                  <div className="mb-3">
+
+                  {/* Xác nhận mật khẩu */}
+                  <div className="mb-3 position-relative">
                     <label className="form-label">Xác nhận mật khẩu</label>
                     <input
-                      type="password"
+                      type={showConfirmPassword ? "text" : "password"}
                       className="form-control"
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       placeholder="********"
                       required
-                      style={{ borderRadius: "10px" }}
+                      style={{ borderRadius: "10px", paddingRight: "40px" }}
                     />
+                    <span
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      style={{
+                        position: "absolute",
+                        right: "12px",
+                        top: "38px",
+                        cursor: "pointer",
+                        color: "#666",
+                      }}
+                    >
+                      {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                    </span>
                   </div>
+
                   {/* Checkbox xác nhận */}
                   <div className="mb-3 form-check">
                     <input
@@ -224,9 +283,11 @@ export default function SignUp() {
                       Tôi đã điền đầy đủ và chính xác thông tin
                     </label>
                   </div>
-                  {/* Submit button */}
+
+                  {/* Nút đăng ký */}
                   <button
                     type="submit"
+                    disabled={!isConfirmed || loading}
                     className="btn btn-lg w-100 fw-bold"
                     style={{
                       backgroundColor: isConfirmed ? "#2ECCB6" : "#94d3b4",
@@ -235,11 +296,11 @@ export default function SignUp() {
                       borderRadius: "10px",
                       cursor: isConfirmed ? "pointer" : "not-allowed",
                     }}
-                    disabled={!isConfirmed}
                   >
-                    Đăng ký
+                    {loading ? "Đang xử lý..." : "Đăng ký"}
                   </button>
                 </form>
+
                 <p className="mt-3 text-center text-muted">
                   Đã có tài khoản?{" "}
                   <span
@@ -254,6 +315,7 @@ export default function SignUp() {
           </div>
         </div>
       </section>
+
       <Footer />
     </div>
   );
