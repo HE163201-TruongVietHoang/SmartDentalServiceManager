@@ -1,9 +1,10 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaServicestack, FaTags, FaSignOutAlt } from "react-icons/fa";
 
 function StaffLayout({ children }) {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const menu = [
     {
@@ -16,7 +17,24 @@ function StaffLayout({ children }) {
       icon: <FaTags />,
       path: "/clinicmanager/material",
     },
+    {
+      name: "Quản lý lịch làm việc bác sĩ",
+      icon: <FaTags />,
+      path: "/clinicmanager/doctorschedule",
+    },
   ];
+
+  // 🧠 Hàm xử lý đăng xuất
+  const handleLogout = () => {
+    // Xóa token & thông tin user
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("refreshToken");
+
+    // Chuyển về trang login
+    navigate("/");
+    setTimeout(() => window.location.reload(), 300);
+  };
 
   return (
     <div className="d-flex">
@@ -56,9 +74,10 @@ function StaffLayout({ children }) {
           ))}
         </ul>
 
-        {/* Logout Button (luôn nằm dưới cùng) */}
+        {/* Logout Button */}
         <div className="mt-auto">
           <button
+            onClick={handleLogout}
             className="btn btn-light w-100 d-flex align-items-center justify-content-center"
             style={{
               borderRadius: "10px",

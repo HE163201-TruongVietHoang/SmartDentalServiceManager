@@ -1,9 +1,8 @@
-// src/pages/staff/StaffServices.jsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
 
-export default function StaffServices() {
+export default function ManagerServices() {
   const [services, setServices] = useState([]);
   const [newService, setNewService] = useState({
     serviceName: "",

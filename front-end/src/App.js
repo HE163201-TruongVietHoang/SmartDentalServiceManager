@@ -20,6 +20,7 @@ import ResetPassword from "./pages/Account/ResetPassword";
 
 import ScheduleRequests from "./pages/manageclinic/ScheduleRequests";
 import ScheduleRequestDetail from "./pages/manageclinic/ScheduleRequestDetail";
+import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
 
 // 🔐 Trang đăng nhập / đăng ký
 import SignIn from "./pages/Account/SignIn";
@@ -99,6 +100,14 @@ function App() {
           element={
             <StaffLayout>
               <MaterialClinicPage />
+            </StaffLayout>
+          }
+        />
+        <Route
+          path="/clinicmanager/doctorschedule"
+          element={
+            <StaffLayout>
+              <ClinicManagerScheduleRequests />
             </StaffLayout>
           }
         />
