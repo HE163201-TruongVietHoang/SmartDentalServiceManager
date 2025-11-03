@@ -4,6 +4,7 @@ const cors = require("cors");
 const db = require("./config/db");
 
 const authRoutes = require("./routes/authRoutes");
+const chatRoutes = require("./routes/chatRoutes");
 const ratingRoutes = require("./routes/ratingRoutes");
 const roleRoutes = require("./routes/roleRoutes");
 const scheduleRoutes = require("./routes/scheduleRoutes");
@@ -19,7 +20,9 @@ app.use(express.json());
 
 // Routes
 
+
 app.use("/api/auth", authRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.use("/api/materials", materialRoutes);
 
