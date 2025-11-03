@@ -17,6 +17,7 @@ async function findOrCreateConversation(participant1Id, participant2Id) {
     return insert.recordset[0];
 }
 
+
 // Lấy danh sách cuộc trò chuyện của 1 user
 async function getConversationsByUser(userId) {
     const result = await db.query(
@@ -26,7 +27,17 @@ async function getConversationsByUser(userId) {
     return result.recordset;
 }
 
+// Lấy thông tin cuộc trò chuyện theo conversationId
+async function getConversationById(conversationId) {
+    const result = await db.query(
+        'SELECT * FROM Conversations WHERE conversationId = ?',
+        [conversationId]
+    );
+    return result.recordset[0];
+}
+
 module.exports = {
     findOrCreateConversation,
-    getConversationsByUser
+    getConversationsByUser,
+    getConversationById
 };

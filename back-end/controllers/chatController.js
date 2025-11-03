@@ -1,4 +1,5 @@
 const chatService = require('../services/chatService');
+const { getIO } = require('../utils/socket');
 
 // Tạo hoặc lấy cuộc trò chuyện giữa 2 user
 async function getOrCreateConversation(req, res) {
@@ -29,8 +30,16 @@ async function sendMessage(req, res) {
         const { conversationId, content, messageType } = req.body;
         const senderId = req.user.userId;
         if (!conversationId || !content) return res.status(400).json({ message: 'Missing data' });
-        const message = await chatService.sendMessageService(conversationId, senderId, content, messageType);
-        res.json(message);
+    const message = await chatService.sendMessageService(conversationId, senderId, content, messageType);
+
+    // Lấy thông tin cuộc trò chuyện để xác định người nhận
+    const conversation = await chatService.getConversationByIdService(conversationId);
+    let receiverId = (senderId === conversation.participant1Id) ? conversation.participant2Id : conversation.participant1Id;
+
+    // Phát sự kiện realtime cho người nhận
+    getIO().to(String(receiverId)).emit('new_message', message);
+
+    res.json(message);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
