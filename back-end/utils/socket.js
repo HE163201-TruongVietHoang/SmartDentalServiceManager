@@ -15,7 +15,7 @@ function initSocket(server) {
     ioInstance.on('connection', (socket) => {
         socket.on('join', (userId) => {
             socket.join(String(userId));
-            console.log('User', socket.id, 'joined room', userId);
+            // console.log('User', socket.id, 'joined room', userId);
         });
     });
     return ioInstance;
