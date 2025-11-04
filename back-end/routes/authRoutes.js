@@ -41,10 +41,10 @@ router.post(
 );
 router.post("/devices/logout-all", authMiddleware, logoutAllDevicesController);
 // Account management (require authentication)
-router.get('/users', authMiddleware, authorizeRoles('ClinicManage'), listUsersController);
-router.get('/users/:id',authMiddleware, authorizeRoles('ClinicManage'), getUserController);
-router.put('/users/:id',authMiddleware, authorizeRoles('ClinicManage'), editUserController);
-router.patch('/users/:id/role',authMiddleware, authorizeRoles('ClinicManage'), updateRoleController);
-router.patch('/users/:id/active',authMiddleware, authorizeRoles('ClinicManage'), toggleUserActiveController);
-router.delete('/users/:id',authMiddleware, authorizeRoles('ClinicManage'), deleteUserController);
+router.get('/users', authMiddleware, authorizeRoles('ClinicManager'), listUsersController);
+router.get('/users/:id',authMiddleware, authorizeRoles('ClinicManager'), getUserController);
+router.put('/users/:id',authMiddleware, authorizeRoles('ClinicManager'), editUserController);
+router.patch('/users/:id/role',authMiddleware, authorizeRoles('ClinicManager'), updateRoleController);
+router.patch('/users/:id/active',authMiddleware, authorizeRoles('ClinicManager'), toggleUserActiveController);
+router.delete('/users/:id',authMiddleware, authorizeRoles('ClinicManager'), deleteUserController);
 module.exports = router;
