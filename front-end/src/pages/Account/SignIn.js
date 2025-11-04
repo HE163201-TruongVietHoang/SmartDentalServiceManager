@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 function SignIn() {
-  const [email, setEmail] = useState("");
+  const [identifier, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
@@ -13,7 +13,7 @@ function SignIn() {
       const res = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ identifier, password }),
       });
 
       const data = await res.json();
@@ -85,7 +85,7 @@ function SignIn() {
             <label style={{ fontWeight: "bold", color: "#333" }}>Email:</label>
             <input
               type="email"
-              value={email}
+              value={identifier}
               onChange={(e) => setEmail(e.target.value)}
               required
               style={{

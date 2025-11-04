@@ -124,9 +124,10 @@ async function sendOtpEmail(email, otp) {
   await transporter.sendMail({
     from: `"Smart Dental Clinic" <${process.env.SMTP_EMAIL}>`,
     to: email,
-    subject: "🔐 Mã OTP",
+    subject: "🔐 Mã xác minh OTP Smart Dental Clinic",
     html: `
       <h2>Mã OTP</h2>
+      <p>Smart Dental Clinic đã nhận được yêu cầu sử dụng địa chỉ email này để giúp khôi phục Tài khoản</p>
       <p>Mã OTP của bạn là: <b style="font-size:22px">${otp}</b></p>
       <p>Mã này chỉ có hiệu lực trong <b>10 phút</b>. Không chia sẻ mã này với bất kỳ ai.</p>
       <br>
@@ -137,7 +138,34 @@ async function sendOtpEmail(email, otp) {
   console.log(" Email OTP đã gửi tới: ", email);
 }
 // ==========================================
+async function sendOtpEmailVerify(email, otp) {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.SMTP_EMAIL,
+      pass: process.env.SMTP_PASS,
+    },
+  });
 
+  await transporter.sendMail({
+    from: `"Smart Dental Clinic" <${process.env.SMTP_EMAIL}>`,
+    to: email,
+    subject: "🔐 Mã xác minh OTP Smart Dental Clinic",
+    html: `
+      <h2>Mã OTP</h2>
+      <p>Smart Dental Clinic đã nhận được yêu cầu sử dụng địa chỉ email này để đăng ký tài khoản</p>
+      <p>Quý khách vui lòng điền mã xác thực dưới đây để kích hoạt tài khoản</p>
+      <p>Mã OTP của bạn là: <b style="font-size:22px">${otp}</b></p>
+      <p>Mã này chỉ có hiệu lực trong <b>10 phút</b>. Không chia sẻ mã này với bất kỳ ai.</p>
+      <p>Đây là email được gửi tự động từ hệ thống, Quý khách vui lòng không trả lời email này.</p>
+      <p><i>Xin chân thành cảm ơn quý khách đã sử dụng dịch vụ của Smart Dental Clinic!.</i></p>
+      <br>
+      <p>Smart Dental Team</p>
+    `,
+  });
+
+  console.log(" Email OTP đã gửi tới: ", email);
+}
 function generateOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -236,7 +264,7 @@ async function registerUser({
   await setOtpForUser(user.userId, otpCode, otpExpiresAt);
 
   // Gửi OTP qua email hoặc SMS
-  await sendOtpEmail(email, otpCode);
+  await sendOtpEmailVerify(email, otpCode);
   return { message: "Đăng ký thành công, vui lòng nhập OTP để xác minh tài khoản", userId: user.userId };
 }
 

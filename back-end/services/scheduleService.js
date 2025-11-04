@@ -8,62 +8,105 @@ const {
   approveScheduleRequest,
   rejectScheduleRequest,
   getDoctorSchedules,
-  getScheduleDetailByDoctor
+  getScheduleDetailByDoctor,
+  deleteScheduleByRequestId,
+  deleteScheduleRequest
 } = require("../access/scheduleAccess");
 const { generateSlots } = require("../access/slotAccess");
 const { normalizeTime, minutesToHHMM, timeToMinutes, formatSqlTime ,formatDateToYMDUTC} = require("../utils/timeUtils");
 const { getPool } = require("../config/db");
-function isOverlap(startA, endA, startB, endB) {
-  const sA = normalizeTime(startA);
-  const eA = normalizeTime(endA);
-  const sB = normalizeTime(startB);
-  const eB = normalizeTime(endB);
-  return sA < eB && sB < eA; // Có giao nhau
+function normalizeTimeToHHMM(timeStr) {
+  // Chuẩn hóa "7:0" -> "07:00", "7:30" -> "07:30"
+  if (!timeStr) return null;
+  const [h, m] = timeStr.split(":").map(Number);
+  return `${h.toString().padStart(2, "0")}:${(m || 0).toString().padStart(2, "0")}`;
 }
+function isOverlap(startA, endA, startB, endB) {
+  const sA = normalizeTimeToHHMM(startA);
+  const eA = normalizeTimeToHHMM(endA);
+  const sB = normalizeTimeToHHMM(startB);
+  const eB = normalizeTimeToHHMM(endB);
+
+  // Tạo thời điểm Date (giả định cùng ngày)
+  const today = new Date();
+  const start1 = new Date(`${today}T${sA}`);
+  let end1 = new Date(`${today}T${eA}`);
+  if (end1 <= start1) end1.setDate(end1.getDate() + 1); // qua đêm
+
+  const start2 = new Date(`${today}T${sB}`);
+  let end2 = new Date(`${today}T${eB}`);
+  if (end2 <= start2) end2.setDate(end2.getDate() + 1); // qua đêm
+
+  // overlap nếu khoảng giao nhau
+  return start1 < end2 && start2 < end1;
+}
+
 async function createMultipleSchedules(doctorId, note, schedules) {
   const unavailable = [];
   const roomsForSlots = [];
   const duplicates = [];
-  for (let i = 0; i < schedules.length; i++) {
-    for (let j = i + 1; j < schedules.length; j++) {
-      const a = schedules[i];
-      const b = schedules[j];
-      if (a.workDate === b.workDate && isOverlap(a.startTime, a.endTime, b.startTime, b.endTime)) {
-        duplicates.push({
-          conflictType: "internal",
-          workDate: a.workDate,
-          a: { startTime: a.startTime, endTime: a.endTime },
-          b: { startTime: b.startTime, endTime: b.endTime },
-          message: "Các khung giờ trong cùng request bị trùng nhau",
-        });
-      }
-    }
-  }
+  const internalConflicts = [];
+
+  // --- 1️⃣ Kiểm tra trùng với lịch đã có trong DB ---
   for (const s of schedules) {
     const { workDate, startTime, endTime } = s;
     const existing = await hasOverlappingSchedule(doctorId, workDate, startTime, endTime);
     if (existing) {
-      duplicates.push({ workDate, startTime, endTime, existing });
+      duplicates.push({
+        workDate,
+        startTime,
+        endTime,
+        type: "Database",
+        message: `Trùng với lịch đã có trong hệ thống (Phòng: ${existing.roomName})`,
+      });
     }
   }
 
-  if (duplicates.length > 0) {
-    return { requestId: null, duplicates };
+  // --- 2️⃣ Kiểm tra trùng giữa các slot mới ---
+  for (let i = 0; i < schedules.length; i++) {
+    const a = schedules[i];
+    for (let j = i + 1; j < schedules.length; j++) {
+      const b = schedules[j];
+      if (a.workDate === b.workDate && isOverlap(a.startTime, a.endTime, b.startTime, b.endTime)) {
+        internalConflicts.push({
+          workDate: a.workDate,
+          startTime: a.startTime,
+          endTime: a.endTime,
+          type: "Internal",
+          message: `Hai khung giờ mới (${a.startTime}-${a.endTime}) và (${b.startTime}-${b.endTime}) bị trùng.`,
+        });
+      }
+    }
   }
 
+  // --- ⚠️ Nếu có conflict thì trả về luôn ---
+  if (duplicates.length > 0 || internalConflicts.length > 0) {
+    return {
+      requestId: null,
+      conflicts: [...duplicates, ...internalConflicts],
+    };
+  }
+
+  // --- 3️⃣ Kiểm tra phòng trống ---
   for (const s of schedules) {
     const { workDate, startTime, endTime } = s;
     const room = await findAvailableRoom(workDate, startTime, endTime);
     if (!room) {
-      unavailable.push({ workDate, startTime, endTime, message: "Không còn phòng trống" });
+      unavailable.push({
+        workDate,
+        startTime,
+        endTime,
+        message: "Không còn phòng trống",
+      });
     }
-    roomsForSlots.push(room); 
+    roomsForSlots.push(room);
   }
 
   if (unavailable.length > 0) {
     return { requestId: null, unavailable };
   }
 
+  // --- 4️⃣ Tạo yêu cầu lịch ---
   const requestId = await createScheduleRequest(doctorId, note);
   const results = [];
 
@@ -85,19 +128,15 @@ async function createMultipleSchedules(doctorId, note, schedules) {
         startTime: s.startTime,
         endTime: s.endTime,
         status: "Success",
-        message: `Đã tạo lịch (phòng ${room.roomName})`,
+        message: `Đã tạo lịch (Phòng: ${room.roomName})`,
       });
     }
 
     return { requestId, results };
   } catch (err) {
-    try {
-      const pool = await getPool();
-      await pool.request().query(`DELETE FROM Schedules WHERE requestId = ${requestId}`);
-      await pool.request().query(`DELETE FROM ScheduleRequests WHERE requestId = ${requestId}`);
-    } catch (cleanupErr) {
-      console.error('Error during cleanup after failed schedule inserts', cleanupErr);
-    }
+    const pool = await getPool();
+    await pool.request().query(`DELETE FROM Schedules WHERE requestId = ${requestId}`);
+    await pool.request().query(`DELETE FROM ScheduleRequests WHERE requestId = ${requestId}`);
     throw err;
   }
 }
@@ -191,7 +230,18 @@ async function getDoctorScheduleDetailService(scheduleId, doctorId) {
   }
   return schedule;
 }
+async function cancelScheduleRequestService(requestId) {
+  const request = await getScheduleRequestById(requestId);
 
+  if (!request) {
+    throw new Error("NOT_FOUND");
+  }
+
+  await deleteScheduleByRequestId(requestId);
+  await deleteScheduleRequest(requestId);
+
+  return true;
+}
 module.exports = {
   createMultipleSchedules,
   checkAvailability,
@@ -200,5 +250,6 @@ module.exports = {
   adminApproveRequest,
   adminRejectRequest,
   getSchedulesByDoctor,
-  getDoctorScheduleDetailService
+  getDoctorScheduleDetailService,
+  cancelScheduleRequestService
 };
