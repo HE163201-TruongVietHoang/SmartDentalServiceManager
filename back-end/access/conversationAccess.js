@@ -1,38 +1,37 @@
-const db = require('../config/db');
+const { getPool, sql } = require('../config/db');
 
 // Tạo hoặc lấy cuộc trò chuyện giữa 2 user
 async function findOrCreateConversation(participant1Id, participant2Id) {
-    // Đảm bảo participant1Id < participant2Id
+    const pool = await getPool();
     const [p1, p2] = participant1Id < participant2Id ? [participant1Id, participant2Id] : [participant2Id, participant1Id];
-    let result = await db.query(
-        'SELECT * FROM Conversations WHERE participant1Id = ? AND participant2Id = ?',
-        [p1, p2]
-    );
+    let result = await pool.request()
+        .input('participant1Id', sql.Int, p1)
+        .input('participant2Id', sql.Int, p2)
+        .query('SELECT * FROM Conversations WHERE participant1Id = @participant1Id AND participant2Id = @participant2Id');
     if (result.recordset.length > 0) return result.recordset[0];
-    // Nếu chưa có thì tạo mới
-    let insert = await db.query(
-        'INSERT INTO Conversations (participant1Id, participant2Id) OUTPUT INSERTED.* VALUES (?, ?)',
-        [p1, p2]
-    );
+    let insert = await pool.request()
+        .input('participant1Id', sql.Int, p1)
+        .input('participant2Id', sql.Int, p2)
+        .query('INSERT INTO Conversations (participant1Id, participant2Id) OUTPUT INSERTED.* VALUES (@participant1Id, @participant2Id)');
     return insert.recordset[0];
 }
 
 
 // Lấy danh sách cuộc trò chuyện của 1 user
 async function getConversationsByUser(userId) {
-    const result = await db.query(
-        `SELECT * FROM Conversations WHERE participant1Id = ? OR participant2Id = ? ORDER BY lastMessageAt DESC, createdAt DESC`,
-        [userId, userId]
-    );
+    const pool = await getPool();
+    const result = await pool.request()
+        .input('userId', sql.Int, userId)
+        .query('SELECT * FROM Conversations WHERE participant1Id = @userId OR participant2Id = @userId ORDER BY lastMessageAt DESC, createdAt DESC');
     return result.recordset;
 }
 
 // Lấy thông tin cuộc trò chuyện theo conversationId
 async function getConversationById(conversationId) {
-    const result = await db.query(
-        'SELECT * FROM Conversations WHERE conversationId = ?',
-        [conversationId]
-    );
+    const pool = await getPool();
+    const result = await pool.request()
+        .input('conversationId', sql.Int, conversationId)
+        .query('SELECT * FROM Conversations WHERE conversationId = @conversationId');
     return result.recordset[0];
 }
 
