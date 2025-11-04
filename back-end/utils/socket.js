@@ -11,6 +11,13 @@ function initSocket(server) {
             methods: ['GET', 'POST']
         }
     });
+    // Lắng nghe sự kiện join từ client để cho socket vào room userId
+    ioInstance.on('connection', (socket) => {
+        socket.on('join', (userId) => {
+            socket.join(String(userId));
+            console.log('User', socket.id, 'joined room', userId);
+        });
+    });
     return ioInstance;
 }
 

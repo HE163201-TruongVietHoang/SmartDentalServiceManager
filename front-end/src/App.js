@@ -38,13 +38,14 @@ import Service from "./pages/ClinicManager/Services";
 import NurseMaterialPage from "./pages/Nurse/NurseMaterialPage";
 
 import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
+import ChatPage from "./pages/ChatPage";
 function App() {
   return (
     <Router>
       <Routes>
         {/* 🌍 Trang người dùng */}
         <Route path="/" element={<Home />} />
-
+          <Route path="/chat" element={<ChatPage />} />
         {/* 👨‍⚕️ Trang dành riêng cho Doctor */}
         <Route path="/doctor/home" element={<HomeDoctor />} />
         {/* <Route path="/doctor/profile" element={<DoctorProfile />} /> */}

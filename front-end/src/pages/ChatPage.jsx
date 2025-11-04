@@ -9,7 +9,7 @@ import {
   createOrGetConversation,
   sendMessage,
   markMessagesRead
-} from '../api/chatService';
+} from '../services/chatService';
 
 const ChatPage = () => {
   const [conversations, setConversations] = useState([]);
