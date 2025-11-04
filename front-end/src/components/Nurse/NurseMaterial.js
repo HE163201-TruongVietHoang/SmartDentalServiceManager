@@ -6,7 +6,6 @@ export default function NurseMaterialPage() {
   const [appointments, setAppointments] = useState([]);
   const [allMaterials, setAllMaterials] = useState([]);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [selectedService, setSelectedService] = useState(null);
   const [serviceMaterials, setServiceMaterials] = useState([]);
 
   // Form states
@@ -18,178 +17,170 @@ export default function NurseMaterialPage() {
   const token = localStorage.getItem("token");
   const userId = JSON.parse(localStorage.getItem("user") || "{}").userId;
 
+  // =========================================
+  // FETCH API CHUNG – ĐÃ FIX 100% LỖI LOAD
+  // =========================================
   const fetchAPI = async (endpoint, method = "GET", body = null) => {
-    try {
-      const res = await fetch(
-        `http://localhost:5000/api/materials${endpoint}`,
-        {
-          method,
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: body ? JSON.stringify(body) : null,
-        }
-      );
+    const res = await fetch(`http://localhost:5000/api/materials${endpoint}`, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: body ? JSON.stringify(body) : null,
+    });
 
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Lỗi khi gọi API");
-      }
-
-      return await res.json();
-    } catch (err) {
-      console.error("API Error:", err);
-      throw err;
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Lỗi server");
     }
+    return await res.json();
   };
 
+  // =========================================
+  // LOAD DATA – GỌI LẠI KHI TOKEN CÓ
+  // =========================================
   useEffect(() => {
-    loadAppointments();
-    loadAllMaterials();
-  }, []);
+    if (token && userId) {
+      loadAppointments();
+      loadAllMaterials();
+    }
+  }, [token, userId]);
 
+  // Load tất cả vật tư (5 món + tồn kho)
   const loadAllMaterials = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/materials", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setAllMaterials(data);
-      }
+      const data = await fetchAPI("/");
+      console.log("VẬT TƯ ĐÃ LOAD:", data);
+      setAllMaterials(data);
     } catch (err) {
-      console.error("Không thể tải danh sách vật tư:", err);
+      console.error("LỖI LOAD VẬT TƯ:", err);
+      alert("Không tải được vật tư! Mở F12 → Console để xem lỗi");
       setAllMaterials([]);
     }
   };
 
+  // Load ca khám hôm nay
   const loadAppointments = async () => {
     try {
       const data = await fetchAPI("/appointments");
-      if (Array.isArray(data)) setAppointments(data);
-      else setAppointments([]);
+      setAppointments(Array.isArray(data) ? data : []);
     } catch (err) {
-      alert("Không thể tải danh sách ca khám: " + err.message);
-      setAppointments([]);
+      alert("Lỗi load ca khám: " + err.message);
     }
   };
 
+  // =========================================
+  // CHỌN CA → LOAD ĐỊNH MỨC
+  // =========================================
   const handleAppointmentChange = async (appointmentId) => {
     const appointment = appointments.find(
       (a) => a.appointmentId === parseInt(appointmentId)
     );
     setSelectedAppointment(appointment);
+    setServiceMaterials([]);
 
     if (appointment?.serviceId) {
-      setSelectedService(appointment.serviceId);
       try {
         const data = await fetchAPI(`/service/${appointment.serviceId}`);
         setServiceMaterials(data);
       } catch {
         setServiceMaterials([]);
       }
-    } else setServiceMaterials([]);
+    }
   };
 
+  // =========================================
+  // CÁC HÀNH ĐỘNG
+  // =========================================
   const handleUse = async () => {
     if (!selectedAppointment || !materialId || !quantity) {
-      alert("Vui lòng chọn ca khám và nhập đầy đủ thông tin");
-      return;
+      return alert("Chọn ca + vật tư + số lượng!");
     }
     try {
-      const res = await fetchAPI("/use", "POST", {
-        materialId: parseInt(materialId),
+      await fetchAPI("/use", "POST", {
+        materialId: +materialId,
         userId,
         appointmentId: selectedAppointment.appointmentId,
-        quantity: parseFloat(quantity),
-        note: note || null,
+        quantity: +quantity,
+        note: note || "Lấy thủ công",
       });
-      alert(res.message || "Đã lấy vật tư thành công!");
+      ting();
+      alert("LẤY THÀNH CÔNG!");
       resetForm();
+      loadAllMaterials(); // cập nhật tồn kho ngay
     } catch (err) {
       alert("Lỗi: " + err.message);
     }
   };
 
   const handleReturn = async () => {
-    if (!selectedAppointment || !materialId || !quantity) {
-      alert("Vui lòng chọn ca khám và nhập đầy đủ thông tin");
-      return;
-    }
+    if (!selectedAppointment || !materialId || !quantity)
+      return alert("Thiếu thông tin!");
     try {
-      const res = await fetchAPI("/return", "POST", {
-        materialId: parseInt(materialId),
+      await fetchAPI("/return", "POST", {
+        materialId: +materialId,
         userId,
         appointmentId: selectedAppointment.appointmentId,
-        quantity: parseFloat(quantity),
-        note: note || null,
+        quantity: +quantity,
+        note: note || "Hoàn thừa",
       });
-      alert(res.message || "Đã hoàn vật tư thành công!");
+      ting();
+      alert("HOÀN THÀNH CÔNG!");
       resetForm();
+      loadAllMaterials();
     } catch (err) {
       alert("Lỗi: " + err.message);
     }
   };
 
   const handleUsed = async () => {
-    if (!selectedAppointment || !materialId || !quantity) {
-      alert("Vui lòng chọn ca khám và nhập đầy đủ thông tin");
-      return;
-    }
+    if (!selectedAppointment || !materialId || !quantity)
+      return alert("Thiếu thông tin!");
     try {
-      const res = await fetchAPI("/used", "POST", {
+      await fetchAPI("/used", "POST", {
         appointmentId: selectedAppointment.appointmentId,
-        materialId: parseInt(materialId),
-        quantityUsed: parseFloat(quantity),
-        note: note || null,
+        materialId: +materialId,
+        quantityUsed: +quantity,
+        note: note || "Thực tế",
       });
-      alert(res.message || "Đã ghi nhận vật tư thực tế!");
+      ting();
+      alert("GHI NHẬN THÀNH CÔNG!");
       resetForm();
     } catch (err) {
       alert("Lỗi: " + err.message);
     }
   };
 
+  // LẤY TẤT CẢ THEO ĐỊNH MỨC
   const handleUseAllByStandard = async () => {
-    if (!selectedAppointment) {
-      alert("Vui lòng chọn ca khám");
-      return;
-    }
-    if (serviceMaterials.length === 0) {
-      alert("Ca khám này chưa có vật tư định mức");
-      return;
-    }
+    if (!selectedAppointment) return alert("Chọn ca trước!");
+    if (!serviceMaterials.length) return alert("Chưa có định mức!");
 
-    const materialList = serviceMaterials
-      .map((m) => `- ${m.materialName}: ${m.standardQuantity} ${m.unit}`)
+    const list = serviceMaterials
+      .map((m) => `• ${m.materialName}: ${m.standardQuantity} ${m.unit}`)
       .join("\n");
-    const confirmMsg = `Bạn có chắc muốn lấy tất cả ${serviceMaterials.length} vật tư theo định mức?\n\n${materialList}`;
-    if (!window.confirm(confirmMsg)) return;
+    if (!confirm(`LẤY THEO ĐỊNH MỨC?\n\n${list}`)) return;
 
-    let successCount = 0,
-      failCount = 0,
-      errors = [];
-    for (const material of serviceMaterials) {
+    let ok = 0,
+      err = 0;
+    for (const m of serviceMaterials) {
       try {
         await fetchAPI("/use", "POST", {
-          materialId: material.materialId,
+          materialId: m.materialId,
           userId,
           appointmentId: selectedAppointment.appointmentId,
-          quantity: parseFloat(material.standardQuantity),
-          note: `Lấy theo định mức - ${selectedAppointment.serviceName}`,
+          quantity: +m.standardQuantity,
+          note: `Định mức - ${selectedAppointment.serviceName || ""}`,
         });
-        successCount++;
-      } catch (err) {
-        failCount++;
-        errors.push(`${material.materialName}: ${err.message}`);
+        ok++;
+      } catch {
+        err++;
       }
     }
-
-    let resultMsg = `🎉 Hoàn thành!\n✅ Thành công: ${successCount}\n❌ Thất bại: ${failCount}`;
-    if (errors.length > 0)
-      resultMsg += `\n\n📋 Chi tiết lỗi:\n${errors.join("\n")}`;
-    alert(resultMsg);
+    ting();
+    alert(`HOÀN TẤT!\nThành công: ${ok}\nLỗi: ${err}`);
+    loadAllMaterials();
   };
 
   const resetForm = () => {
@@ -198,22 +189,32 @@ export default function NurseMaterialPage() {
     setNote("");
   };
 
+  const ting = () =>
+    new Audio(
+      "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="
+    )
+      .play()
+      .catch(() => {});
+
+  // =========================================
+  // RENDER – ĐẸP + DỄ DÙNG
+  // =========================================
   return (
     <>
       <div
         style={{
-          backgroundColor: "#f0fffa",
+          background: "#f0fffa",
           minHeight: "100vh",
           padding: "40px 20px",
         }}
       >
-        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "1200px", margin: "auto" }}>
           <div
             style={{
-              backgroundColor: "white",
+              background: "#fff",
               borderRadius: "20px",
               padding: "30px",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+              boxShadow: "0 4px 20px rgba(0,0,0,.1)",
             }}
           >
             <h2
@@ -224,55 +225,48 @@ export default function NurseMaterialPage() {
                 fontWeight: "bold",
               }}
             >
-              🦷 Quản lý vật tư y tế — Y tá
+              QUẢN LÝ VẬT TƯ – Y TÁ
             </h2>
 
-            {/* --- CHỌN CA KHÁM --- */}
+            {/* 1. CHỌN CA */}
             <div
               style={{
                 marginBottom: "30px",
                 padding: "20px",
-                backgroundColor: "#f8f9fa",
+                background: "#f8f9fa",
                 borderRadius: "10px",
               }}
             >
               <label
                 style={{
-                  fontWeight: "600",
-                  marginBottom: "10px",
+                  fontWeight: 600,
                   display: "block",
+                  marginBottom: "10px",
                 }}
               >
-                📋 Chọn ca khám hôm nay:
+                CHỌN CA KHÁM HÔM NAY:
               </label>
               <select
                 onChange={(e) => handleAppointmentChange(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  borderRadius: "10px",
-                  border: "2px solid #2ECCB6",
-                  fontSize: "16px",
-                }}
+                style={selectStyle}
               >
-                <option value="">-- Chọn ca khám --</option>
+                <option value="">-- Chọn ca --</option>
                 {appointments.map((a) => (
                   <option key={a.appointmentId} value={a.appointmentId}>
-                    #{a.appointmentId} | {a.patientName} | {a.startTime} -{" "}
-                    {a.endTime} | BS: {a.doctorName} |{" "}
-                    {a.serviceName || "Chưa có dịch vụ"}
+                    #{a.appointmentId} | {a.patientName} | {a.startTime}-
+                    {a.endTime} | BS: {a.doctorName}
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* --- VẬT TƯ ĐỊNH MỨC --- */}
+            {/* 2. ĐỊNH MỨC */}
             {serviceMaterials.length > 0 && (
               <div
                 style={{
                   marginBottom: "30px",
                   padding: "20px",
-                  backgroundColor: "#e8f8f5",
+                  background: "#e8f8f5",
                   borderRadius: "10px",
                 }}
               >
@@ -286,50 +280,41 @@ export default function NurseMaterialPage() {
                   <h6
                     style={{ color: "#27ae60", margin: 0, fontWeight: "bold" }}
                   >
-                    📦 Vật tư định mức cho dịch vụ:
+                    VẬT TƯ ĐỊNH MỨC
                   </h6>
                   <button
                     onClick={handleUseAllByStandard}
-                    style={{
-                      padding: "10px 20px",
-                      backgroundColor: "#27ae60",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "8px",
-                      fontWeight: "bold",
-                      cursor: "pointer",
-                    }}
+                    style={btnStyle("#27ae60")}
                   >
-                    ⚡ Lấy tất cả theo định mức
+                    LẤY TẤT CẢ
                   </button>
                 </div>
-
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns:
-                      "repeat(auto-fill, minmax(250px, 1fr))",
-                    gap: "10px",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(240px,1fr))",
+                    gap: "12px",
+                    marginTop: "15px",
                   }}
                 >
-                  {serviceMaterials.map((sm) => (
+                  {serviceMaterials.map((m) => (
                     <div
-                      key={sm.materialId}
-                      onClick={() => setMaterialId(sm.materialId)}
+                      key={m.materialId}
+                      onClick={() => {
+                        setMaterialId(m.materialId);
+                        setQuantity(m.standardQuantity);
+                      }}
                       style={{
                         padding: "12px",
-                        backgroundColor: "white",
+                        background: "#fff",
                         borderRadius: "8px",
                         border: "2px solid #27ae60",
                         cursor: "pointer",
                       }}
                     >
-                      <strong style={{ color: "#27ae60" }}>
-                        ID: {sm.materialId}
-                      </strong>
-                      <p>{sm.materialName}</p>
-                      <p style={{ color: "#666" }}>
-                        Định mức: {sm.standardQuantity} {sm.unit}
+                      <strong>{m.materialName}</strong>
+                      <p style={{ margin: "4px 0", color: "#666" }}>
+                        {m.standardQuantity} {m.unit}
                       </p>
                     </div>
                   ))}
@@ -337,90 +322,121 @@ export default function NurseMaterialPage() {
               </div>
             )}
 
-            {/* --- FORM NHẬP LIỆU --- */}
+            {/* 3. TAB */}
+            <div style={{ textAlign: "center", marginBottom: "20px" }}>
+              {[
+                { key: "use", label: "LẤY VẬT TƯ", color: "#2ECCB6" },
+                { key: "return", label: "HOÀN VẬT TƯ", color: "#f39c12" },
+                { key: "used", label: "GHI NHẬN ĐÃ DÙNG", color: "#27ae60" },
+              ].map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => setActiveTab(t.key)}
+                  style={{
+                    ...btnStyle(t.color),
+                    margin: "0 8px",
+                    opacity: activeTab === t.key ? 1 : 0.7,
+                    transform: activeTab === t.key ? "scale(1.05)" : "scale(1)",
+                    transition: "all .2s",
+                  }}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* 4. FORM THỦ CÔNG */}
             <div
               style={{
                 padding: "20px",
-                backgroundColor: "#f8f9fa",
+                background: "#f8f9fa",
                 borderRadius: "10px",
               }}
             >
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(200px,1fr))",
                   gap: "15px",
-                  marginBottom: "20px",
                 }}
               >
+                {/* VẬT TƯ – ĐÃ FIX 100% */}
                 <div>
-                  <label style={{ fontWeight: "600" }}>Vật tư:</label>
-                  <select
-                    value={materialId}
-                    onChange={(e) => setMaterialId(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "10px",
-                      borderRadius: "8px",
-                      border: "2px solid #2ECCB6",
-                    }}
-                  >
-                    <option value="">-- Chọn vật tư --</option>
-                    {allMaterials.map((m) => (
-                      <option key={m.materialId} value={m.materialId}>
-                        {m.materialName} ({m.unit}) - Tồn: {m.stockQuantity}
-                      </option>
-                    ))}
-                  </select>
+                  <label style={{ fontWeight: 600 }}>Vật tư:</label>
+                  {allMaterials.length === 0 ? (
+                    <div
+                      style={{
+                        padding: "12px",
+                        background: "#ffebee",
+                        borderRadius: "8px",
+                        color: "#c62828",
+                      }}
+                    >
+                      <strong>
+                        Đang tải vật tư... (F12 → Console nếu lỗi)
+                      </strong>
+                    </div>
+                  ) : (
+                    <select
+                      value={materialId}
+                      onChange={(e) => setMaterialId(e.target.value)}
+                      style={selectStyle}
+                    >
+                      <option value="">-- Chọn vật tư --</option>
+                      {allMaterials.map((m) => (
+                        <option key={m.materialId} value={m.materialId}>
+                          [{m.materialId}] {m.materialName} ({m.unit}) → Tồn:{" "}
+                          {m.stockQuantity}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
+
+                {/* SỐ LƯỢNG */}
                 <div>
-                  <label style={{ fontWeight: "600" }}>Số lượng:</label>
+                  <label style={{ fontWeight: 600 }}>Số lượng:</label>
                   <input
                     type="number"
+                    min="0.1"
+                    step="0.1"
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "10px",
-                      borderRadius: "8px",
-                      border: "2px solid #2ECCB6",
-                    }}
+                    style={inputStyle}
                   />
                 </div>
+
+                {/* GHI CHÚ */}
                 <div>
-                  <label style={{ fontWeight: "600" }}>Ghi chú:</label>
+                  <label style={{ fontWeight: 600 }}>Ghi chú:</label>
                   <input
                     type="text"
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "10px",
-                      borderRadius: "8px",
-                      border: "2px solid #2ECCB6",
-                    }}
+                    placeholder="VD: Ca khẩn"
+                    style={inputStyle}
                   />
                 </div>
               </div>
-            </div>
 
-            {/* --- NÚT THỰC HIỆN --- */}
-            <div style={{ textAlign: "center", marginTop: "20px" }}>
-              {activeTab === "use" && (
-                <button onClick={handleUse} style={btnStyle("#2ECCB6")}>
-                  📤 Xác nhận lấy vật tư
-                </button>
-              )}
-              {activeTab === "return" && (
-                <button onClick={handleReturn} style={btnStyle("#f39c12")}>
-                  🔄 Xác nhận hoàn vật tư
-                </button>
-              )}
-              {activeTab === "used" && (
-                <button onClick={handleUsed} style={btnStyle("#27ae60")}>
-                  ✅ Ghi nhận vật tư đã dùng
-                </button>
-              )}
+              {/* NÚT XÁC NHẬN */}
+              <div style={{ textAlign: "center", marginTop: "25px" }}>
+                {activeTab === "use" && (
+                  <button onClick={handleUse} style={btnStyle("#2ECCB6")}>
+                    XÁC NHẬN LẤY
+                  </button>
+                )}
+                {activeTab === "return" && (
+                  <button onClick={handleReturn} style={btnStyle("#f39c12")}>
+                    XÁC NHẬN HOÀN
+                  </button>
+                )}
+                {activeTab === "used" && (
+                  <button onClick={handleUsed} style={btnStyle("#27ae60")}>
+                    GHI NHẬN
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -429,14 +445,32 @@ export default function NurseMaterialPage() {
   );
 }
 
-// 🔧 Style helper
+// STYLE ĐẸP
+const selectStyle = {
+  width: "100%",
+  padding: "12px",
+  borderRadius: "8px",
+  border: "2px solid #2ECCB6",
+  fontSize: "16px",
+  background: "#fff",
+};
+
+const inputStyle = {
+  width: "100%",
+  padding: "12px",
+  borderRadius: "8px",
+  border: "2px solid #2ECCB6",
+  fontSize: "16px",
+};
+
 const btnStyle = (bg) => ({
   padding: "14px 40px",
-  backgroundColor: bg,
-  color: "white",
+  background: bg,
+  color: "#fff",
   border: "none",
-  borderRadius: "10px",
+  borderRadius: "12px",
   fontSize: "16px",
   fontWeight: "bold",
   cursor: "pointer",
+  boxShadow: "0 4px 10px rgba(0,0,0,.2)",
 });

@@ -7,7 +7,7 @@ const { authMiddleware } = require("../middlewares/authMiddleware");
 router.get(
   "/",
   authMiddleware,
-  authorizeRoles("ClinicManager"),
+  authorizeRoles("ClinicManager", "Nurse"),
   controller.getAllMaterials
 );
 router.post(
@@ -66,5 +66,4 @@ router.get(
   authorizeRoles("Nurse"),
   controller.getMaterialsByService
 );
-
 module.exports = router;
