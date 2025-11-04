@@ -8,14 +8,24 @@ export default function useChatSocket(onNewMessage) {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('userId');
+    let userId = 0;
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      userId = user?.userId || 0;
+    } catch {
+      userId = 0;
+    }
     if (!userId) return;
     socketRef.current = io(SOCKET_URL, {
-      auth: { token },
-      query: { userId }
+      auth: { token }
     });
+    //     socketRef.current.on('connect', () => {
+    //   console.log('Socket connected:', socketRef.current.id);
+    //   socketRef.current.emit('join', String(userId));
+    //   console.log('Emit join', userId);
+    // });
     // Join room theo userId để nhận tin nhắn
-    socketRef.current.emit('join', userId);
+    socketRef.current.emit('join', String(userId));
     // Lắng nghe sự kiện new_message
     socketRef.current.on('new_message', (message) => {
       if (onNewMessage) onNewMessage(message);
