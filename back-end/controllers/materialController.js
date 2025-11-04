@@ -3,7 +3,7 @@
 // Mỗi hàm chỉ nhận request, gọi service tương ứng và trả JSON response.
 // Note: validate input ở controller trước khi gọi service (cơ bản).
 
-const materialService = require("../services/materialService");
+const materialService = require("../access/materialAcess");
 
 /**
  * GET /api/materials
@@ -204,6 +204,24 @@ exports.getMaterialUsageReport = async (req, res) => {
     res.json(data);
   } catch (err) {
     console.error("getMaterialUsageReport error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.addNewMaterial = async (req, res) => {
+  try {
+    const { materialName, unit, unitPrice } = req.body;
+    if (!materialName || !unit || !unitPrice) {
+      return res.status(400).json({ error: "Thiếu thông tin vật tư." });
+    }
+    const result = await materialService.addNewMaterial({
+      materialName,
+      unit,
+      unitPrice,
+    });
+    res.json(result);
+  } catch (err) {
+    console.error("addNewMaterial error:", err);
     res.status(500).json({ error: err.message });
   }
 };

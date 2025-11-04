@@ -1,3 +1,4 @@
+
 const { getPool } = require("../config/db");
 const sql = require("mssql");
 
@@ -91,6 +92,7 @@ async function updatePassword(userId, hashedPassword) {
     );
 }
 
+
 async function createUser({ email, password, fullName, phone, gender, dob, address}) {
   const pool = await getPool();
 
@@ -143,12 +145,14 @@ async function getUsers({ page = 1, pageSize = 10, search = "", roleId }) {
   const offset = (page - 1) * pageSize;
   const searchPattern = `%${search}%`;
 
-  let whereClause = '(u.username LIKE @search OR u.email LIKE @search OR u.fullName LIKE @search)';
+  let whereClause =
+    "(u.username LIKE @search OR u.email LIKE @search OR u.fullName LIKE @search)";
   if (roleId !== undefined) {
-    whereClause += ' AND u.roleId = @roleId';
+    whereClause += " AND u.roleId = @roleId";
   }
 
-  const request = pool.request()
+  const request = pool
+    .request()
     .input("search", sql.NVarChar, searchPattern)
     .input("offset", sql.Int, offset)
     .input("pageSize", sql.Int, pageSize);
@@ -156,7 +160,8 @@ async function getUsers({ page = 1, pageSize = 10, search = "", roleId }) {
     request.input("roleId", sql.Int, roleId);
   }
 
-  const result = await request.query(`SELECT u.userId, u.username, u.email, u.fullName, u.phone, u.gender, u.dob, u.address, u.roleId, r.roleName, u.isActive
+  const result =
+    await request.query(`SELECT u.userId, u.username, u.email, u.fullName, u.phone, u.gender, u.dob, u.address, u.roleId, r.roleName, u.isActive
             FROM dbo.Users u
             JOIN dbo.Roles r ON u.roleId = r.roleId
             WHERE ${whereClause}
@@ -164,10 +169,13 @@ async function getUsers({ page = 1, pageSize = 10, search = "", roleId }) {
             OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY`);
 
   // Count query
-  let countWhereClause = '(username LIKE @search OR email LIKE @search OR fullName LIKE @search)';
-  const countRequest = pool.request().input("search", sql.NVarChar, searchPattern);
+  let countWhereClause =
+    "(username LIKE @search OR email LIKE @search OR fullName LIKE @search)";
+  const countRequest = pool
+    .request()
+    .input("search", sql.NVarChar, searchPattern);
   if (roleId !== undefined) {
-    countWhereClause += ' AND roleId = @roleId';
+    countWhereClause += " AND roleId = @roleId";
     countRequest.input("roleId", sql.Int, roleId);
   }
   const countResult = await countRequest.query(
@@ -175,7 +183,6 @@ async function getUsers({ page = 1, pageSize = 10, search = "", roleId }) {
   );
   return { users: result.recordset, total: countResult.recordset[0].total };
 }
-
 
 async function findUserById(userId) {
   const pool = await getPool();
@@ -191,7 +198,10 @@ async function findUserById(userId) {
   return result.recordset[0];
 }
 
-async function updateUser(userId, { fullName, phone, gender, dob, address, roleId }) {
+async function updateUser(
+  userId,
+  { fullName, phone, gender, dob, address, roleId }
+) {
   const pool = await getPool();
   await pool
     .request()
@@ -209,7 +219,11 @@ async function updateUser(userId, { fullName, phone, gender, dob, address, roleI
 
 async function changeUserRole(userId, roleId) {
   const pool = await getPool();
-  await pool.request().input("userId", sql.Int, userId).input("roleId", sql.Int, roleId).query(`UPDATE dbo.Users SET roleId = @roleId WHERE userId = @userId`);
+  await pool
+    .request()
+    .input("userId", sql.Int, userId)
+    .input("roleId", sql.Int, roleId)
+    .query(`UPDATE dbo.Users SET roleId = @roleId WHERE userId = @userId`);
 }
 
 async function setUserActive(userId, isActive) {
@@ -223,7 +237,10 @@ async function setUserActive(userId, isActive) {
 
 async function deleteUser(userId) {
   const pool = await getPool();
-  await pool.request().input("userId", sql.Int, userId).query(`DELETE FROM dbo.Users WHERE userId = @userId`);
+  await pool
+    .request()
+    .input("userId", sql.Int, userId)
+    .query(`DELETE FROM dbo.Users WHERE userId = @userId`);
 }
 
 const updateUserProfile = async (userId, data) => {
@@ -236,21 +253,16 @@ const updateUserProfile = async (userId, data) => {
     .input("phone", sql.NVarChar, phone)
     .input("gender", sql.NVarChar, gender)
     .input("dob", sql.Date, dob)
-    .input("address", sql.NVarChar, address)
-    .query(`
+    .input("address", sql.NVarChar, address).query(`
           UPDATE Users
           SET fullName=@fullName, phone=@phone, gender=@gender, dob=@dob, address=@address, updatedAt=GETDATE()
           WHERE userId=@userId
         `);
 };
 
-
 const getUserSessions = async (userId) => {
   const pool = await getPool();
-  const result = await pool
-    .request()
-    .input("userId", sql.Int, userId)
-    .query(`
+  const result = await pool.request().input("userId", sql.Int, userId).query(`
           SELECT sessionId, jwtToken, userAgent, ipAddress, isActive, createdAt 
           FROM UserSessions 
           WHERE userId=@userId AND isActive=1
@@ -258,15 +270,20 @@ const getUserSessions = async (userId) => {
   return result.recordset;
 };
 
-
 const logoutSession = async (sessionId) => {
   const pool = await getPool();
-  await pool.request().input("sessionId", sql.Int, sessionId).query(`UPDATE UserSessions SET isActive=0 WHERE sessionId=@sessionId`);
+  await pool
+    .request()
+    .input("sessionId", sql.Int, sessionId)
+    .query(`UPDATE UserSessions SET isActive=0 WHERE sessionId=@sessionId`);
 };
 
 const logoutAllSessions = async (userId) => {
   const pool = await getPool();
-  await pool.request().input("userId", sql.Int, userId).query(`UPDATE UserSessions SET isActive=0 WHERE userId=@userId`);
+  await pool
+    .request()
+    .input("userId", sql.Int, userId)
+    .query(`UPDATE UserSessions SET isActive=0 WHERE userId=@userId`);
 };
 
 module.exports = {
@@ -290,3 +307,4 @@ module.exports = {
   findUserByPhone,
   verifyUserOtp
 }
+

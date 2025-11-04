@@ -1,91 +1,52 @@
-// src/pages/ServicesPage.jsx
-import React, { useState } from "react";
+// src/pages/Service/Service.jsx
+import React, { useEffect, useState } from "react";
 import Header from "../../components/home/Header/Header";
 import Footer from "../../components/home/Footer/Footer";
+import axios from "axios";
 
 export default function ServicesPage() {
-  const services = [
-    {
-      icon: "fa-tooth",
-      title: "Trồng răng Implant",
-      desc: "Khôi phục răng đã mất bằng trụ Implant bền chắc và thẩm mỹ cao.",
-    },
-    {
-      icon: "fa-syringe",
-      title: "Tẩy trắng răng",
-      desc: "Mang lại nụ cười trắng sáng tự nhiên chỉ trong một buổi điều trị.",
-    },
-    {
-      icon: "fa-smile-beam",
-      title: "Niềng răng thẩm mỹ",
-      desc: "Điều chỉnh răng đều đẹp, cải thiện khớp cắn và thẩm mỹ khuôn mặt.",
-    },
-    {
-      icon: "fa-user-md",
-      title: "Khám tổng quát răng miệng",
-      desc: "Kiểm tra định kỳ giúp phát hiện sớm và điều trị kịp thời các vấn đề răng miệng.",
-    },
-    {
-      icon: "fa-teeth",
-      title: "Bọc răng sứ",
-      desc: "Giúp răng sáng bóng, đều đẹp và tự tin hơn khi giao tiếp.",
-    },
-    {
-      icon: "fa-tooth",
-      title: "Lấy cao răng",
-      desc: "Loại bỏ mảng bám, giúp răng sạch hơn và ngăn ngừa viêm nướu.",
-    },
-    {
-      icon: "fa-teeth-open",
-      title: "Trám răng thẩm mỹ",
-      desc: "Phục hồi răng sâu hoặc sứt mẻ bằng vật liệu composite tự nhiên.",
-    },
-    {
-      icon: "fa-tooth",
-      title: "Nhổ răng không đau",
-      desc: "Ứng dụng công nghệ gây tê hiện đại, an toàn và nhẹ nhàng cho bệnh nhân.",
-    },
-    {
-      icon: "fa-tooth",
-      title: "Điều trị tủy răng",
-      desc: "Loại bỏ tủy bị viêm nhiễm, bảo tồn cấu trúc răng thật tối đa.",
-    },
-    {
-      icon: "fa-x-ray",
-      title: "Chụp X-quang răng",
-      desc: "Chẩn đoán chính xác tình trạng răng miệng bằng máy X-quang kỹ thuật số.",
-    },
-    {
-      icon: "fa-tooth",
-      title: "Cạo vôi và đánh bóng răng",
-      desc: "Làm sạch mảng bám, mang lại hơi thở thơm mát và nụ cười tươi sáng.",
-    },
-    {
-      icon: "fa-tooth",
-      title: "Hàm tháo lắp",
-      desc: "Giải pháp tiết kiệm thay thế răng mất, dễ dàng tháo lắp và vệ sinh.",
-    },
-  ];
+  const [services, setServices] = useState([]);
+  const [visibleCount, setVisibleCount] = useState(9);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // ---- Pagination logic ----
-  const [currentPage, setCurrentPage] = useState(1);
-  const servicesPerPage = 6;
-  const totalPages = Math.ceil(services.length / servicesPerPage);
+  const API_URL = "http://localhost:5000/api/services";
 
-  const indexOfLastService = currentPage * servicesPerPage;
-  const indexOfFirstService = indexOfLastService - servicesPerPage;
-  const currentServices = services.slice(
-    indexOfFirstService,
-    indexOfLastService
-  );
-
-  const handleNext = () => {
-    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  // --- Lấy dữ liệu từ backend ---
+  const fetchServices = async () => {
+    try {
+      const res = await axios.get(API_URL);
+      if (Array.isArray(res.data)) {
+        setServices(res.data);
+      } else if (res.data.services) {
+        setServices(res.data.services);
+      } else {
+        throw new Error("Dữ liệu không hợp lệ từ server");
+      }
+    } catch (err) {
+      console.error("❌ Lỗi khi tải dịch vụ:", err);
+      setError("Không thể tải danh sách dịch vụ. Vui lòng thử lại sau!");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handlePrev = () => {
-    if (currentPage > 1) setCurrentPage(currentPage - 1);
-  };
+  useEffect(() => {
+    fetchServices();
+  }, []);
+
+  // --- Load More / Thu gọn ---
+  const handleLoadMore = () =>
+    setVisibleCount((prev) => Math.min(prev + 9, services.length));
+
+  const handleCollapse = () => setVisibleCount((prev) => Math.max(prev - 9, 9));
+
+  // --- Format giá VND ---
+  const formatPrice = (price) =>
+    Number(price).toLocaleString("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    });
 
   return (
     <div>
@@ -102,69 +63,101 @@ export default function ServicesPage() {
             </p>
           </div>
 
-          {/* Cards */}
-          <div className="row g-4">
-            {currentServices.map((s, i) => (
-              <div key={i} className="col-md-6 col-lg-4">
-                <div
-                  className="card border-0 shadow-sm h-100 text-center p-4"
-                  style={{
-                    borderRadius: "15px",
-                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = "translateY(-5px)";
-                    e.currentTarget.style.boxShadow =
-                      "0 8px 20px rgba(46, 204, 182, 0.3)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow =
-                      "0 4px 12px rgba(0,0,0,0.05)";
-                  }}
-                >
-                  <div
-                    className="d-flex align-items-center justify-content-center mb-3"
-                    style={{
-                      width: "70px",
-                      height: "70px",
-                      margin: "0 auto",
-                      borderRadius: "50%",
-                      backgroundColor: "#E8FAF6",
-                    }}
-                  >
-                    <i
-                      className={`fa-solid ${s.icon}`}
-                      style={{ color: "#2ECCB6", fontSize: "2rem" }}
-                    ></i>
-                  </div>
-                  <h5 className="fw-bold mb-2">{s.title}</h5>
-                  <p className="text-muted small">{s.desc}</p>
-                </div>
+          {/* Hiển thị khi đang tải */}
+          {loading && (
+            <div className="text-center my-5">
+              <div className="spinner-border text-success" role="status">
+                <span className="visually-hidden">Đang tải...</span>
               </div>
-            ))}
-          </div>
+              <p className="mt-3 text-muted">Đang tải danh sách dịch vụ...</p>
+            </div>
+          )}
 
-          {/* Pagination buttons */}
-          <div className="d-flex justify-content-center align-items-center mt-5">
-            <button
-              className="btn btn-outline-secondary me-3"
-              onClick={handlePrev}
-              disabled={currentPage === 1}
-            >
-              ← Trang trước
-            </button>
-            <span className="fw-semibold">
-              Trang {currentPage} / {totalPages}
-            </span>
-            <button
-              className="btn btn-outline-secondary ms-3"
-              onClick={handleNext}
-              disabled={currentPage === totalPages}
-            >
-              Trang sau →
-            </button>
-          </div>
+          {/* Hiển thị khi lỗi */}
+          {error && (
+            <div className="alert alert-danger text-center" role="alert">
+              {error}
+            </div>
+          )}
+
+          {/* Hiển thị danh sách */}
+          {!loading && !error && (
+            <>
+              {services.length === 0 ? (
+                <div className="text-center text-muted">
+                  <p>Không có dịch vụ nào để hiển thị.</p>
+                </div>
+              ) : (
+                <div className="row g-4">
+                  {services.slice(0, visibleCount).map((s) => (
+                    <div key={s.serviceId} className="col-md-6 col-lg-4">
+                      <div
+                        className="card border-0 shadow-sm h-100 text-center p-4"
+                        style={{
+                          borderRadius: "15px",
+                          transition:
+                            "transform 0.3s ease, box-shadow 0.3s ease",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = "translateY(-5px)";
+                          e.currentTarget.style.boxShadow =
+                            "0 8px 20px rgba(46, 204, 182, 0.3)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = "translateY(0)";
+                          e.currentTarget.style.boxShadow =
+                            "0 4px 12px rgba(0,0,0,0.05)";
+                        }}
+                      >
+                        <div
+                          className="d-flex align-items-center justify-content-center mb-3"
+                          style={{
+                            width: "70px",
+                            height: "70px",
+                            margin: "0 auto",
+                            borderRadius: "50%",
+                            backgroundColor: "#E8FAF6",
+                          }}
+                        >
+                          <i
+                            className="fa-solid fa-tooth"
+                            style={{ color: "#2ECCB6", fontSize: "2rem" }}
+                          ></i>
+                        </div>
+                        <h5 className="fw-bold mb-2">{s.serviceName}</h5>
+                        <p className="text-muted small">{s.description}</p>
+                        {s.price && (
+                          <p className="fw-semibold">{formatPrice(s.price)}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Nút tải thêm / thu gọn */}
+          {!loading && !error && services.length > 9 && (
+            <div className="d-flex justify-content-center align-items-center mt-4 gap-2">
+              {visibleCount < services.length && (
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={handleLoadMore}
+                >
+                  Tải thêm
+                </button>
+              )}
+              {visibleCount > 9 && (
+                <button
+                  className="btn btn-outline-secondary"
+                  onClick={handleCollapse}
+                >
+                  Thu gọn
+                </button>
+              )}
+            </div>
+          )}
         </div>
       </section>
       <Footer />

@@ -1,6 +1,7 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const {
+
     loginController,
     refreshTokenController,
     changePasswordController,
@@ -32,9 +33,13 @@ router.post('/change-password', authMiddleware, changePasswordController);
 router.get("/profile", authMiddleware, profileController);
 router.put('/profile', authMiddleware, updateProfileController);
 
-router.get('/devices', authMiddleware, getDevicesController);
-router.post('/devices/:sessionId/logout', authMiddleware, logoutDeviceController);
-router.post('/devices/logout-all', authMiddleware, logoutAllDevicesController);
+router.get("/devices", authMiddleware, getDevicesController);
+router.post(
+  "/devices/:sessionId/logout",
+  authMiddleware,
+  logoutDeviceController
+);
+router.post("/devices/logout-all", authMiddleware, logoutAllDevicesController);
 // Account management (require authentication)
 router.get('/users', authMiddleware, authorizeRoles('ClinicManage'), listUsersController);
 router.get('/users/:id',authMiddleware, authorizeRoles('ClinicManage'), getUserController);

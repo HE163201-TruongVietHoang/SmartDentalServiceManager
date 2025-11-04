@@ -1,30 +1,30 @@
-const { 
-  login, 
-  refreshToken, 
-  changePassword, 
-  requestPasswordReset, 
-  resetPassword, 
-  registerUser, 
-  listUsers, 
-  getUser, 
-  editUser, 
-  updateRole, 
-  toggleUserActive, 
-  removeUser, 
-  getProfile , 
-  updateProfile, 
-  fetchDevices, 
-  logoutDevice, 
+const {
+  login,
+  refreshToken,
+  changePassword,
+  requestPasswordReset,
+  resetPassword,
+  registerUser,
+  listUsers,
+  getUser,
+  editUser,
+  updateRole,
+  toggleUserActive,
+  removeUser,
+  getProfile,
+  updateProfile,
+  fetchDevices,
+  logoutDevice,
   logoutAllDevices,
   sendVerificationOtp,
-  verifyAccountOtp
-} = require('../services/authService');
+  verifyAccountOtp,
+} = require("../services/authService");
 
 async function loginController(req, res) {
   try {
     const { identifier, password } = req.body;
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-    const device = req.headers['user-agent'] || '';
+    const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+    const device = req.headers["user-agent"] || "";
 
     const result = await login({ identifier, password, ip, device });
 
@@ -36,8 +36,8 @@ async function loginController(req, res) {
       user: {
         userId: result.user.userId,
         fullName: result.user.fullName,
-        roleName: result.user.roleName
-      }
+        roleName: result.user.roleName,
+      },
     });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -107,7 +107,7 @@ async function listUsersController(req, res) {
   try {
     const page = parseInt(req.query.page) || 1;
     const pageSize = parseInt(req.query.pageSize) || 10;
-    const search = req.query.search || '';
+    const search = req.query.search || "";
     const roleId = req.query.roleId ? parseInt(req.query.roleId) : undefined;
     const data = await listUsers({ page, pageSize, search, roleId });
     res.json(data);
@@ -167,25 +167,25 @@ async function deleteUserController(req, res) {
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
-} 
+}
 async function updateProfileController(req, res) {
   try {
     await updateProfile(req.user.userId, req.body);
-    res.json({ message: 'Cập nhật hồ sơ thành công' });
+    res.json({ message: "Cập nhật hồ sơ thành công" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Lỗi server' });
+    res.status(500).json({ message: "Lỗi server" });
   }
 }
 
 async function getDevicesController(req, res) {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
+    const token = req.headers.authorization?.split(" ")[1];
     const devices = await fetchDevices(req.user.userId, token);
     res.json(devices);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Lỗi server' });
+    res.status(500).json({ message: "Lỗi server" });
   }
 }
 
@@ -193,20 +193,20 @@ async function logoutDeviceController(req, res) {
   try {
     const { sessionId } = req.params;
     await logoutDevice(sessionId);
-    res.json({ message: 'Đăng xuất thiết bị thành công' });
+    res.json({ message: "Đăng xuất thiết bị thành công" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Lỗi server' });
+    res.status(500).json({ message: "Lỗi server" });
   }
 }
 
 async function logoutAllDevicesController(req, res) {
   try {
     await logoutAllDevices(req.user.userId);
-    res.json({ message: 'Đăng xuất tất cả thiết bị thành công' });
+    res.json({ message: "Đăng xuất tất cả thiết bị thành công" });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Lỗi server' });
+    res.status(500).json({ message: "Lỗi server" });
   }
 }
 
@@ -238,6 +238,5 @@ module.exports = {
   getDevicesController,
   logoutDeviceController,
   logoutAllDevicesController,
-  verifyOtp
+  verifyOtp,
 };
-

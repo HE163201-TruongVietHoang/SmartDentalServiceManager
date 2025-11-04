@@ -1,42 +1,23 @@
-const { getPool } = require('../config/db');
-const sql = require('mssql');
+const roleAccess = require('../access/roleAccess');
 
 async function getAllRoles() {
-  const pool = await getPool();
-  const result = await pool.request().query('SELECT * FROM Roles');
-  return result.recordset;
+  return await roleAccess.getAllRoles();
 }
 
 async function getRoleById(roleId) {
-  const pool = await getPool();
-  const result = await pool.request()
-    .input('roleId', sql.Int, roleId)
-    .query('SELECT * FROM Roles WHERE roleId = @roleId');
-  return result.recordset[0];
+  return await roleAccess.getRoleById(roleId);
 }
 
 async function createRole({ roleName }) {
-  const pool = await getPool();
-  const result = await pool.request()
-    .input('roleName', sql.NVarChar, roleName)
-    .query('INSERT INTO Roles (roleName) OUTPUT INSERTED.* VALUES (@roleName)');
-  return result.recordset[0];
+  return await roleAccess.createRole({ roleName });
 }
 
 async function updateRole(roleId, { roleName }) {
-  const pool = await getPool();
-  await pool.request()
-    .input('roleId', sql.Int, roleId)
-    .input('roleName', sql.NVarChar, roleName)
-    .query('UPDATE Roles SET roleName = @roleName WHERE roleId = @roleId');
-  return getRoleById(roleId);
+  return await roleAccess.updateRole(roleId, { roleName });
 }
 
 async function deleteRole(roleId) {
-  const pool = await getPool();
-  await pool.request()
-    .input('roleId', sql.Int, roleId)
-    .query('DELETE FROM Roles WHERE roleId = @roleId');
+  await roleAccess.deleteRole(roleId);
 }
 
 module.exports = {

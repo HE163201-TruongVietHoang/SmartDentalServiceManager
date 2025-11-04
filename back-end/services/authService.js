@@ -1,4 +1,3 @@
-
 const nodemailer = require("nodemailer"); // ✅ Thêm Nodemailer
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -22,7 +21,7 @@ const {
   findUserByPhone,
   findUserByEmail,
   verifyUserOtp,
-  activateUser
+  activateUser,
 } = require("../access/userAccess");
 const {
   getActiveSessions,
@@ -203,19 +202,49 @@ async function resetPassword({ email, otpCode, newPassword }) {
 
   return { message: "Đổi mật khẩu thành công, tất cả thiết bị đã bị logout" };
 }
-async function verifyAccountOtp(userId, otp) {
+// async function verifyAccountOtp(userId, otp) {
+//   const user = await verifyUserOtp(userId, otp);
+//   if (!user) throw new Error("Người dùng không tồn tại");
+
+//   if (user.isVerify) throw new Error("Tài khoản đã được xác minh");
+
+//   if (user.otpCode !== otp) throw new Error("OTP không hợp lệ");
+
+//   if (new Date() > user.otpExpiresAt) throw new Error("OTP đã hết hạn");
+
+//   await activateUser(userId);
+
+//   return { message: "Xác minh tài khoản thành công" };
+// }
+async function verifyAccountOtp(userId, otp, ip, device) {
   const user = await verifyUserOtp(userId, otp);
   if (!user) throw new Error("Người dùng không tồn tại");
 
   if (user.isVerify) throw new Error("Tài khoản đã được xác minh");
-
   if (user.otpCode !== otp) throw new Error("OTP không hợp lệ");
 
-  if (new Date() > user.otpExpiresAt) throw new Error("OTP đã hết hạn");
+  if (new Date() > new Date(user.otpExpiresAt))
+    throw new Error("OTP đã hết hạn");
 
   await activateUser(userId);
 
-  return { message: "Xác minh tài khoản thành công" };
+  const jwtToken = generateAccessToken(user);
+  const refreshToken = generateRefreshToken();
+  const sessionId = await createSession({
+    userId: user.userId,
+    jwtToken,
+    refreshToken,
+    ip,
+    device,
+  });
+
+  return {
+    message: "Xác minh tài khoản thành công",
+    jwtToken,
+    refreshToken,
+    user,
+    sessionId,
+  };
 }
 
 async function registerUser({
@@ -266,11 +295,17 @@ async function registerUser({
   // Gửi OTP qua email hoặc SMS
   await sendOtpEmailVerify(email, otpCode);
   return { message: "Đăng ký thành công, vui lòng nhập OTP để xác minh tài khoản", userId: user.userId };
+
 }
 
 // ----- Account management services -----
 async function listUsers({ page = 1, pageSize = 10, search = "" }) {
-  const data = await getUsers({ page, pageSize, search, roleId: arguments[0]?.roleId });
+  const data = await getUsers({
+    page,
+    pageSize,
+    search,
+    roleId: arguments[0]?.roleId,
+  });
   return data;
 }
 
@@ -314,9 +349,9 @@ const updateProfile = async (userId, data) => {
 
 const fetchDevices = async (userId, currentToken) => {
   const sessions = await getUserSessions(userId);
-  return sessions.map(s => ({
+  return sessions.map((s) => ({
     ...s,
-    isCurrentDevice: s.jwtToken === currentToken
+    isCurrentDevice: s.jwtToken === currentToken,
   }));
 };
 
@@ -346,5 +381,5 @@ module.exports = {
   fetchDevices,
   logoutDevice,
   logoutAllDevices,
-  verifyAccountOtp
+  verifyAccountOtp,
 };

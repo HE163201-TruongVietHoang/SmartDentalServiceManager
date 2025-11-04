@@ -1,15 +1,70 @@
 const express = require("express");
 const router = express.Router();
 const controller = require("../controllers/materialController");
+const authorizeRoles = require("../middlewares/roleMiddleware");
+const { authMiddleware } = require("../middlewares/authMiddleware");
 
-router.get("/", controller.getAllMaterials);
-router.get("/transactions", controller.getAllTransactions);
-router.post("/use", controller.useMaterial);
-router.post("/return", controller.returnMaterial);
-router.post("/import", controller.importMaterial);
-router.post("/used", controller.addUsedMaterial);
-router.get("/appointments", controller.getTodayAppointments);
-router.get("/service/:serviceId", controller.getMaterialsByService);
-router.get("/report", controller.getMaterialUsageReport);
+router.get(
+  "/",
+  authMiddleware,
+  authorizeRoles("ClinicManager"),
+  controller.getAllMaterials
+);
+router.post(
+  "/add",
+  authMiddleware,
+  authorizeRoles("ClinicManager"),
+  controller.addNewMaterial
+);
+
+router.get(
+  "/transactions",
+  authMiddleware,
+  authorizeRoles("ClinicManager"),
+  controller.getAllTransactions
+);
+router.post(
+  "/import",
+  authMiddleware,
+  authorizeRoles("ClinicManager"),
+  controller.importMaterial
+);
+router.get(
+  "/report",
+  authMiddleware,
+  authorizeRoles("ClinicManager"),
+  controller.getMaterialUsageReport
+);
+
+router.get(
+  "/appointments",
+  authMiddleware,
+  authorizeRoles("Nurse"),
+  controller.getTodayAppointments
+);
+router.post(
+  "/use",
+  authMiddleware,
+  authorizeRoles("Nurse"),
+  controller.useMaterial
+);
+router.post(
+  "/return",
+  authMiddleware,
+  authorizeRoles("Nurse"),
+  controller.returnMaterial
+);
+router.post(
+  "/used",
+  authMiddleware,
+  authorizeRoles("Nurse"),
+  controller.addUsedMaterial
+);
+router.get(
+  "/service/:serviceId",
+  authMiddleware,
+  authorizeRoles("Nurse"),
+  controller.getMaterialsByService
+);
 
 module.exports = router;

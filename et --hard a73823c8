@@ -1,0 +1,65 @@
+[33m6e1200cb[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/baonqhe170954[m[33m, [m[1;32mbaonqhe170954[m[33m)[m Resolve merge conflicts between main and baonqhe170954
+[33ma73823c8[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m kiendt
+[33m41b0efdc[m Merge branch 'main' into kiendt
+[33m33e0f895[m update but not enough
+[33m72eb9eef[m update material
+[33ma0643273[m kiendt
+[33m80f5e8b9[m update code login
+[33m8d14489e[m Resolve merge conflict in authRoutes.js
+[33m9f1df4fb[m Update App.js
+[33mbdc7ab00[m Update ProfileView import paths in profile components
+[33m3a54f706[m backend service staff
+[33m5927abbf[m kiendt update material
+[33m6eafcbfe[m Merge branch 'kiendt' of https://github.com/HE163201-TruongVietHoang/SmartDentalServiceManager into kiendt
+[33m1171485e[m update code material
+[33m2aa01678[m Merge pull request #4 from HE163201-TruongVietHoang/kiendt
+[33m9cc09710[m Merge branch 'main' into kiendt
+[33m911b8fc7[m Merge branch 'hoangtvhe163201'
+[33m852ff541[m materials
+[33m6310673b[m update ui
+[33m7fc54dff[m Refactor user access logic and add new routes
+[33m82f10b57[m Merge branch 'main' into origin/profile
+[33mcba39fc3[m Implement schedule request and management features
+[33m8d7a98e9[m staff dashboard
+[33m88aaa279[m okok
+[33md669c83c[m test intergation test
+[33mbbf2edf0[m add component ui  common
+[33m20b62300[m add api role
+[33m70176d97[m done fe rating doctor and service
+[33meae4ecfa[m api rating
+[33m93c351e9[m add filter for role
+[33m1ccf93c6[m update api auth for user managment
+[33m3f0abd64[m Merge remote-tracking branch 'origin/baonqhe170954' into hoangtvhe163201
+[33m1b4b10aa[m Add user dropdown and logout to header
+[33m92469528[m Merge branch 'origin/profile'
+[33md1aeb2c1[m Refactor imports for readability in auth modules
+[33ma39b66c0[m Implement session management and change password UI
+[33m900f4963[m Merge branch 'main' into baonqhe170954
+[33m056e8b7d[m Merge pull request #3 from HE163201-TruongVietHoang/kiendt
+[33mc6789b8e[m header
+[33mb5defcbf[m Merge branch 'main' into origin/profile
+[33m17436aa5[m update
+[33m1138217b[m frontend and back end
+[33mc983ae03[m Merge pull request #2 from HE163201-TruongVietHoang/kiendt
+[33m273fd2fe[m update
+[33m403c461f[m Merge branch 'main' into baonqhe170954
+[33m1aac8ba0[m update service page
+[33mdd889185[m done crud vo hieu hoa tai khoan
+[33m00d6ea70[m update code
+[33mc8a85152[m fix config
+[33m8e27eac8[m update service page
+[33m57664754[m fe manager user
+[33m658084bb[m add api
+[33mcefeca40[m Update userAccess.js
+[33mba358eb9[m Update authController.js
+[33mad1a0eb9[m update homepage contact
+[33md748e375[m edit homepage
+[33m9a380a54[m[33m ([m[1;31morigin/HungPT[m[33m)[m fix connect
+[33m51f58f21[m xóa node
+[33mf83dada0[m Create .gitignore
+[33m1742b278[m update mssql, các chức năng auth
+[33mc28d2ba6[m up
+[33m84a5b308[m update homepage
+[33m5c3d7f2f[m up
+[33ma32f4261[m up
+[33m94f29a24[m Initial commit

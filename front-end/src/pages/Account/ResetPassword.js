@@ -1,16 +1,23 @@
 import React, { useState } from "react";
+import Header from "../../components/home/Header/Header";
+import Footer from "../../components/home/Footer/Footer";
 import { useNavigate } from "react-router-dom";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-function ResetPassword() {
+export default function ResetPassword() {
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const res = await fetch(
         "http://localhost:5000/api/auth/request-reset-password",
@@ -20,7 +27,6 @@ function ResetPassword() {
           body: JSON.stringify({ email }),
         }
       );
-
       const data = await res.json();
       if (res.ok) {
         alert("✅ Mã OTP đã được gửi đến email của bạn!");
@@ -28,8 +34,10 @@ function ResetPassword() {
       } else {
         alert("⚠️ " + (data.error || "Không thể gửi OTP, vui lòng thử lại!"));
       }
-    } catch (error) {
+    } catch {
       alert("❌ Lỗi máy chủ hoặc không thể kết nối!");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -40,199 +48,312 @@ function ResetPassword() {
       return;
     }
 
+    setLoading(true);
     try {
       const res = await fetch("http://localhost:5000/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, otpCode: otp, newPassword }),
       });
-
       const data = await res.json();
+
       if (res.ok) {
         alert("✅ Đặt lại mật khẩu thành công!");
-        window.location.href = "/signin";
+        navigate("/signin");
       } else {
         alert("⚠️ " + (data.error || "OTP sai hoặc đã hết hạn!"));
       }
-    } catch (error) {
+    } catch {
       alert("❌ Lỗi máy chủ hoặc không thể kết nối!");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div
       style={{
-        backgroundColor: "#87CEEB", // ✅ Giống SignIn
-        height: "100vh",
+        backgroundColor: "#f0fffa",
+        minHeight: "100vh",
         display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        fontFamily: "Arial, sans-serif",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        fontFamily: "Inter, sans-serif",
       }}
     >
+      {/* Header */}
+      <Header />
+
+      {/* Form giữa màn hình */}
       <div
         style={{
-          backgroundColor: "white",
-          padding: "40px 30px",
-          borderRadius: "12px",
-          boxShadow: "0 4px 15px rgba(0, 0, 0, 0.2)",
-          width: "100%",
-          maxWidth: "420px",
+          flex: 1,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          padding: "40px 20px",
         }}
       >
-        <h2
+        <div
           style={{
-            textAlign: "center",
-            marginBottom: "25px",
-            color: "#2563eb",
+            backgroundColor: "white",
+            padding: "40px 30px",
+            borderRadius: "20px",
+            boxShadow: "0 6px 20px rgba(0, 0, 0, 0.15)",
+            width: "100%",
+            maxWidth: "420px",
           }}
         >
-          {step === 1 ? "Khôi phục mật khẩu" : "Xác nhận OTP"}
-        </h2>
+          <h2
+            style={{
+              textAlign: "center",
+              marginBottom: "25px",
+              color: "#2ECCB6",
+              fontWeight: "700",
+              fontSize: "26px",
+            }}
+          >
+            {step === 1 ? "Khôi phục mật khẩu" : "Đặt lại mật khẩu mới"}
+          </h2>
 
-        {/* STEP 1 */}
-        {step === 1 && (
-          <form onSubmit={handleSendOtp}>
-            <label style={{ fontWeight: "bold", color: "#333" }}>
-              Nhập email:
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="vd: user@gmail.com"
-              style={{
-                width: "100%",
-                padding: "10px",
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                marginTop: "8px",
-                marginBottom: "20px",
-              }}
-            />
-            <button
-              type="submit"
-              style={{
-                width: "100%",
-                padding: "12px",
-                backgroundColor: "#2563eb",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                fontWeight: "bold",
-                cursor: "pointer",
-              }}
-              onMouseOver={(e) => (e.target.style.backgroundColor = "#1e40af")}
-              onMouseOut={(e) => (e.target.style.backgroundColor = "#2563eb")}
-            >
-              Gửi mã OTP
-            </button>
-          </form>
-        )}
+          {/* STEP 1 */}
+          {step === 1 && (
+            <form onSubmit={handleSendOtp}>
+              <div style={{ marginBottom: "20px" }}>
+                <label
+                  style={{
+                    fontWeight: "600",
+                    color: "#333",
+                    display: "block",
+                    marginBottom: "6px",
+                  }}
+                >
+                  Nhập email
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="example@gmail.com"
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    border: "1px solid #ccc",
+                    borderRadius: "10px",
+                    fontSize: "15px",
+                    outline: "none",
+                  }}
+                  onFocus={(e) => (e.target.style.border = "1px solid #2ECCB6")}
+                  onBlur={(e) => (e.target.style.border = "1px solid #ccc")}
+                />
+              </div>
 
-        {/* STEP 2 */}
-        {step === 2 && (
-          <form onSubmit={handleResetPassword}>
-            <label style={{ fontWeight: "bold", color: "#333" }}>Mã OTP:</label>
-            <input
-              type="text"
-              value={otp}
-              onChange={(e) => setOtp(e.target.value)}
-              required
-              placeholder="Nhập mã OTP"
-              style={{
-                width: "100%",
-                padding: "10px",
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                marginTop: "8px",
-                marginBottom: "15px",
-              }}
-            />
-            <label style={{ fontWeight: "bold", color: "#333" }}>
-              Mật khẩu mới:
-            </label>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-              placeholder="Mật khẩu mới"
-              style={{
-                width: "100%",
-                padding: "10px",
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                marginTop: "8px",
-                marginBottom: "15px",
-              }}
-            />
-            <label style={{ fontWeight: "bold", color: "#333" }}>
-              Xác nhận mật khẩu:
-            </label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              placeholder="Nhập lại mật khẩu"
-              style={{
-                width: "100%",
-                padding: "10px",
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                marginTop: "8px",
-                marginBottom: "20px",
-              }}
-            />
-            <button
-              type="submit"
-              style={{
-                width: "100%",
-                padding: "12px",
-                backgroundColor: "#10b981",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                fontWeight: "bold",
-                cursor: "pointer",
-              }}
-              onMouseOver={(e) => (e.target.style.backgroundColor = "#059669")}
-              onMouseOut={(e) => (e.target.style.backgroundColor = "#10b981")}
-            >
-              Xác nhận đổi mật khẩu
-            </button>
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  backgroundColor: "#2ECCB6",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "10px",
+                  fontWeight: "600",
+                  fontSize: "16px",
+                  cursor: "pointer",
+                  transition: "background-color 0.3s",
+                }}
+                onMouseOver={(e) =>
+                  (e.target.style.backgroundColor = "#28B89F")
+                }
+                onMouseOut={(e) => (e.target.style.backgroundColor = "#2ECCB6")}
+              >
+                {loading ? "Đang gửi..." : "Gửi mã OTP"}
+              </button>
+            </form>
+          )}
 
-            <p
+          {/* STEP 2 */}
+          {step === 2 && (
+            <form onSubmit={handleResetPassword}>
+              <div style={{ marginBottom: "18px" }}>
+                <label
+                  style={{
+                    fontWeight: "600",
+                    color: "#333",
+                    display: "block",
+                    marginBottom: "6px",
+                  }}
+                >
+                  Mã OTP
+                </label>
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  placeholder="Nhập mã OTP"
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    border: "1px solid #ccc",
+                    borderRadius: "10px",
+                    fontSize: "15px",
+                    outline: "none",
+                  }}
+                  onFocus={(e) => (e.target.style.border = "1px solid #2ECCB6")}
+                  onBlur={(e) => (e.target.style.border = "1px solid #ccc")}
+                />
+              </div>
+
+              <div style={{ marginBottom: "18px", position: "relative" }}>
+                <label
+                  style={{
+                    fontWeight: "600",
+                    color: "#333",
+                    display: "block",
+                    marginBottom: "6px",
+                  }}
+                >
+                  Mật khẩu mới
+                </label>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="********"
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "12px 40px 12px 12px",
+                    border: "1px solid #ccc",
+                    borderRadius: "10px",
+                    fontSize: "15px",
+                    outline: "none",
+                  }}
+                  onFocus={(e) => (e.target.style.border = "1px solid #2ECCB6")}
+                  onBlur={(e) => (e.target.style.border = "1px solid #ccc")}
+                />
+                <span
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: "absolute",
+                    right: "12px",
+                    top: "42px",
+                    cursor: "pointer",
+                    color: "#2ECCB6",
+                  }}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </span>
+              </div>
+
+              <div style={{ marginBottom: "22px", position: "relative" }}>
+                <label
+                  style={{
+                    fontWeight: "600",
+                    color: "#333",
+                    display: "block",
+                    marginBottom: "6px",
+                  }}
+                >
+                  Xác nhận mật khẩu
+                </label>
+                <input
+                  type={showConfirm ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="********"
+                  required
+                  style={{
+                    width: "100%",
+                    padding: "12px 40px 12px 12px",
+                    border: "1px solid #ccc",
+                    borderRadius: "10px",
+                    fontSize: "15px",
+                    outline: "none",
+                  }}
+                  onFocus={(e) => (e.target.style.border = "1px solid #2ECCB6")}
+                  onBlur={(e) => (e.target.style.border = "1px solid #ccc")}
+                />
+                <span
+                  onClick={() => setShowConfirm(!showConfirm)}
+                  style={{
+                    position: "absolute",
+                    right: "12px",
+                    top: "42px",
+                    cursor: "pointer",
+                    color: "#2ECCB6",
+                  }}
+                >
+                  {showConfirm ? <FaEyeSlash /> : <FaEye />}
+                </span>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  backgroundColor: "#2ECCB6",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "10px",
+                  fontWeight: "600",
+                  fontSize: "16px",
+                  cursor: "pointer",
+                  transition: "background-color 0.3s",
+                }}
+                onMouseOver={(e) =>
+                  (e.target.style.backgroundColor = "#28B89F")
+                }
+                onMouseOut={(e) => (e.target.style.backgroundColor = "#2ECCB6")}
+              >
+                {loading ? "Đang xử lý..." : "Xác nhận đổi mật khẩu"}
+              </button>
+
+              <p
+                style={{
+                  textAlign: "center",
+                  marginTop: "15px",
+                  color: "#2ECCB6",
+                  cursor: "pointer",
+                  fontWeight: "500",
+                }}
+                onClick={() => setStep(1)}
+              >
+                ← Gửi lại OTP
+              </p>
+            </form>
+          )}
+
+          <p
+            style={{
+              textAlign: "center",
+              marginTop: "15px",
+              fontSize: "14px",
+              color: "#555",
+            }}
+          >
+            Quay lại{" "}
+            <span
+              onClick={() => navigate("/signin")}
               style={{
-                textAlign: "center",
-                marginTop: "15px",
-                color: "#2563eb",
+                color: "#2ECCB6",
                 cursor: "pointer",
-                fontWeight: "bold",
+                fontWeight: "600",
               }}
-              onClick={() => setStep(1)}
             >
-              ← Gửi lại OTP
-            </p>
-          </form>
-        )}
-        <p
-          style={{
-            textAlign: "center",
-            marginTop: "15px",
-            color: "#2563eb",
-            cursor: "pointer",
-            fontWeight: "bold",
-          }}
-          onClick={() => navigate("/signin")}
-        >
-          ← Quay lại đăng nhập
-        </p>
+              Đăng nhập
+            </span>
+          </p>
+        </div>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
-
-export default ResetPassword;
