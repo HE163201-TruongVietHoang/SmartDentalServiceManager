@@ -18,8 +18,8 @@ import ScheduleRequest from "./components/doctor/ScheduleRequest";
 import ServicesPage from "./pages/Service/Service";
 import ResetPassword from "./pages/Account/ResetPassword";
 
-import ScheduleRequests from "./pages/manageclinic/ScheduleRequests";
-import ScheduleRequestDetail from "./pages/manageclinic/ScheduleRequestDetail";
+import ScheduleRequests from "./pages/Manageclinic/ScheduleRequests";
+import ScheduleRequestDetail from "./pages/Manageclinic/ScheduleRequestDetail";
 import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
 
 // 🔐 Trang đăng nhập / đăng ký
