@@ -254,29 +254,29 @@ module.exports = {
   async getTodayAppointments() {
     const pool = await getPool();
     const result = await pool.request().query(`
-      SELECT
-        a.appointmentId,
-        uPatient.userId AS patientId,
-        uPatient.fullName AS patientName,
-        uDoc.userId AS doctorId,
-        uDoc.fullName AS doctorName,
-        sch.workDate,
-        sl.startTime,
-        sl.endTime,
-        ds.serviceId,
-        srv.serviceName,
-        a.status
-      FROM Appointments a
-      LEFT JOIN Users uPatient ON a.patientId = uPatient.userId
-      LEFT JOIN Users uDoc ON a.doctorId = uDoc.userId
-      LEFT JOIN Slots sl ON a.slotId = sl.slotId
-      LEFT JOIN Schedules sch ON sl.scheduleId = sch.scheduleId
-      LEFT JOIN Diagnoses d ON d.appointmentId = a.appointmentId
-      LEFT JOIN DiagnosisServices ds ON ds.diagnosisId = d.diagnosisId
-      LEFT JOIN Services srv ON srv.serviceId = ds.serviceId
-      WHERE sch.workDate = CAST(GETDATE() AS DATE)
-      ORDER BY sl.startTime
-    `);
+    SELECT
+      a.appointmentId,
+      uPatient.userId AS patientId,
+      uPatient.fullName AS patientName,
+      uDoc.userId AS doctorId,
+      uDoc.fullName AS doctorName,
+      sch.workDate,
+      CONVERT(VARCHAR(5), sl.startTime, 108) AS startTime,
+      CONVERT(VARCHAR(5), sl.endTime, 108) AS endTime,
+      ds.serviceId,
+      srv.serviceName,
+      a.status
+    FROM Appointments a
+    LEFT JOIN Users uPatient ON a.patientId = uPatient.userId
+    LEFT JOIN Users uDoc ON a.doctorId = uDoc.userId
+    LEFT JOIN Slots sl ON a.slotId = sl.slotId
+    LEFT JOIN Schedules sch ON sl.scheduleId = sch.scheduleId
+    LEFT JOIN Diagnoses d ON d.appointmentId = a.appointmentId
+    LEFT JOIN DiagnosisServices ds ON ds.diagnosisId = d.diagnosisId
+    LEFT JOIN Services srv ON srv.serviceId = ds.serviceId
+    WHERE sch.workDate = CAST(GETDATE() AS DATE)
+    ORDER BY sl.startTime
+  `);
     return result.recordset;
   },
 
