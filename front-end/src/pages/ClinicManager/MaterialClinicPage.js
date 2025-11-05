@@ -205,13 +205,14 @@ export default function ClinicManagerMaterialPage() {
                       <th style={{ padding: "12px" }}>Bệnh nhân</th>
                       <th style={{ padding: "12px" }}>Y tá</th>
                       <th style={{ padding: "12px" }}>Thời gian</th>
+                      <th style={{ padding: "12px" }}>Ghi chú</th> {/* ← MỚI */}
                     </tr>
                   </thead>
                   <tbody>
                     {transactions.length === 0 ? (
                       <tr>
                         <td
-                          colSpan="6"
+                          colSpan="7"
                           style={{
                             textAlign: "center",
                             padding: "40px",
@@ -284,6 +285,17 @@ export default function ClinicManagerMaterialPage() {
                             }}
                           >
                             {formatDate(t.transactionDate)}
+                          </td>
+                          <td
+                            style={{
+                              padding: "12px",
+                              fontSize: "13px",
+                              color: "#555",
+                              maxWidth: "200px",
+                              wordBreak: "break-word",
+                            }}
+                          >
+                            {t.note || "—"}
                           </td>
                         </tr>
                       ))
