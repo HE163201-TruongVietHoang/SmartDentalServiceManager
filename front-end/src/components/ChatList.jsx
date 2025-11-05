@@ -1,8 +1,14 @@
 import React from 'react';
 
 const ChatList = ({ conversations, selectedConversation, onSelectConversation, onStartConversation }) => {
-  // Giả sử userId hiện tại lấy từ localStorage
-  const currentUserId = Number(localStorage.getItem('userId'));
+  // Lấy userId từ localStorage user object
+  let currentUserId = 0;
+  try {
+    const user = JSON.parse(localStorage.getItem('user'));
+    currentUserId = user?.userId || 0;
+  } catch {
+    currentUserId = 0;
+  }
   return (
     <div style={{ width: 300, borderRight: '1px solid #eee', overflowY: 'auto' }}>
       <div style={{ padding: 16, borderBottom: '1px solid #eee', fontWeight: 'bold' }}>Danh sách trò chuyện</div>
