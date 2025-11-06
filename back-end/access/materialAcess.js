@@ -330,4 +330,115 @@ module.exports = {
     `);
     return result.recordset;
   },
+
+  /**
+   * updateServiceMaterial
+   * Cập nhật standardQuantity trong ServiceMaterials
+   */
+  async updateServiceMaterial(serviceId, materialId, standardQuantity) {
+    const pool = await getPool();
+    const result = await pool
+      .request()
+      .input("serviceId", sql.Int, serviceId)
+      .input("materialId", sql.Int, materialId)
+      .input("standardQuantity", sql.Decimal(18, 2), standardQuantity).query(`
+        UPDATE ServiceMaterials
+        SET standardQuantity = @standardQuantity
+        WHERE serviceId = @serviceId AND materialId = @materialId
+      `);
+
+    if (result.rowsAffected[0] === 0) {
+      throw new Error("Không tìm thấy định mức vật tư để cập nhật");
+    }
+
+    return { message: "Cập nhật định mức thành công!" };
+  },
+
+  /**
+   * addMaterialToService
+   * Thêm mới 1 dòng vào ServiceMaterials
+   */
+  async addMaterialToService(serviceId, materialId, standardQuantity) {
+    const pool = await getPool();
+
+    // Kiểm tra trùng
+    const exists = await pool
+      .request()
+      .input("serviceId", sql.Int, serviceId)
+      .input("materialId", sql.Int, materialId).query(`
+        SELECT 1 FROM ServiceMaterials
+        WHERE serviceId = @serviceId AND materialId = @materialId
+      `);
+
+    if (exists.recordset.length > 0) {
+      throw new Error("Vật tư này đã có trong dịch vụ");
+    }
+
+    await pool
+      .request()
+      .input("serviceId", sql.Int, serviceId)
+      .input("materialId", sql.Int, materialId)
+      .input("standardQuantity", sql.Decimal(18, 2), standardQuantity).query(`
+        INSERT INTO ServiceMaterials (serviceId, materialId, standardQuantity)
+        VALUES (@serviceId, @materialId, @standardQuantity)
+      `);
+
+    return { message: "Thêm vật tư vào dịch vụ thành công!" };
+  },
+
+  /**
+   * removeMaterialFromService
+   * Xóa 1 dòng khỏi ServiceMaterials
+   */
+  async removeMaterialFromService(serviceId, materialId) {
+    const pool = await getPool();
+    const result = await pool
+      .request()
+      .input("serviceId", sql.Int, serviceId)
+      .input("materialId", sql.Int, materialId).query(`
+        DELETE FROM ServiceMaterials
+        WHERE serviceId = @serviceId AND materialId = @materialId
+      `);
+
+    if (result.rowsAffected[0] === 0) {
+      throw new Error("Không tìm thấy định mức để xóa");
+    }
+
+    return { message: "Xóa vật tư khỏi dịch vụ thành công!" };
+  },
+
+  /**
+   * getAllServices
+   * Lấy danh sách dịch vụ
+   */
+  async getAllServices() {
+    const pool = await getPool();
+    const result = await pool.request().query(`
+      SELECT serviceId, serviceName
+      FROM Services
+      ORDER BY serviceName
+    `);
+    return result.recordset;
+  },
+
+  /**
+   * getAllServiceMaterials
+   * Lấy toàn bộ ServiceMaterials + thông tin vật tư
+   */
+  async getAllServiceMaterials() {
+    const pool = await getPool();
+    const result = await pool.request().query(`
+      SELECT 
+        sm.id,
+        sm.serviceId,
+        sm.materialId,
+        sm.standardQuantity,
+        m.materialName,
+        m.unit
+      FROM ServiceMaterials sm
+      JOIN Materials m ON sm.materialId = m.materialId
+      ORDER BY sm.serviceId, m.materialName
+    `);
+    return result.recordset;
+  },
 };

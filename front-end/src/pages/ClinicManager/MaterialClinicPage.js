@@ -9,6 +9,15 @@ export default function ClinicManagerMaterialPage() {
   const token = localStorage.getItem("token");
   const userId = JSON.parse(localStorage.getItem("user") || "{}").userId;
 
+  // ==================== ĐỊNH MỨC DỊCH VỤ – STATE ====================
+  const [services, setServices] = useState([]);
+  const [serviceMaterials, setServiceMaterials] = useState([]);
+  const [selectedService, setSelectedService] = useState(null);
+  const [editQty, setEditQty] = useState({});
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newMaterialId, setNewMaterialId] = useState("");
+  const [newStandardQty, setNewStandardQty] = useState("");
+
   // ==================== API CALL ====================
   const fetchAPI = async (endpoint, method = "GET", body = null) => {
     const res = await fetch(`http://localhost:5000/api/materials${endpoint}`, {
@@ -31,6 +40,8 @@ export default function ClinicManagerMaterialPage() {
     loadMaterials();
     loadTransactions();
     loadUsageReport();
+    loadServices();
+    loadServiceMaterials();
     const interval = setInterval(() => {
       loadTransactions();
       loadUsageReport();
@@ -56,6 +67,27 @@ export default function ClinicManagerMaterialPage() {
     try {
       setUsageReport(await fetchAPI("/report"));
     } catch {}
+  };
+
+  const loadServices = async () => {
+    try {
+      const data = await fetchAPI("/service/all");
+      setServices(data);
+      if (data.length > 0 && !selectedService) {
+        setSelectedService(data[0].serviceId);
+      }
+    } catch (err) {
+      console.error("Lỗi load dịch vụ:", err);
+    }
+  };
+
+  const loadServiceMaterials = async () => {
+    try {
+      const data = await fetchAPI("/service/materials");
+      setServiceMaterials(data);
+    } catch (err) {
+      console.error("Lỗi load định mức:", err);
+    }
   };
 
   // ==================== NHẬP KHO ====================
@@ -98,6 +130,58 @@ export default function ClinicManagerMaterialPage() {
       alert("THÊM MỚI THÀNH CÔNG!");
       setNewMat({ name: "", unit: "", price: "" });
       loadMaterials();
+    } catch (err) {
+      alert("Lỗi: " + err.message);
+    }
+  };
+
+  // ==================== ĐỊNH MỨC DỊCH VỤ – HÀM XỬ LÝ ====================
+  const handleUpdateStandard = async (id, qty) => {
+    if (qty < 0) return alert("Số lượng không hợp lệ");
+    try {
+      const sm = serviceMaterials.find((s) => s.id === id);
+      await fetchAPI(
+        `/service/${selectedService}/material/${sm.materialId}`,
+        "PUT",
+        {
+          standardQuantity: +qty,
+        }
+      );
+      alert("Cập nhật thành công!");
+      loadServiceMaterials();
+    } catch (err) {
+      alert("Lỗi: " + err.message);
+    }
+  };
+
+  const handleAddToService = async () => {
+    if (!newMaterialId || !newStandardQty)
+      return alert("Chọn vật tư + số lượng");
+    try {
+      await fetchAPI(`/service/${selectedService}/material`, "POST", {
+        materialId: +newMaterialId,
+        standardQuantity: +newStandardQty,
+      });
+      alert("Thêm thành công!");
+      setShowAddModal(false);
+      setNewMaterialId("");
+      setNewStandardQty("");
+      loadServiceMaterials();
+    } catch (err) {
+      alert("Lỗi: " + err.message);
+    }
+  };
+
+  const handleRemoveFromService = async (id) => {
+    if (!confirm("Xóa vật tư khỏi dịch vụ?")) return;
+    try {
+      const sm = serviceMaterials.find((s) => s.id === id);
+      await fetchAPI(
+        `/service/${selectedService}/material/${sm.materialId}`,
+        "DELETE"
+      );
+      alert("Xóa thành công!");
+      loadServiceMaterials();
     } catch (err) {
       alert("Lỗi: " + err.message);
     }
@@ -152,24 +236,24 @@ export default function ClinicManagerMaterialPage() {
             }}
           >
             {[
-              { k: "materials", l: "DANH SÁCH", c: "#2ECCB6" },
-              { k: "transactions", l: "GIAO DỊCH", c: "#3498db" },
-              { k: "import", l: "NHẬP KHO", c: "#27ae60" },
-              { k: "report", l: "BÁO CÁO", c: "#e74c3c" },
+              { k: "material", l: "Vật tư" },
+              { k: "transactions", l: "Giao dịch" },
+              { k: "report", l: "Báo cáo" },
+              { k: "import", l: "Nhập kho" },
+              { k: "standard", l: "Định mức" },
             ].map((t) => (
               <button
                 key={t.k}
                 onClick={() => setActiveTab(t.k)}
                 style={{
-                  padding: "12px 28px",
-                  background: activeTab === t.k ? t.c : "#e0e0e0",
-                  color: activeTab === t.k ? "#fff" : "#555",
+                  padding: "12px 24px",
+                  background: activeTab === t.k ? "#2ECCB6" : "#ecf0f1",
+                  color: activeTab === t.k ? "#fff" : "#2c3e50",
                   border: "none",
                   borderRadius: "12px",
                   fontWeight: "bold",
                   cursor: "pointer",
-                  boxShadow:
-                    activeTab === t.k ? "0 4px 10px rgba(0,0,0,.2)" : "none",
+                  transition: "0.2s",
                 }}
               >
                 {t.l}
@@ -177,289 +261,42 @@ export default function ClinicManagerMaterialPage() {
             ))}
           </div>
 
-          {/* LỊCH SỬ GIAO DỊCH – ĐÃ CÓ TÊN BỆNH NHÂN */}
-          {activeTab === "transactions" && (
+          {/* VẬT TƯ */}
+          {activeTab === "material" && (
             <div>
-              <h4
-                style={{
-                  color: "#3498db",
-                  marginBottom: "20px",
-                  textAlign: "center",
-                }}
-              >
-                LỊCH SỬ GIAO DỊCH VẬT TƯ
-              </h4>
-              <div style={{ overflowX: "auto" }}>
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    fontSize: "14px",
-                  }}
-                >
-                  <thead style={{ background: "#3498db", color: "#fff" }}>
-                    <tr>
-                      <th style={{ padding: "12px" }}>Loại</th>
-                      <th style={{ padding: "12px" }}>Vật tư</th>
-                      <th style={{ padding: "12px" }}>SL</th>
-                      <th style={{ padding: "12px" }}>Bệnh nhân</th>
-                      <th style={{ padding: "12px" }}>Y tá</th>
-                      <th style={{ padding: "12px" }}>Thời gian</th>
-                      <th style={{ padding: "12px" }}>Ghi chú</th> {/* ← MỚI */}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactions.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan="7"
-                          style={{
-                            textAlign: "center",
-                            padding: "40px",
-                            color: "#999",
-                          }}
-                        >
-                          Chưa có giao dịch
-                        </td>
-                      </tr>
-                    ) : (
-                      transactions.map((t, i) => (
-                        <tr
-                          key={t.transactionId}
-                          style={{ background: i % 2 ? "#f8f9fa" : "#fff" }}
-                        >
-                          <td style={{ padding: "12px", textAlign: "center" }}>
-                            <span
-                              style={{
-                                padding: "6px 12px",
-                                borderRadius: "20px",
-                                fontWeight: "bold",
-                                fontSize: "11px",
-                                color: "#fff",
-                                background:
-                                  t.transactionType === "IMPORT"
-                                    ? "#27ae60"
-                                    : t.transactionType === "USE"
-                                    ? "#e74c3c"
-                                    : t.transactionType === "RETURN"
-                                    ? "#f39c12"
-                                    : "#95a5a6",
-                              }}
-                            >
-                              {t.transactionType === "IMPORT"
-                                ? "NHẬP"
-                                : t.transactionType === "USE"
-                                ? "LẤY"
-                                : t.transactionType === "RETURN"
-                                ? "HOÀN"
-                                : "KHÁC"}
-                            </span>
-                          </td>
-                          <td style={{ padding: "12px", fontWeight: "600" }}>
-                            {t.materialName}
-                          </td>
-                          <td
-                            style={{
-                              padding: "12px",
-                              textAlign: "center",
-                              fontWeight: "bold",
-                            }}
-                          >
-                            {t.quantity}
-                          </td>
-                          <td
-                            style={{
-                              padding: "12px",
-                              fontWeight: "600",
-                              color: "#2c3e50",
-                            }}
-                          >
-                            {t.patientName || "—"}
-                          </td>
-                          <td style={{ padding: "12px" }}>{t.operatorName}</td>
-                          <td
-                            style={{
-                              padding: "12px",
-                              fontSize: "12px",
-                              color: "#7f8c8d",
-                            }}
-                          >
-                            {formatDate(t.transactionDate)}
-                          </td>
-                          <td
-                            style={{
-                              padding: "12px",
-                              fontSize: "13px",
-                              color: "#555",
-                              maxWidth: "200px",
-                              wordBreak: "break-word",
-                            }}
-                          >
-                            {t.note || "—"}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* BÁO CÁO */}
-          {activeTab === "report" && (
-            <div>
-              <h4
-                style={{
-                  color: "#e74c3c",
-                  marginBottom: "20px",
-                  textAlign: "center",
-                }}
-              >
-                BÁO CÁO ĐỊNH MỨC vs THỰC TẾ
-              </h4>
-              <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead style={{ background: "#e74c3c", color: "#fff" }}>
-                    <tr>
-                      <th style={{ padding: "14px" }}>Dịch vụ</th>
-                      <th style={{ padding: "14px" }}>Vật tư</th>
-                      <th style={{ padding: "14px", textAlign: "center" }}>
-                        Định mức
-                      </th>
-                      <th style={{ padding: "14px", textAlign: "center" }}>
-                        Thực tế
-                      </th>
-                      <th style={{ padding: "14px", textAlign: "center" }}>
-                        Chênh lệch
-                      </th>
-                      <th style={{ padding: "14px", textAlign: "center" }}>
-                        Trạng thái
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {usageReport.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan="6"
-                          style={{
-                            textAlign: "center",
-                            padding: "40px",
-                            color: "#999",
-                          }}
-                        >
-                          Chưa có dữ liệu – Y tá cần{" "}
-                          <strong>GHI NHẬN ĐÃ DÙNG</strong>
-                        </td>
-                      </tr>
-                    ) : (
-                      usageReport.map((r, i) => {
-                        const std = r.Standard ?? 0;
-                        const act = r.Actual ?? 0;
-                        const diff = act - std;
-                        const over = diff > 0;
-                        const under = diff < 0;
-                        return (
-                          <tr
-                            key={i}
-                            style={{ background: i % 2 ? "#f8f9fa" : "#fff" }}
-                          >
-                            <td style={{ padding: "12px", fontWeight: "600" }}>
-                              {r.serviceName || "—"}
-                            </td>
-                            <td style={{ padding: "12px" }}>
-                              {r.materialName}
-                            </td>
-                            <td
-                              style={{ padding: "12px", textAlign: "center" }}
-                            >
-                              {std}
-                            </td>
-                            <td
-                              style={{
-                                padding: "12px",
-                                textAlign: "center",
-                                fontWeight: "bold",
-                              }}
-                            >
-                              {act}
-                            </td>
-                            <td
-                              style={{
-                                padding: "12px",
-                                textAlign: "center",
-                                fontWeight: "bold",
-                                color: over
-                                  ? "#e74c3c"
-                                  : under
-                                  ? "#27ae60"
-                                  : "#7f8c8d",
-                              }}
-                            >
-                              {diff > 0 ? `+${diff}` : diff}
-                            </td>
-                            <td
-                              style={{ padding: "12px", textAlign: "center" }}
-                            >
-                              <span
-                                style={{
-                                  padding: "6px 14px",
-                                  borderRadius: "20px",
-                                  background: over
-                                    ? "#e74c3c"
-                                    : under
-                                    ? "#27ae60"
-                                    : "#95a5a6",
-                                  color: "#fff",
-                                  fontWeight: "bold",
-                                  fontSize: "12px",
-                                }}
-                              >
-                                {over ? "VƯỢT" : under ? "TIẾT KIỆM" : "ĐÚNG"}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {/* DANH SÁCH VẬT TƯ */}
-          {activeTab === "materials" && (
-            <div>
-              <h4 style={{ color: "#2ECCB6", marginBottom: "20px" }}>
+              <h4 style={{ color: "#27ae60", textAlign: "center" }}>
                 DANH SÁCH VẬT TƯ
               </h4>
               <div style={{ overflowX: "auto" }}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead style={{ background: "#2ECCB6", color: "#fff" }}>
-                    <tr>
+                  <thead>
+                    <tr style={{ background: "#27ae60", color: "#fff" }}>
                       <th style={{ padding: "12px" }}>ID</th>
-                      <th style={{ padding: "12px" }}>Tên</th>
+                      <th style={{ padding: "12px", textAlign: "left" }}>
+                        Tên vật tư
+                      </th>
                       <th style={{ padding: "12px" }}>Đơn vị</th>
                       <th style={{ padding: "12px", textAlign: "right" }}>
-                        Giá
+                        Giá (đ)
                       </th>
                       <th style={{ padding: "12px", textAlign: "right" }}>
-                        Tồn
+                        Tồn kho
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {materials.map((m, i) => (
+                    {materials.map((m) => (
                       <tr
                         key={m.materialId}
-                        style={{ background: i % 2 ? "#f8f9fa" : "#fff" }}
+                        style={{
+                          background: m.stockQuantity < 10 ? "#fadbd8" : "#fff",
+                          borderBottom: "1px solid #ddd",
+                        }}
                       >
-                        <td style={{ padding: "12px" }}>{m.materialId}</td>
-                        <td style={{ padding: "12px", fontWeight: "600" }}>
-                          {m.materialName}
+                        <td style={{ padding: "12px", textAlign: "center" }}>
+                          {m.materialId}
                         </td>
+                        <td style={{ padding: "12px" }}>{m.materialName}</td>
                         <td style={{ padding: "12px" }}>{m.unit}</td>
                         <td style={{ padding: "12px", textAlign: "right" }}>
                           {Number(m.unitPrice).toLocaleString("vi")}đ
@@ -473,6 +310,145 @@ export default function ClinicManagerMaterialPage() {
                           }}
                         >
                           {m.stockQuantity}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* GIAO DỊCH */}
+          {activeTab === "transactions" && (
+            <div>
+              <h4 style={{ color: "#3498db", textAlign: "center" }}>
+                LỊCH SỬ GIAO DỊCH
+              </h4>
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ background: "#3498db", color: "#fff" }}>
+                      <th style={{ padding: "12px" }}>Thời gian</th>
+                      <th style={{ padding: "12px" }}>Loại</th>
+                      <th style={{ padding: "12px" }}>Vật tư</th>
+                      <th style={{ padding: "12px" }}>SL</th>
+                      <th style={{ padding: "12px" }}>Người thực hiện</th>
+                      <th style={{ padding: "12px" }}>Ca khám</th>
+                      <th style={{ padding: "12px" }}>Ghi chú</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions.map((t) => (
+                      <tr
+                        key={t.transactionId}
+                        style={{ borderBottom: "1px solid #ddd" }}
+                      >
+                        <td style={{ padding: "12px" }}>
+                          {formatDate(t.transactionDate)}
+                        </td>
+                        <td style={{ padding: "12px" }}>
+                          <span
+                            style={{
+                              background:
+                                t.transactionType === "IMPORT"
+                                  ? "#27ae60"
+                                  : t.transactionType === "USE"
+                                  ? "#e67e22"
+                                  : t.transactionType === "RETURN"
+                                  ? "#9b59b6"
+                                  : "#95a5a6",
+                              color: "#fff",
+                              padding: "4px 10px",
+                              borderRadius: "8px",
+                              fontSize: "12px",
+                            }}
+                          >
+                            {t.transactionType}
+                          </span>
+                        </td>
+                        <td style={{ padding: "12px" }}>{t.materialName}</td>
+                        <td
+                          style={{
+                            padding: "12px",
+                            textAlign: "center",
+                            fontWeight: "bold",
+                            color:
+                              t.transactionType === "IMPORT"
+                                ? "#27ae60"
+                                : "#e74c3c",
+                          }}
+                        >
+                          {t.transactionType === "IMPORT" ? "+" : ""}
+                          {t.quantity}
+                        </td>
+                        <td style={{ padding: "12px" }}>{t.operatorName}</td>
+                        <td style={{ padding: "12px", textAlign: "center" }}>
+                          {t.appointmentId || "—"}
+                        </td>
+                        <td style={{ padding: "12px" }}>{t.note || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* BÁO CÁO */}
+          {activeTab === "report" && (
+            <div>
+              <h4 style={{ color: "#9b59b6", textAlign: "center" }}>
+                BÁO CÁO SỬ DỤNG VẬT TƯ
+              </h4>
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr style={{ background: "#9b59b6", color: "#fff" }}>
+                      <th style={{ padding: "12px", textAlign: "left" }}>
+                        Dịch vụ
+                      </th>
+                      <th style={{ padding: "12px", textAlign: "left" }}>
+                        Vật tư
+                      </th>
+                      <th style={{ padding: "12px", textAlign: "center" }}>
+                        Chuẩn
+                      </th>
+                      <th style={{ padding: "12px", textAlign: "center" }}>
+                        Thực tế
+                      </th>
+                      <th style={{ padding: "12px", textAlign: "center" }}>
+                        Chênh lệch
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {usageReport.map((r, i) => (
+                      <tr
+                        key={i}
+                        style={{
+                          background: r.Difference > 0 ? "#fadbd8" : "#d5f5e3",
+                          borderBottom: "1px solid #ddd",
+                        }}
+                      >
+                        <td style={{ padding: "12px" }}>{r.serviceName}</td>
+                        <td style={{ padding: "12px" }}>{r.materialName}</td>
+                        <td style={{ padding: "12px", textAlign: "center" }}>
+                          {r.Standard}
+                        </td>
+                        <td style={{ padding: "12px", textAlign: "center" }}>
+                          {r.Actual}
+                        </td>
+                        <td
+                          style={{
+                            padding: "12px",
+                            textAlign: "center",
+                            fontWeight: "bold",
+                            color: r.Difference > 0 ? "#e74c3c" : "#27ae60",
+                          }}
+                        >
+                          {r.Difference > 0 ? "+" : ""}
+                          {r.Difference}
                         </td>
                       </tr>
                     ))}
@@ -573,6 +549,329 @@ export default function ClinicManagerMaterialPage() {
                   THÊM MỚI
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* ==================== TAB ĐỊNH MỨC DỊCH VỤ ==================== */}
+          {activeTab === "standard" && (
+            <div>
+              <h4
+                style={{
+                  color: "#9b59b6",
+                  textAlign: "center",
+                  marginBottom: "20px",
+                }}
+              >
+                ĐỊNH MỨC VẬT TƯ THEO DỊCH VỤ
+              </h4>
+
+              {services.length === 0 ? (
+                <p style={{ textAlign: "center", color: "#7f8c8d" }}>
+                  Đang tải dịch vụ...
+                </p>
+              ) : (
+                <>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "10px",
+                      flexWrap: "wrap",
+                      justifyContent: "center",
+                      marginBottom: "20px",
+                    }}
+                  >
+                    {services.map((srv) => (
+                      <button
+                        key={srv.serviceId}
+                        onClick={() => setSelectedService(srv.serviceId)}
+                        style={{
+                          padding: "10px 18px",
+                          background:
+                            selectedService === srv.serviceId
+                              ? "#9b59b6"
+                              : "#3498db",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: "10px",
+                          fontWeight: "bold",
+                          cursor: "pointer",
+                          fontSize: "14px",
+                        }}
+                      >
+                        {srv.serviceName}
+                      </button>
+                    ))}
+                  </div>
+
+                  {selectedService && (
+                    <div
+                      style={{
+                        background: "#f9f9f9",
+                        padding: "20px",
+                        borderRadius: "12px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          marginBottom: "15px",
+                        }}
+                      >
+                        <h5 style={{ color: "#8e44ad", margin: 0 }}>
+                          {
+                            services.find(
+                              (s) => s.serviceId === selectedService
+                            )?.serviceName
+                          }
+                        </h5>
+                        <button
+                          onClick={() => setShowAddModal(true)}
+                          style={{
+                            padding: "8px 14px",
+                            background: "#27ae60",
+                            color: "#fff",
+                            border: "none",
+                            borderRadius: "8px",
+                            fontSize: "13px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          + Thêm vật tư
+                        </button>
+                      </div>
+
+                      <table
+                        style={{ width: "100%", borderCollapse: "collapse" }}
+                      >
+                        <thead>
+                          <tr style={{ background: "#ecf0f1" }}>
+                            <th style={{ padding: "10px", textAlign: "left" }}>
+                              Vật tư
+                            </th>
+                            <th
+                              style={{ padding: "10px", textAlign: "center" }}
+                            >
+                              Đơn vị
+                            </th>
+                            <th
+                              style={{ padding: "10px", textAlign: "center" }}
+                            >
+                              Định mức
+                            </th>
+                            <th
+                              style={{ padding: "10px", textAlign: "center" }}
+                            >
+                              Hành động
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {serviceMaterials
+                            .filter((sm) => sm.serviceId === selectedService)
+                            .map((sm) => {
+                              const mat = materials.find(
+                                (m) => m.materialId === sm.materialId
+                              );
+                              return (
+                                <tr
+                                  key={sm.id}
+                                  style={{ borderBottom: "1px solid #eee" }}
+                                >
+                                  <td style={{ padding: "10px" }}>
+                                    {mat?.materialName || "—"}
+                                  </td>
+                                  <td
+                                    style={{
+                                      padding: "10px",
+                                      textAlign: "center",
+                                    }}
+                                  >
+                                    {mat?.unit || "—"}
+                                  </td>
+                                  <td
+                                    style={{
+                                      padding: "10px",
+                                      textAlign: "center",
+                                    }}
+                                  >
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      step="0.01"
+                                      value={
+                                        editQty[sm.id] ?? sm.standardQuantity
+                                      }
+                                      onChange={(e) =>
+                                        setEditQty({
+                                          ...editQty,
+                                          [sm.id]: e.target.value,
+                                        })
+                                      }
+                                      style={{
+                                        width: "70px",
+                                        padding: "5px",
+                                        borderRadius: "5px",
+                                        border: "1px solid #bdc3c7",
+                                        textAlign: "center",
+                                      }}
+                                    />
+                                  </td>
+                                  <td
+                                    style={{
+                                      padding: "10px",
+                                      textAlign: "center",
+                                    }}
+                                  >
+                                    <button
+                                      onClick={() =>
+                                        handleUpdateStandard(
+                                          sm.id,
+                                          editQty[sm.id] ?? sm.standardQuantity
+                                        )
+                                      }
+                                      style={{
+                                        background: "#3498db",
+                                        color: "#fff",
+                                        border: "none",
+                                        padding: "5px 10px",
+                                        borderRadius: "5px",
+                                        marginRight: "5px",
+                                        cursor: "pointer",
+                                        fontSize: "12px",
+                                      }}
+                                    >
+                                      Lưu
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleRemoveFromService(sm.id)
+                                      }
+                                      style={{
+                                        background: "#e74c3c",
+                                        color: "#fff",
+                                        border: "none",
+                                        padding: "5px 10px",
+                                        borderRadius: "5px",
+                                        cursor: "pointer",
+                                        fontSize: "12px",
+                                      }}
+                                    >
+                                      Xóa
+                                    </button>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          {serviceMaterials.filter(
+                            (sm) => sm.serviceId === selectedService
+                          ).length === 0 && (
+                            <tr>
+                              <td
+                                colSpan="4"
+                                style={{
+                                  textAlign: "center",
+                                  padding: "20px",
+                                  color: "#95a5a6",
+                                }}
+                              >
+                                Chưa có vật tư định mức
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* MODAL THÊM VẬT TƯ */}
+              {showAddModal && (
+                <div
+                  style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: "rgba(0,0,0,0.5)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    zIndex: 1000,
+                  }}
+                  onClick={() => setShowAddModal(false)}
+                >
+                  <div
+                    style={{
+                      background: "#fff",
+                      padding: "25px",
+                      borderRadius: "14px",
+                      width: "380px",
+                      maxWidth: "90%",
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <h5
+                      style={{
+                        color: "#9b59b6",
+                        textAlign: "center",
+                        marginBottom: "15px",
+                      }}
+                    >
+                      Thêm vật tư vào dịch vụ
+                    </h5>
+                    <select
+                      value={newMaterialId}
+                      onChange={(e) => setNewMaterialId(e.target.value)}
+                      style={s}
+                    >
+                      <option value="">-- Chọn vật tư --</option>
+                      {materials
+                        .filter(
+                          (m) =>
+                            !serviceMaterials.some(
+                              (sm) =>
+                                sm.materialId === m.materialId &&
+                                sm.serviceId === selectedService
+                            )
+                        )
+                        .map((m) => (
+                          <option key={m.materialId} value={m.materialId}>
+                            {m.materialName} ({m.unit}) - Tồn: {m.stockQuantity}
+                          </option>
+                        ))}
+                    </select>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={newStandardQty}
+                      onChange={(e) => setNewStandardQty(e.target.value)}
+                      placeholder="Số lượng định mức"
+                      style={i}
+                    />
+                    <div
+                      style={{ display: "flex", gap: "8px", marginTop: "15px" }}
+                    >
+                      <button
+                        onClick={handleAddToService}
+                        style={{ ...b("#27ae60"), flex: 1 }}
+                      >
+                        Thêm
+                      </button>
+                      <button
+                        onClick={() => setShowAddModal(false)}
+                        style={{ ...b("#95a5a6"), flex: 1 }}
+                      >
+                        Hủy
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
