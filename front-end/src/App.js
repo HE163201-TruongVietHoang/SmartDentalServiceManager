@@ -34,8 +34,14 @@ import UserManagement from "./pages/Admin/UserManagement";
 
 import DoctorRatingTestPage from "./pages/Test/DoctorRatingTestPage";
 import ServiceRatingTestPage from "./pages/Test/ServiceRatingTestPage";
-import ServicesPage from "./pages/Service/Service";
+import StaffLayout from "./pages/ClinicManager/ClinicManagerLayout";
+import Service from "./pages/ClinicManager/Services";
+import NurseMaterialPage from "./pages/Nurse/NurseMaterialPage";
+import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
 
+import DoctorLayout from "./pages/Doctor/DoctorLayout";
+import DoctorScheduleCalendar from "./pages/Doctor/DoctorSchedule";
+import DoctorCreateSchedule from "./pages/Doctor/DotorCreateSchedule";
 function App() {
   return (
     <Router>
@@ -45,14 +51,23 @@ function App() {
         <Route path="/service" element={<ServicesPage />} />
 
         <Route path="/doctor/home" element={<HomeDoctor />} />
-        <Route path="/doctor/appointments" element={<Appointments />} />
+        {/* <Route path="/doctor/profile" element={<DoctorProfile />} /> */}
+        {/* <Route path="/doctor/appointments" element={<Appointments />} />
         <Route path="/doctor/patients" element={<PatientRecords />} />
         <Route path="/doctor/schedule" element={<Schedule />} />
         <Route path="/doctor/examination" element={<Examination />} />
         <Route path="/doctor/prescription" element={<Prescription />} />
         <Route path="/doctor/diagnosis" element={<DiagnosisPlan />} />
         <Route path="/doctor/progress" element={<TreatmentProgress />} />
-        <Route path="/doctor/create-schedule" element={<ScheduleRequest />} />
+        <Route path="/doctor/create-schedule" element={<ScheduleRequest />} /> */}
+        <Route
+          path="/test/doctor-rating/:doctorId"
+          element={<DoctorRatingTestPage />}
+        />
+        <Route
+          path="/test/service-rating/:serviceId"
+          element={<ServiceRatingTestPage />}
+        />
 
         <Route path="/schedule-requests" element={<ScheduleRequests />} />
         <Route
@@ -102,7 +117,24 @@ function App() {
             </StaffLayout>
           }
         />
-        <Route path="/nurse/materials" element={<NurseMaterialPage />} />
+
+        {/* Trang cho Doctor */}
+        <Route
+          path="/doctor/schedule"
+          element={
+            <DoctorLayout>
+              <DoctorScheduleCalendar />
+            </DoctorLayout>
+          }
+        />
+        <Route
+          path="/doctor/create/schedule"
+          element={
+            <DoctorLayout>
+              <DoctorCreateSchedule />
+            </DoctorLayout>
+          }
+        />
       </Routes>
     </Router>
   );
