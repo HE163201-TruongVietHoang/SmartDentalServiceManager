@@ -15,6 +15,7 @@ import TreatmentProgress from "./components/doctor/TreatmentProgress";
 import ScheduleRequest from "./components/doctor/ScheduleRequest";
 
 import ProfilePage from "./pages/profile/ProfileView";
+import ServicesPage from "./pages/Service/Service";
 
 import ScheduleRequests from "./pages/manageclinic/ScheduleRequests";
 import ScheduleRequestDetail from "./pages/manageclinic/ScheduleRequestDetail";
@@ -34,10 +35,6 @@ import UserManagement from "./pages/Admin/UserManagement";
 
 import DoctorRatingTestPage from "./pages/Test/DoctorRatingTestPage";
 import ServiceRatingTestPage from "./pages/Test/ServiceRatingTestPage";
-import StaffLayout from "./pages/ClinicManager/ClinicManagerLayout";
-import Service from "./pages/ClinicManager/Services";
-import NurseMaterialPage from "./pages/Nurse/NurseMaterialPage";
-import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
 
 import DoctorLayout from "./pages/Doctor/DoctorLayout";
 import DoctorScheduleCalendar from "./pages/Doctor/DoctorSchedule";
@@ -135,6 +132,8 @@ function App() {
             </DoctorLayout>
           }
         />
+
+        <Route path="/nurse/materials" element={<NurseMaterialPage />} />
       </Routes>
     </Router>
   );
