@@ -254,7 +254,7 @@ export default function NurseMaterialPage() {
                 {appointments.map((a) => (
                   <option key={a.appointmentId} value={a.appointmentId}>
                     #{a.appointmentId} | {a.patientName} | {a.startTime}-
-                    {a.endTime} | BS: {a.doctorName}
+                    {a.endTime} | BS: {a.doctorName} | DV: {a.serviceName}
                   </option>
                 ))}
               </select>

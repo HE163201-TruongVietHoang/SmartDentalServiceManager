@@ -36,6 +36,41 @@ router.get(
   controller.getMaterialUsageReport
 );
 
+router.put(
+  "/service/:serviceId/material/:materialId",
+  authMiddleware,
+  authorizeRoles("ClinicManager"),
+  controller.updateServiceMaterial
+);
+
+router.post(
+  "/service/:serviceId/material",
+  authMiddleware,
+  authorizeRoles("ClinicManager"),
+  controller.addMaterialToService
+);
+
+router.delete(
+  "/service/:serviceId/material/:materialId",
+  authMiddleware,
+  authorizeRoles("ClinicManager"),
+  controller.removeMaterialFromService
+);
+
+router.get(
+  "/service/all",
+  authMiddleware,
+  authorizeRoles("ClinicManager"),
+  controller.getAllServices
+);
+
+router.get(
+  "/service/materials",
+  authMiddleware,
+  authorizeRoles("ClinicManager"),
+  controller.getAllServiceMaterials
+);
+
 router.get(
   "/appointments",
   authMiddleware,
