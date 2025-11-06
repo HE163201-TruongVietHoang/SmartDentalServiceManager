@@ -36,8 +36,11 @@ import ServiceRatingTestPage from "./pages/Test/ServiceRatingTestPage";
 import StaffLayout from "./pages/ClinicManager/ClinicManagerLayout";
 import Service from "./pages/ClinicManager/Services";
 import NurseMaterialPage from "./pages/Nurse/NurseMaterialPage";
-
 import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
+
+import DoctorLayout from "./pages/Doctor/DoctorLayout";
+import DoctorScheduleCalendar from "./pages/Doctor/DoctorSchedule";
+import DoctorCreateSchedule from "./pages/Doctor/DotorCreateSchedule";
 function App() {
   return (
     <Router>
@@ -48,14 +51,14 @@ function App() {
         {/* 👨‍⚕️ Trang dành riêng cho Doctor */}
         <Route path="/doctor/home" element={<HomeDoctor />} />
         {/* <Route path="/doctor/profile" element={<DoctorProfile />} /> */}
-        <Route path="/doctor/appointments" element={<Appointments />} />
+        {/* <Route path="/doctor/appointments" element={<Appointments />} />
         <Route path="/doctor/patients" element={<PatientRecords />} />
         <Route path="/doctor/schedule" element={<Schedule />} />
         <Route path="/doctor/examination" element={<Examination />} />
         <Route path="/doctor/prescription" element={<Prescription />} />
         <Route path="/doctor/diagnosis" element={<DiagnosisPlan />} />
         <Route path="/doctor/progress" element={<TreatmentProgress />} />
-        <Route path="/doctor/create-schedule" element={<ScheduleRequest />} />
+        <Route path="/doctor/create-schedule" element={<ScheduleRequest />} /> */}
         <Route
           path="/test/doctor-rating/:doctorId"
           element={<DoctorRatingTestPage />}
@@ -109,6 +112,24 @@ function App() {
             <StaffLayout>
               <ClinicManagerScheduleRequests />
             </StaffLayout>
+          }
+        />
+
+        {/* Trang cho Doctor */}
+        <Route
+          path="/doctor/schedule"
+          element={
+            <DoctorLayout>
+              <DoctorScheduleCalendar />
+            </DoctorLayout>
+          }
+        />
+        <Route
+          path="/doctor/create/schedule"
+          element={
+            <DoctorLayout>
+              <DoctorCreateSchedule />
+            </DoctorLayout>
           }
         />
       </Routes>
