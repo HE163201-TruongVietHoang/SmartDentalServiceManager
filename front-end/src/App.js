@@ -1,12 +1,10 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-// 🌐 Trang chính cho người dùng
 import Home from "./pages/Home";
+import ChatPage from "./pages/ChatPage";
 
-// 👨‍⚕️ Trang cho Doctor
 import HomeDoctor from "./pages/HomeDoctor";
-// import Profile from "./components/doctor/Profile";
 import Appointments from "./components/doctor/Appointments";
 import PatientRecords from "./components/doctor/PatientRecords";
 import Schedule from "./components/doctor/Schedule";
@@ -15,22 +13,25 @@ import Prescription from "./components/doctor/PrescribeMedication";
 import DiagnosisPlan from "./components/doctor/DiagnosisPlan";
 import TreatmentProgress from "./components/doctor/TreatmentProgress";
 import ScheduleRequest from "./components/doctor/ScheduleRequest";
-import ServicesPage from "./pages/Service/Service";
-import ResetPassword from "./pages/Account/ResetPassword";
+
+import ProfilePage from "./pages/profile/ProfileView";
 
 import ScheduleRequests from "./pages/manageclinic/ScheduleRequests";
 import ScheduleRequestDetail from "./pages/manageclinic/ScheduleRequestDetail";
-import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
 
-// 🔐 Trang đăng nhập / đăng ký
+import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
+import StaffLayout from "./pages/ClinicManager/ClinicManagerLayout";
+import Service from "./pages/ClinicManager/Services";
+import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
+import NurseMaterialPage from "./pages/Nurse/NurseMaterialPage";
+
 import SignIn from "./pages/Account/SignIn";
 import SignUp from "./pages/Account/SignUp";
 import VerifyOtp from "./pages/Account/VerifyOTP";
-import UserManagement from "./pages/Admin/UserManagement";
-import PatientProfile from "./components/patient/PatientProfile";
-import DoctorProfile from "./components/doctor/DoctorProfile";
-import AdminProfile from "./components/admin/AdminProfile";
+import ResetPassword from "./pages/Account/ResetPassword";
 import ChangePassword from "./pages/Account/ChangePassword";
+import UserManagement from "./pages/Admin/UserManagement";
+
 import DoctorRatingTestPage from "./pages/Test/DoctorRatingTestPage";
 import ServiceRatingTestPage from "./pages/Test/ServiceRatingTestPage";
 import StaffLayout from "./pages/ClinicManager/ClinicManagerLayout";
@@ -45,10 +46,10 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* 🌍 Trang người dùng */}
         <Route path="/" element={<Home />} />
+        <Route path="/chat" element={<ChatPage />} />
+        <Route path="/service" element={<ServicesPage />} />
 
-        {/* 👨‍⚕️ Trang dành riêng cho Doctor */}
         <Route path="/doctor/home" element={<HomeDoctor />} />
         {/* <Route path="/doctor/profile" element={<DoctorProfile />} /> */}
         {/* <Route path="/doctor/appointments" element={<Appointments />} />
@@ -73,23 +74,25 @@ function App() {
           path="/schedule-requests/:id"
           element={<ScheduleRequestDetail />}
         />
-        {/* Trang Home */}
-        <Route path="/service" element={<ServicesPage />} />
-        <Route path="/change-password" element={<ChangePassword />} />
-        <Route path="/profile" element={<PatientProfile />} />
-        <Route path="/profile" element={<DoctorProfile />} />
-        <Route path="/profile" element={<AdminProfile />} />
-        {/* 🔑 Trang tài khoản */}
+
+        <Route path="/profile" element={<ProfilePage />} />
+
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/admin/users" element={<UserManagement />} />
 
-        {/*clinic Manager*/}
-        <Route path="/nurse/materials" element={<NurseMaterialPage />} />
+        <Route
+          path="/test/doctor-rating/:doctorId"
+          element={<DoctorRatingTestPage />}
+        />
+        <Route
+          path="/test/service-rating/:serviceId"
+          element={<ServiceRatingTestPage />}
+        />
 
-        {/* Clinic Manager */}
         <Route
           path="/clinicmanager/services"
           element={
