@@ -36,7 +36,7 @@ import ServiceRatingTestPage from "./pages/Test/ServiceRatingTestPage";
 import StaffLayout from "./pages/ClinicManager/ClinicManagerLayout";
 import Service from "./pages/ClinicManager/Services";
 import NurseMaterialPage from "./pages/Nurse/NurseMaterialPage";
-
+import AppointmentPage from "./pages/AppointmentPage";
 import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
 function App() {
   return (
@@ -82,7 +82,7 @@ function App() {
         <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/admin/users" element={<UserManagement />} />
-
+        <Route path="/appointment" element={<AppointmentPage />} />
         {/*clinic Manager*/}
         <Route path="/nurse/materials" element={<NurseMaterialPage />} />
 
