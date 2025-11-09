@@ -11,18 +11,17 @@ const scheduleRoutes = require("./routes/scheduleRoutes");
 const authMiddleware = require("./middlewares/authMiddleware");
 const serviceStaffRoutes = require("./routes/serviceStaffRoutes");
 const materialRoutes = require("./routes/materialRoutes");
-
+const doctorDiagnosisRoutes = require("./routes/doctorDiagnosisRoutes");
 
 const { getPool } = require("./config/db");
 const app = express();
-const http = require('http');
-const { initSocket } = require('./utils/socket');
+const http = require("http");
+const { initSocket } = require("./utils/socket");
 
 app.use(cors());
 app.use(express.json());
 
 // Routes
-
 
 app.use("/api/auth", authRoutes);
 app.use("/api/chat", chatRoutes);
@@ -33,6 +32,7 @@ app.use("/api/rating", ratingRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api/schedules", scheduleRoutes);
 app.use("/api/services", serviceStaffRoutes);
+app.use("/api/diagnoses", doctorDiagnosisRoutes);
 
 getPool();
 
