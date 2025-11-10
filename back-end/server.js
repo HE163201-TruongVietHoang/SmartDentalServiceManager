@@ -16,16 +16,16 @@ const slotRoutes = require("./routes/slotRoutes");
 const appointmentRoutes = require("./routes/appointmentRoutes");
 const doctorRoutes = require("./routes/doctorRoutes");
 const patientRoutes = require("./routes/patientRoutes");
+const doctorDiagnosisRoutes = require("./routes/doctorDiagnosisRoutes");
 const { getPool } = require("./config/db");
 const app = express();
-const http = require('http');
-const { initSocket } = require('./utils/socket');
+const http = require("http");
+const { initSocket } = require("./utils/socket");
 
 app.use(cors());
 app.use(express.json());
 
 // Routes
-
 
 app.use("/api/auth", authRoutes);
 app.use("/api/chat", chatRoutes);
@@ -39,6 +39,7 @@ app.use("/api/services", serviceStaffRoutes);
 app.use("/api/slots", slotRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/diagnoses", doctorDiagnosisRoutes);
 
 cron.schedule("*/1 * * * *", async () => {
   console.log("Running auto-cancel job...");

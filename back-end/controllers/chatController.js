@@ -35,7 +35,7 @@ async function sendMessage(req, res) {
     // Lấy thông tin cuộc trò chuyện để xác định người nhận
     const conversation = await chatService.getConversationByIdService(conversationId);
     let receiverId = (senderId === conversation.participant1Id) ? conversation.participant2Id : conversation.participant1Id;
-
+// console.log('Emit new_message to', receiverId, message);
     // Phát sự kiện realtime cho người nhận
     getIO().to(String(receiverId)).emit('new_message', message);
 

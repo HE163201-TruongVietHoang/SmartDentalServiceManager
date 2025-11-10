@@ -7,7 +7,7 @@ const { authMiddleware } = require("../middlewares/authMiddleware");
 router.get(
   "/",
   authMiddleware,
-  authorizeRoles("ClinicManager"),
+  authorizeRoles("ClinicManager", "Nurse"),
   controller.getAllMaterials
 );
 router.post(
@@ -34,6 +34,41 @@ router.get(
   authMiddleware,
   authorizeRoles("ClinicManager"),
   controller.getMaterialUsageReport
+);
+
+router.put(
+  "/service/:serviceId/material/:materialId",
+  authMiddleware,
+  authorizeRoles("ClinicManager"),
+  controller.updateServiceMaterial
+);
+
+router.post(
+  "/service/:serviceId/material",
+  authMiddleware,
+  authorizeRoles("ClinicManager"),
+  controller.addMaterialToService
+);
+
+router.delete(
+  "/service/:serviceId/material/:materialId",
+  authMiddleware,
+  authorizeRoles("ClinicManager"),
+  controller.removeMaterialFromService
+);
+
+router.get(
+  "/service/all",
+  authMiddleware,
+  authorizeRoles("ClinicManager"),
+  controller.getAllServices
+);
+
+router.get(
+  "/service/materials",
+  authMiddleware,
+  authorizeRoles("ClinicManager"),
+  controller.getAllServiceMaterials
 );
 
 router.get(
@@ -66,5 +101,4 @@ router.get(
   authorizeRoles("Nurse"),
   controller.getMaterialsByService
 );
-
 module.exports = router;

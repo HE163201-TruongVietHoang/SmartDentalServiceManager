@@ -6,6 +6,109 @@
 const materialService = require("../access/materialAcess");
 
 /**
+ * PUT /api/materials/service/:serviceId/material/:materialId
+ * ClinicManager: Cập nhật số lượng định mức của vật tư trong dịch vụ
+ */
+exports.updateServiceMaterial = async (req, res) => {
+  try {
+    const { serviceId, materialId } = req.params;
+    const { standardQuantity } = req.body;
+
+    if (!standardQuantity || standardQuantity < 0) {
+      return res
+        .status(400)
+        .json({ error: "standardQuantity là bắt buộc và phải >= 0" });
+    }
+
+    const result = await materialService.updateServiceMaterial(
+      parseInt(serviceId, 10),
+      parseInt(materialId, 10),
+      parseFloat(standardQuantity)
+    );
+
+    res.json(result);
+  } catch (err) {
+    console.error("updateServiceMaterial error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * POST /api/materials/service/:serviceId/material
+ * ClinicManager: Thêm vật tư mới vào dịch vụ
+ */
+exports.addMaterialToService = async (req, res) => {
+  try {
+    const { serviceId } = req.params;
+    const { materialId, standardQuantity } = req.body;
+
+    if (!materialId || !standardQuantity || standardQuantity < 0) {
+      return res
+        .status(400)
+        .json({ error: "materialId và standardQuantity là bắt buộc" });
+    }
+
+    const result = await materialService.addMaterialToService(
+      parseInt(serviceId, 10),
+      parseInt(materialId, 10),
+      parseFloat(standardQuantity)
+    );
+
+    res.json(result);
+  } catch (err) {
+    console.error("addMaterialToService error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * DELETE /api/materials/service/:serviceId/material/:materialId
+ * ClinicManager: Xóa vật tư khỏi dịch vụ
+ */
+exports.removeMaterialFromService = async (req, res) => {
+  try {
+    const { serviceId, materialId } = req.params;
+
+    const result = await materialService.removeMaterialFromService(
+      parseInt(serviceId, 10),
+      parseInt(materialId, 10)
+    );
+
+    res.json(result);
+  } catch (err) {
+    console.error("removeMaterialFromService error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * GET /api/materials/service/all
+ * ClinicManager: Lấy danh sách tất cả dịch vụ
+ */
+exports.getAllServices = async (req, res) => {
+  try {
+    const data = await materialService.getAllServices();
+    res.json(data);
+  } catch (err) {
+    console.error("getAllServices error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/**
+ * GET /api/materials/service/materials
+ * ClinicManager: Lấy toàn bộ định mức vật tư theo dịch vụ
+ */
+exports.getAllServiceMaterials = async (req, res) => {
+  try {
+    const data = await materialService.getAllServiceMaterials();
+    res.json(data);
+  } catch (err) {
+    console.error("getAllServiceMaterials error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+/**
  * GET /api/materials
  * Admin: Lấy toàn bộ vật tư
  */

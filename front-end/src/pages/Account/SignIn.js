@@ -37,13 +37,13 @@ function SignIn() {
             navigate("/");
             break;
           case "Doctor":
-            navigate("/doctor/home");
+            navigate("/doctor/schedule");
             break;
           case "Nurse":
             navigate("/nurse/materials");
             break;
           case "ClinicManager":
-            navigate("/clinicmanager/material");
+            navigate("/clinicmanager/services");
             break;
           case "Receptionist":
             navigate("/receptionist/appointments");
