@@ -38,13 +38,35 @@ const appointmentController = {
    * 
    * @return {json} Danh sách các lịch hẹn
    */
-  async getAllAppointment (req, res){
+  async getAllAppointment(req, res) {
     try {
       const appointments = await appointmentService.getAllAppointments();
       res.json({ success: true, data: appointments });
     } catch (err) {
       res.status(500).json({ success: false, message: err.message });
     }
+  },
+  async cancelAppointment(req, res) {
+    try {
+      const appointmentId = parseInt(req.params.id);
+      const userId = req.user?.userId;
+      const io = req.app.get("io"); // lấy socket.io instance từ app.js
+
+      const result = await appointmentService.cancelAppointment(appointmentId, userId, io);
+      res.json(result);
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
+  async  markInProgress(req, res) {
+  const { appointmentId } = req.params;
+
+  try {
+    const result = await appointmentService.markInProgress(Number(appointmentId));
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
   }
+}
 };
 module.exports = { appointmentController };

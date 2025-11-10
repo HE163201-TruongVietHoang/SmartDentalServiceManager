@@ -13,7 +13,7 @@ const {
   deleteScheduleRequest
 } = require("../access/scheduleAccess");
 const { generateSlots } = require("../access/slotAccess");
-const { normalizeTime, minutesToHHMM, timeToMinutes, formatSqlTime ,formatDateToYMDUTC} = require("../utils/timeUtils");
+const { normalizeTime, minutesToHHMM, timeToMinutes, formatSqlTime, formatDateToYMDUTC, minutesToHHMMSS } = require("../utils/timeUtils");
 const { getPool } = require("../config/db");
 function normalizeTimeToHHMM(timeStr) {
   // Chuẩn hóa "7:0" -> "07:00", "7:30" -> "07:30"
@@ -175,25 +175,29 @@ async function getScheduleRequestDetails(requestId) {
 
 async function adminApproveRequest(requestId, adminId) {
   await approveScheduleRequest(requestId);
-  const { request, schedules } = await getScheduleRequestById(requestId);
+
+  const { schedules } = await getScheduleRequestById(requestId);
+
   for (const schedule of schedules) {
-    const start = normalizeTime(schedule.startTime); 
-    const end = normalizeTime(schedule.endTime);    
+    if (!schedule.startTime || !schedule.endTime) continue;
 
-    if (!start || !end) continue; 
+    // Bắt buộc chuyển sang string trước khi normalizeTime
+    const start = normalizeTime(String(schedule.startTime)); 
+    const end = normalizeTime(String(schedule.endTime));
 
-    let startMin = timeToMinutes(start); 
-    let endMin = timeToMinutes(end);   
+    let startMin = timeToMinutes(start);
+    let endMin = timeToMinutes(end);
 
-
-    if (endMin <= startMin) endMin += 24 * 60;
+    if (endMin <= startMin) endMin += 24*60; // ca đêm
 
     let currentMin = startMin;
     while (currentMin < endMin) {
       const nextMin = Math.min(currentMin + 30, endMin);
 
-      const slotStart = minutesToHHMM(currentMin);
-      const slotEnd = minutesToHHMM(nextMin);
+      const slotStart = minutesToHHMMSS(currentMin); // HH:mm:ss
+      const slotEnd = minutesToHHMMSS(nextMin);
+
+      console.log("Generating slot:", slotStart, slotEnd); // debug
 
       await generateSlots({
         scheduleId: schedule.scheduleId,
@@ -205,8 +209,9 @@ async function adminApproveRequest(requestId, adminId) {
     }
   }
 
-  return { success: true, message: "Đã duyệt request và sinh slot tự động (kể cả ca đêm)." };
+  return { success: true, message: "Đã duyệt request và sinh slot tự động (cả ca đêm)." };
 }
+
 
 async function adminRejectRequest(requestId, adminId, reason = null) {
   return await rejectScheduleRequest(requestId, adminId, reason);

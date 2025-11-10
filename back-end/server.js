@@ -2,7 +2,8 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const db = require("./config/db");
-
+const cron = require("node-cron");
+const { appointmentService } = require("./services/appointmentService");
 const authRoutes = require("./routes/authRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const ratingRoutes = require("./routes/ratingRoutes");
@@ -14,6 +15,7 @@ const materialRoutes = require("./routes/materialRoutes");
 const slotRoutes = require("./routes/slotRoutes");
 const appointmentRoutes = require("./routes/appointmentRoutes");
 const doctorRoutes = require("./routes/doctorRoutes");
+const patientRoutes = require("./routes/patientRoutes");
 const { getPool } = require("./config/db");
 const app = express();
 const http = require('http');
@@ -35,9 +37,13 @@ app.use("/api/roles", roleRoutes);
 app.use("/api/schedules", scheduleRoutes);
 app.use("/api/services", serviceStaffRoutes);
 app.use("/api/slots", slotRoutes);
-
+app.use("/api/patients", patientRoutes);
 app.use("/api/appointments", appointmentRoutes);
 
+cron.schedule("*/1 * * * *", async () => {
+  console.log("Running auto-cancel job...");
+  await appointmentService.autoCancelNoShow(initSocket);
+});
 getPool();
 
 // Start server with Socket.IO

@@ -91,5 +91,12 @@ function formatDateToYMDUTC(date) {
   const dd = String(d.getUTCDate()).padStart(2, "0");
   return `${dd}-${mm}-${yyyy}`;
 }
+function minutesToHHMMSS(totalMinutes) {
+  // wrap trong 0-1439 phút (0:00 -> 23:59)
+  const m = ((totalMinutes % (24*60)) + (24*60)) % (24*60);
+  const hh = Math.floor(m / 60);
+  const mm = m % 60;
+  return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}:00`;
+}
 
-module.exports = { normalizeTime, minutesToHHMM, timeToMinutes ,formatSqlTime, formatDateToYMDUTC};
+module.exports = { normalizeTime, minutesToHHMM, timeToMinutes ,formatSqlTime, formatDateToYMDUTC, minutesToHHMMSS};

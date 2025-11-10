@@ -1,13 +1,16 @@
 const { getPool } = require("../config/db");
 const sql = require("mssql");
 const { normalizeTime } = require("../utils/timeUtils");
-
+function hhmmssToUTCDate(hhmmss) {
+  const [hh, mm, ss] = hhmmss.split(":").map(Number);
+  const d = new Date(Date.UTC(1970, 0, 1, hh, mm, ss, 0)); // ngày tùy ý, giờ giữ nguyên UTC
+  return d;
+}
 //  Tạo slot mới
 async function generateSlots({ scheduleId, startTime, endTime }) {
   const pool = await getPool();
-  const sStart = normalizeTime(startTime);
-  const sEnd = normalizeTime(endTime);
-
+  const sStart = hhmmssToUTCDate(startTime);
+  const sEnd = hhmmssToUTCDate(endTime);
   await pool
     .request()
     .input("scheduleId", sql.Int, scheduleId)
@@ -65,4 +68,16 @@ async function markAsBooked(slotId, transaction = null) {
   await request.input("slotId", sql.Int, slotId)
     .query(`UPDATE Slots SET isBooked = 1,updatedAt = GETDATE() WHERE slotId = @slotId`);
 }
-module.exports = { generateSlots, getAvailable, markAsBooked, checkSlot };
+
+async function unmarkAsBooked(slotId, transaction = null) {
+  const request = transaction ? transaction.request() : (await getPool()).request();
+  await request
+    .input("slotId", sql.Int, slotId)
+    .query(`
+      UPDATE Slots
+      SET isBooked = 0,
+          updatedAt = GETDATE()
+      WHERE slotId = @slotId
+    `);
+}
+module.exports = { generateSlots, getAvailable, markAsBooked, checkSlot,unmarkAsBooked };
