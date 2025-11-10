@@ -6,7 +6,8 @@ const {
   adminApproveRequest,
   adminRejectRequest,
   getSchedulesByDoctor,
-  getDoctorScheduleDetailService
+  getDoctorScheduleDetailService,
+  cancelScheduleRequestService
 } = require("../services/scheduleService");
 
 async function createScheduleRequestController(req, res) {
@@ -24,13 +25,14 @@ async function createScheduleRequestController(req, res) {
 
     const result = await createMultipleSchedules(doctorId, note, schedules);
 
-    if (result.duplicates?.length > 0) {
+    if (result.conflicts?.length > 0) {
       return res.status(409).json({
-        message: "Bạn đã có lịch trùng với lịch trước đó hoặc đã được duyệt.",
+        message: "Có xung đột trong các khung giờ bạn chọn.",
         success: false,
-        duplicates: result.duplicates,
+        conflicts: result.conflicts,
       });
     }
+
 
     if (result.unavailable?.length > 0) {
       return res.status(207).json({
@@ -42,7 +44,7 @@ async function createScheduleRequestController(req, res) {
 
     res.status(201).json({
       success: true,
-      message: "Đã gửi yêu cầu tạo lịch cho admin.",
+      message: "Đã gửi yêu cầu tạo lịch cho manageclinic.",
       requestId: result.requestId,
       details: result.results,
     });
@@ -81,7 +83,7 @@ async function checkAvailabilityController(req, res) {
   }
 }
 
-async function listScheduleRequestsController(req, res)  {
+async function listScheduleRequestsController(req, res) {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -147,7 +149,7 @@ async function rejectScheduleRequestController(req, res) {
 
 async function getDoctorSchedulesController(req, res) {
   try {
-    const doctorId = req.user.userId; 
+    const doctorId = req.user.userId;
     const schedules = await getSchedulesByDoctor(doctorId);
     res.status(200).json(schedules);
   } catch (err) {
@@ -157,7 +159,7 @@ async function getDoctorSchedulesController(req, res) {
 }
 async function getDoctorScheduleDetail(req, res) {
   try {
-    const doctorId = req.user.userId; 
+    const doctorId = req.user.userId;
     const { scheduleId } = req.params;
 
     const schedule = await getDoctorScheduleDetailService(scheduleId, doctorId);
@@ -174,6 +176,25 @@ async function getDoctorScheduleDetail(req, res) {
     });
   }
 }
+const cancelScheduleRequest = async (req, res) => {
+  const { id } = req.params;
+  const doctorId = req.user?.userId;
+
+  try {
+    await cancelScheduleRequestService(id, doctorId);
+    return res.status(200).json({ message: "Đã hủy và xóa yêu cầu thành công" });
+  } catch (error) {
+    if (error.message === "NOT_FOUND") {
+      return res.status(404).json({ message: "Không tìm thấy yêu cầu" });
+    }
+    if (error.message === "FORBIDDEN") {
+      return res.status(403).json({ message: "Không có quyền hủy yêu cầu này" });
+    }
+
+    console.error("Cancel Schedule Request Error:", error);
+    return res.status(500).json({ message: "Lỗi hệ thống" });
+  }
+};
 module.exports = {
   createScheduleRequestController,
   getDoctorSchedulesController,
@@ -183,5 +204,6 @@ module.exports = {
   approveScheduleRequestController,
   rejectScheduleRequestController,
   getDoctorSchedulesController,
-  getDoctorScheduleDetail
+  getDoctorScheduleDetail,
+  cancelScheduleRequest
 };
