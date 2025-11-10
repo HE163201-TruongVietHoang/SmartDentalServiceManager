@@ -39,6 +39,9 @@ import ServiceRatingTestPage from "./pages/Test/ServiceRatingTestPage";
 import DoctorLayout from "./pages/Doctor/DoctorLayout";
 import DoctorScheduleCalendar from "./pages/Doctor/DoctorSchedule";
 import DoctorCreateSchedule from "./pages/Doctor/DotorCreateSchedule";
+
+import NurseLayout from "./pages/Nurse/NurseLayout";
+import NurseProfile from "./pages/Nurse/NurseProfile";
 function App() {
   return (
     <Router>
@@ -133,7 +136,22 @@ function App() {
           }
         />
 
-        <Route path="/nurse/materials" element={<NurseMaterialPage />} />
+        <Route
+          path="/nurse/profile"
+          element={
+            <NurseLayout>
+              <NurseProfile />
+            </NurseLayout>
+          }
+        />
+        <Route
+          path="/nurse/materials"
+          element={
+            <NurseLayout>
+              <NurseMaterialPage />
+            </NurseLayout>
+          }
+        />
       </Routes>
     </Router>
   );
