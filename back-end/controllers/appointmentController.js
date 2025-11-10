@@ -67,6 +67,16 @@ const appointmentController = {
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
   }
+},
+async  makeAppointmentReceptionistController(req, res) {
+  try {
+    const appointmentData = req.body;
+    const io = req.app.get("io"); // nếu dùng socket.io
+    const result = await appointmentService.makeAppointmentForReceptionist(appointmentData, io);
+    res.status(201).json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
 }
 };
 module.exports = { appointmentController };

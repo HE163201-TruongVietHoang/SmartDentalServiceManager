@@ -17,4 +17,5 @@ router.put("/:id/cancel", authMiddleware, appointmentController.cancelAppointmen
 //     res.status(500).json({ success: false, message: err.message });
 //   }
 // });
+router.post("/receptionist", appointmentController.makeAppointmentReceptionistController);
 module.exports = router;
