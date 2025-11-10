@@ -39,6 +39,7 @@ import ServiceRatingTestPage from "./pages/Test/ServiceRatingTestPage";
 import DoctorLayout from "./pages/Doctor/DoctorLayout";
 import DoctorScheduleCalendar from "./pages/Doctor/DoctorSchedule";
 import DoctorCreateSchedule from "./pages/Doctor/DotorCreateSchedule";
+import DoctorDiagnosis from "./components/doctor/DoctorDiagnosis";
 function App() {
   return (
     <Router>
@@ -61,6 +62,9 @@ function App() {
           path="/test/doctor-rating/:doctorId"
           element={<DoctorRatingTestPage />}
         />
+
+        <Route path="/doctor/diagnosis" element={<DoctorDiagnosis />} />
+
         <Route
           path="/test/service-rating/:serviceId"
           element={<ServiceRatingTestPage />}
