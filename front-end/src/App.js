@@ -21,10 +21,6 @@ import ScheduleRequests from "./pages/manageclinic/ScheduleRequests";
 import ScheduleRequestDetail from "./pages/manageclinic/ScheduleRequestDetail";
 
 import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
-import StaffLayout from "./pages/ClinicManager/ClinicManagerLayout";
-import Service from "./pages/ClinicManager/Services";
-import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
-import NurseMaterialPage from "./pages/Nurse/NurseMaterialPage";
 
 import SignIn from "./pages/Account/SignIn";
 import SignUp from "./pages/Account/SignUp";
@@ -35,11 +31,21 @@ import UserManagement from "./pages/Admin/UserManagement";
 
 import DoctorRatingTestPage from "./pages/Test/DoctorRatingTestPage";
 import ServiceRatingTestPage from "./pages/Test/ServiceRatingTestPage";
-
+import StaffLayout from "./pages/ClinicManager/ClinicManagerLayout";
+import Service from "./pages/ClinicManager/Services";
+import NurseMaterialPage from "./pages/Nurse/NurseMaterialPage";
+import AppointmentPage from "./pages/AppointmentPage";
+import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
 import DoctorLayout from "./pages/Doctor/DoctorLayout";
 import DoctorScheduleCalendar from "./pages/Doctor/DoctorSchedule";
 import DoctorCreateSchedule from "./pages/Doctor/DotorCreateSchedule";
+
 import DoctorDiagnosis from "./components/doctor/DoctorDiagnosis";
+
+
+import NurseLayout from "./pages/Nurse/NurseLayout";
+import NurseProfile from "./pages/Nurse/NurseProfile";
+
 function App() {
   return (
     <Router>
@@ -84,6 +90,9 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/admin/users" element={<UserManagement />} />
+        <Route path="/appointment" element={<AppointmentPage />} />
+        {/*clinic Manager*/}
+        <Route path="/nurse/materials" element={<NurseMaterialPage />} />
 
         <Route
           path="/test/doctor-rating/:doctorId"
@@ -137,7 +146,22 @@ function App() {
           }
         />
 
-        <Route path="/nurse/materials" element={<NurseMaterialPage />} />
+        <Route
+          path="/nurse/profile"
+          element={
+            <NurseLayout>
+              <NurseProfile />
+            </NurseLayout>
+          }
+        />
+        <Route
+          path="/nurse/materials"
+          element={
+            <NurseLayout>
+              <NurseMaterialPage />
+            </NurseLayout>
+          }
+        />
       </Routes>
     </Router>
   );

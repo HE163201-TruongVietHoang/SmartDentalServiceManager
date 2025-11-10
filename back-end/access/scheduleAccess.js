@@ -297,6 +297,20 @@ async function getScheduleDetailByDoctor(scheduleId, doctorId) {
     })),
   };
 }
+async function deleteScheduleByRequestId(requestId) {
+  const pool = await getPool();
+  await pool.request()
+    .input("requestId", sql.Int, requestId)
+    .query(`DELETE FROM Schedules WHERE requestId = @requestId`);
+}
+
+// Xóa request
+async function deleteScheduleRequest(requestId) {
+  const pool = await getPool();
+  await pool.request()
+    .input("requestId", sql.Int, requestId)
+    .query(`DELETE FROM ScheduleRequests WHERE requestId = @requestId`);
+}
 module.exports = {
   createScheduleRequest,
   createSchedule,
@@ -306,5 +320,7 @@ module.exports = {
   approveScheduleRequest,
   rejectScheduleRequest,
   getDoctorSchedules,
-  getScheduleDetailByDoctor
+  getScheduleDetailByDoctor,
+  deleteScheduleByRequestId,
+  deleteScheduleRequest
 };

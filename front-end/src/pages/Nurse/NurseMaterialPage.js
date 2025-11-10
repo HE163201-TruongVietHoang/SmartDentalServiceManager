@@ -6,9 +6,7 @@ import Footer from "../../components/home/Footer/Footer";
 function AdminDashboardPage() {
   return (
     <div>
-      <Header />
       <NurseMaterial />
-      <Footer />
     </div>
   );
 }

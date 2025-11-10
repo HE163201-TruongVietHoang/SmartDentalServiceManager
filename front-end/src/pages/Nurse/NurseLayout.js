@@ -1,65 +1,44 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FaServicestack, FaTags, FaSignOutAlt } from "react-icons/fa";
+import {
+  FaServicestack,
+  FaTags,
+  FaSignOutAlt,
+  FaUserCircle,
+} from "react-icons/fa";
 
-function StaffLayout({ children }) {
+function NurseLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
 
   const menu = [
     {
-      name: "Quản lý dịch vụ",
-      icon: <FaServicestack />,
-      path: "/clinicmanager/services",
-    },
-    {
       name: "Quản lý vật tư",
-      icon: <FaTags />,
-      path: "/clinicmanager/material",
+      icon: <FaServicestack />,
+      path: "/nurse/materials",
     },
     {
-      name: "Quản lý lịch làm việc bác sĩ",
-      icon: <FaTags />,
-      path: "/clinicmanager/doctorschedule",
+      //   name: "Quản lý vật tư",
+      //   icon: <FaTags />,
+      //   path: "/clinicmanager/material",
+    },
+    {
+      //   name: "Quản lý lịch làm việc bác sĩ",
+      //   icon: <FaTags />,
+      //   path: "/clinicmanager/doctorschedule",
     },
   ];
 
-  const handleLogout = async () => {
-    const token = localStorage.getItem("token");
-    const sessionId = localStorage.getItem("sessionId");
+  // 🧠 Hàm xử lý đăng xuất
+  const handleLogout = () => {
+    // Xóa token & thông tin user
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("refreshToken");
 
-    if (!token || !sessionId) {
-      localStorage.clear();
-      window.location.href = "/signin";
-      return;
-    }
-
-    try {
-      const res = await fetch(
-        `http://localhost:5000/api/auth/devices/${sessionId}/logout`,
-        {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
-          },
-        }
-      );
-
-      if (!res.ok) {
-        const data = await res.json();
-        console.error(data.message || "Logout thất bại");
-      }
-
-    } catch (err) {
-      console.error("Lỗi khi logout:", err);
-    } finally {
-      // Luôn clear token, sessionId và user sau logout
-      localStorage.removeItem("token");
-      localStorage.removeItem("sessionId");
-      localStorage.removeItem("user");
-      window.location.href = "/signin";
-    }
+    // Chuyển về trang login
+    navigate("/");
+    setTimeout(() => window.location.reload(), 300);
   };
 
   return (
@@ -100,8 +79,16 @@ function StaffLayout({ children }) {
           ))}
         </ul>
 
+        <button
+          onClick={() => navigate("/nurse/profile")}
+          className="btn btn-outline-light w-100 mb-2 d-flex align-items-center justify-content-center"
+        >
+          <FaUserCircle className="me-2" />
+          Trang cá nhân
+        </button>
+
         {/* Logout Button */}
-        <div className="mt-auto">
+        <div>
           <button
             onClick={handleLogout}
             className="btn btn-light w-100 d-flex align-items-center justify-content-center"
@@ -132,4 +119,4 @@ function StaffLayout({ children }) {
   );
 }
 
-export default StaffLayout;
+export default NurseLayout;
