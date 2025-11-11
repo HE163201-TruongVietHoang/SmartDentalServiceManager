@@ -63,7 +63,7 @@ export default function Home() {
                     borderColor: "#2ECCB6",
                     color: "#fff",
                   }}
-                  onClick={() => navigate("/signin")}
+                  onClick={() => navigate("/appointment")}
                 >
                   Đặt lịch ngay
                 </button>
