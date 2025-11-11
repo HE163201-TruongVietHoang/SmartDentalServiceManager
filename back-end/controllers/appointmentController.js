@@ -1,9 +1,9 @@
 const { appointmentService } = require("../services/appointmentService");
-
+const {getIO} = require("../utils/socket");
 const appointmentController = {
   async makeAppointment(req, res) {
     try {
-      const io = req.app.get("io"); // Lấy socket instance
+      const io = getIO(); // Lấy socket instance
       const appointment = await appointmentService.makeAppointment(req.body, io);
       res.json({ success: true, appointment });
     } catch (err) {

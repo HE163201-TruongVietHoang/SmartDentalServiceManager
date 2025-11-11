@@ -14,11 +14,11 @@ import DiagnosisPlan from "./components/doctor/DiagnosisPlan";
 import TreatmentProgress from "./components/doctor/TreatmentProgress";
 import ScheduleRequest from "./components/doctor/ScheduleRequest";
 
-import ProfilePage from "./pages/profile/ProfileView";
+import ProfilePage from "./pages/Profile/ProfileView";
 import ServicesPage from "./pages/Service/Service";
 
-import ScheduleRequests from "./pages/manageclinic/ScheduleRequests";
-import ScheduleRequestDetail from "./pages/manageclinic/ScheduleRequestDetail";
+import ScheduleRequests from "./pages/Manageclinic/ScheduleRequests";
+import ScheduleRequestDetail from "./pages/Manageclinic/ScheduleRequestDetail";
 
 import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
 
