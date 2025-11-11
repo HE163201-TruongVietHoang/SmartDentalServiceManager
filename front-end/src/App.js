@@ -35,6 +35,7 @@ import StaffLayout from "./pages/ClinicManager/ClinicManagerLayout";
 import Service from "./pages/ClinicManager/Services";
 import NurseMaterialPage from "./pages/Nurse/NurseMaterialPage";
 import AppointmentPage from "./pages/AppointmentPage";
+import MyAppointmentsPage from "./pages/Patient/MyAppointment";
 import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
 import DoctorLayout from "./pages/Doctor/DoctorLayout";
 import DoctorScheduleCalendar from "./pages/Doctor/DoctorSchedule";
@@ -84,6 +85,7 @@ function App() {
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/admin/users" element={<UserManagement />} />
         <Route path="/appointment" element={<AppointmentPage />} />
+        <Route path="/appointment/me" element={<MyAppointmentsPage />} />
         {/*clinic Manager*/}
         <Route path="/nurse/materials" element={<NurseMaterialPage />} />
 

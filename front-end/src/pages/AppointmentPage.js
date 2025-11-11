@@ -1,120 +1,254 @@
 import React, { useState, useEffect } from "react";
-import { getDoctors, getAvailableSlots, makeAppointment } from "../api/api";
 import { socket } from "../api/socket";
+import Header from "../components/home/Header/Header";
+import Footer from "../components/home/Footer/Footer";
+import { useNavigate } from "react-router-dom";
 
 export default function AppointmentPage() {
   const [doctors, setDoctors] = useState([]);
-  const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [selectedDoctor, setSelectedDoctor] = useState("");
   const [date, setDate] = useState("");
   const [slots, setSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [reason, setReason] = useState("");
-  const [appointmentType, setAppointmentType] = useState("tai kham");
+  const [appointmentType, setAppointmentType] = useState("tái khám");
+  const [loading, setLoading] = useState(false);
 
-  // Lấy user từ localStorage
+  const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
   const patientId = user?.userId;
 
- useEffect(() => {
-  getDoctors().then(setDoctors).catch(err => console.error(err));
-}, []);
-
-
+  // 🔹 Lấy danh sách bác sĩ
   useEffect(() => {
-    if (selectedDoctor && date) {
-      fetchSlots();
-    }
+    const fetchDoctors = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/auth/doctors");
+        if (!res.ok) throw new Error("Không thể tải danh sách bác sĩ");
+        const data = await res.json();
+        setDoctors(data);
+      } catch (err) {
+        console.error("Lỗi khi tải danh sách bác sĩ:", err);
+        alert("Không thể tải danh sách bác sĩ. Vui lòng thử lại sau!");
+      }
+    };
+    fetchDoctors();
+  }, []);
+
+  // 🔹 Lấy slot trống khi chọn bác sĩ và ngày
+  useEffect(() => {
+    if (selectedDoctor && date) fetchSlots();
   }, [selectedDoctor, date]);
 
+  // 🔹 Nhận realtime khi slot bị đặt
   useEffect(() => {
     if (!patientId) return;
-    // Lắng nghe slot bị booked realtime
     socket.on("slotBooked", ({ slotId }) => {
-      setSlots(prev => prev.map(s => s.slotId === slotId ? { ...s, isBooked: 1 } : s));
+      setSlots((prev) =>
+        prev.map((s) => (s.slotId === slotId ? { ...s, isBooked: 1 } : s))
+      );
     });
     return () => socket.off("slotBooked");
   }, [patientId]);
 
+  // 🔹 Hàm lấy slot trống
   const fetchSlots = async () => {
-    if (!selectedDoctor || !date) return;
-    const data = await getAvailableSlots(selectedDoctor, date);
-    setSlots(data);
+    if (!token) return; // nếu chưa login thì không fetch
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/appointments/slots?doctorId=${selectedDoctor}&date=${date}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!res.ok) throw new Error("Không thể tải khung giờ");
+      const data = await res.json();
+      setSlots(data);
+    } catch (err) {
+      console.error("Lỗi khi lấy slot:", err);
+      alert("Không thể tải danh sách khung giờ. Vui lòng thử lại!");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // 🔹 Xử lý đặt lịch
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!patientId) return alert("Bạn cần đăng nhập để đặt lịch!");
-    if (!selectedSlot) return alert("Chọn slot!");
+    if (!patientId) {
+      alert("Bạn cần đăng nhập để đặt lịch!");
+      return navigate("/signin");
+    }
+    if (!selectedSlot) {
+      alert("Vui lòng chọn khung giờ!");
+      return;
+    }
+
     try {
-      await makeAppointment({
+      setLoading(true);
+      const appointmentData = {
         patientId,
         doctorId: selectedDoctor,
         slotId: selectedSlot,
         reason,
         workDate: date,
-        appointmentType
+        appointmentType,
+      };
+
+      const res = await fetch("http://localhost:5000/api/appointments", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(appointmentData),
       });
-      alert("Đặt lịch thành công!");
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw { response: { status: res.status, data: errData } };
+      }
+
+      alert("🎉 Đặt lịch thành công!");
+      setReason("");
+      setSelectedSlot(null);
       fetchSlots(); // refresh slots
     } catch (err) {
-      alert(err.response?.data?.message || "Lỗi khi đặt lịch");
+      console.error(err);
+      if (err.response?.status === 401) {
+        alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+        localStorage.removeItem("token");
+        navigate("/signin");
+      } else {
+        alert(err.response?.data?.message || "Lỗi khi đặt lịch!");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="p-4">
-      <h2>Đặt lịch khám</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Bác sĩ: </label>
-          <select onChange={e => setSelectedDoctor(Number(e.target.value))} value={selectedDoctor || ""}>
-            <option value="">Chọn bác sĩ</option>
-            {doctors.map(d => (
-              <option key={d.userId} value={d.userId}>{d.fullName}</option>
-            ))}
-          </select>
-        </div>
+    <div>
+      <Header />
+      <section className="py-5" style={{ backgroundColor: "#f7fdfc" }}>
+        <div className="container">
+          <div
+            className="card shadow-sm border-0 p-4 mx-auto"
+            style={{ maxWidth: "700px", borderRadius: "20px" }}
+          >
+            <h4 className="fw-bold mb-4 text-center text-primary">
+              Đặt lịch khám
+            </h4>
 
-        <div>
-          <label>Ngày: </label>
-          <input type="date" onChange={e => setDate(e.target.value)} value={date} />
-        </div>
+            <form onSubmit={handleSubmit}>
+              {/* Bác sĩ */}
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Bác sĩ</label>
+                <select
+                  className="form-select"
+                  value={selectedDoctor}
+                  onChange={(e) => setSelectedDoctor(Number(e.target.value))}
+                  required
+                >
+                  <option value="">-- Chọn bác sĩ --</option>
+                  {doctors.map((d) => (
+                    <option key={d.userId} value={d.userId}>
+                      {d.fullName}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-        <div>
-          <label>Slot: </label>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-            {slots.map(slot => (
-              <button
-                key={slot.slotId}
-                type="button"
-                disabled={slot.isBooked}
-                style={{
-                  padding: "6px 12px",
-                  backgroundColor: slot.isBooked ? "#ccc" : selectedSlot === slot.slotId ? "#4caf50" : "#eee"
-                }}
-                onClick={() => setSelectedSlot(slot.slotId)}
-              >
-                {slot.startTime} - {slot.endTime}
-              </button>
-            ))}
+              {/* Ngày */}
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Ngày khám</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={date}
+                  min={new Date().toISOString().split("T")[0]}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* Khung giờ */}
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Khung giờ</label>
+                <div className="d-flex flex-wrap gap-2">
+                  {loading ? (
+                    <p className="text-muted small">Đang tải khung giờ...</p>
+                  ) : slots.length === 0 ? (
+                    <p className="text-muted small">
+                      Vui lòng chọn bác sĩ và ngày để xem khung giờ.
+                    </p>
+                  ) : (
+                    slots.map((slot) => (
+                      <button
+                        key={slot.slotId}
+                        type="button"
+                        className={`btn px-3 py-2 rounded-pill ${
+                          slot.isBooked
+                            ? "btn-secondary"
+                            : selectedSlot === slot.slotId
+                            ? "btn-success"
+                            : "btn-outline-success"
+                        }`}
+                        disabled={slot.isBooked}
+                        onClick={() => setSelectedSlot(slot.slotId)}
+                      >
+                        {slot.startTime} - {slot.endTime}
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Lý do */}
+              <div className="mb-3">
+                <label className="form-label fw-semibold">Lý do khám</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Ví dụ: Đau răng, kiểm tra định kỳ..."
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* Loại khám */}
+              <div className="mb-4">
+                <label className="form-label fw-semibold">Loại khám</label>
+                <select
+                  className="form-select"
+                  value={appointmentType}
+                  onChange={(e) => setAppointmentType(e.target.value)}
+                >
+                  <option value="tai kham">Tái khám</option>
+                  <option value="kham lan dau">Khám lần đầu</option>
+                </select>
+              </div>
+
+              {/* Nút */}
+              <div className="text-center">
+                <button
+                  type="submit"
+                  className="btn btn-lg text-white px-5"
+                  style={{ backgroundColor: "#2ECCB6" }}
+                  disabled={loading}
+                >
+                  {loading ? "Đang xử lý..." : "Đặt lịch ngay"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
-
-        <div>
-          <label>Lý do: </label>
-          <input type="text" value={reason} onChange={e => setReason(e.target.value)} />
-        </div>
-
-        <div>
-          <label>Loại khám: </label>
-          <select value={appointmentType} onChange={e => setAppointmentType(e.target.value)}>
-            <option value="tai kham">Tái khám</option>
-            <option value="kham lan dau">Khám lần đầu</option>
-          </select>
-        </div>
-
-        <button type="submit">Đặt lịch</button>
-      </form>
+      </section>
+      <Footer />
     </div>
   );
 }
