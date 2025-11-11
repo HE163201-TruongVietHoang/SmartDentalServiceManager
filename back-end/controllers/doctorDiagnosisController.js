@@ -12,19 +12,21 @@ exports.getDoctorAppointments = async (req, res) => {
   }
 };
 
+// ✅ Tạo chẩn đoán mới (chuẩn theo DB SmartDentalService)
 exports.createDiagnosis = async (req, res) => {
   try {
     const doctorId = req.user.userId;
-    const { appointmentId, diagnosisText, notes } = req.body;
+    const { appointmentId, symptoms, diagnosisResult, doctorNote } = req.body;
 
-    if (!appointmentId || !diagnosisText)
+    if (!appointmentId || !diagnosisResult)
       return res.status(400).json({ error: "Thiếu dữ liệu cần thiết" });
 
     const diagnosis = await doctorDiagnosisService.createDiagnosis({
       appointmentId,
       doctorId,
-      diagnosisText,
-      notes: notes || null,
+      symptoms: symptoms || null,
+      diagnosisResult,
+      doctorNote: doctorNote || null,
     });
 
     res.json(diagnosis);
@@ -34,6 +36,7 @@ exports.createDiagnosis = async (req, res) => {
   }
 };
 
+// ✅ Thêm dịch vụ điều trị
 exports.addDiagnosisServices = async (req, res) => {
   try {
     const { diagnosisId } = req.params;

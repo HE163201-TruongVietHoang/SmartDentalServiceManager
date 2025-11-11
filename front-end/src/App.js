@@ -14,14 +14,13 @@ import DiagnosisPlan from "./components/doctor/DiagnosisPlan";
 import TreatmentProgress from "./components/doctor/TreatmentProgress";
 import ScheduleRequest from "./components/doctor/ScheduleRequest";
 
-import ProfilePage from "./pages/Profile/ProfileView";
+import ProfilePage from "./pages/profile/ProfileView";
 import ServicesPage from "./pages/Service/Service";
 
-import ScheduleRequests from "./pages/Manageclinic/ScheduleRequests";
-import ScheduleRequestDetail from "./pages/Manageclinic/ScheduleRequestDetail";
+import ScheduleRequests from "./pages/manageclinic/ScheduleRequests";
+import ScheduleRequestDetail from "./pages/manageclinic/ScheduleRequestDetail";
 
 import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
-
 
 import SignIn from "./pages/Account/SignIn";
 import SignUp from "./pages/Account/SignUp";
@@ -40,6 +39,13 @@ import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
 import DoctorLayout from "./pages/Doctor/DoctorLayout";
 import DoctorScheduleCalendar from "./pages/Doctor/DoctorSchedule";
 import DoctorCreateSchedule from "./pages/Doctor/DotorCreateSchedule";
+
+import DoctorDiagnosis from "./components/doctor/DoctorDiagnosis";
+
+
+import NurseLayout from "./pages/Nurse/NurseLayout";
+import NurseProfile from "./pages/Nurse/NurseProfile";
+
 function App() {
   return (
     <Router>
@@ -62,6 +68,9 @@ function App() {
           path="/test/doctor-rating/:doctorId"
           element={<DoctorRatingTestPage />}
         />
+
+        <Route path="/doctor/diagnosis" element={<DoctorDiagnosis />} />
+
         <Route
           path="/test/service-rating/:serviceId"
           element={<ServiceRatingTestPage />}
@@ -137,7 +146,22 @@ function App() {
           }
         />
 
-        <Route path="/nurse/materials" element={<NurseMaterialPage />} />
+        <Route
+          path="/nurse/profile"
+          element={
+            <NurseLayout>
+              <NurseProfile />
+            </NurseLayout>
+          }
+        />
+        <Route
+          path="/nurse/materials"
+          element={
+            <NurseLayout>
+              <NurseMaterialPage />
+            </NurseLayout>
+          }
+        />
       </Routes>
     </Router>
   );

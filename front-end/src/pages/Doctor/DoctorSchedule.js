@@ -137,8 +137,9 @@ export default function DoctorSchedule({ doctorId }) {
             <FullCalendar
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
               initialView="timeGridWeek"
-              locale="vi"
-              height="auto"
+              height={500} // 🔹 giới hạn chiều cao, không full trang
+              contentHeight={450} // chiều cao thực tế nội dung
+              aspectRatio={1.5} // 🔹 giúp calendar nhìn gọn
               headerToolbar={{
                 left: "prev,next today",
                 center: "title",
@@ -146,27 +147,23 @@ export default function DoctorSchedule({ doctorId }) {
               }}
               events={events}
               eventClick={handleEventClick}
-              dayMaxEvents={3}
+              dayMaxEvents={2} // 🔹 show tối đa 2 sự kiện / ngày
               eventDidMount={(info) => {
-                info.el.title = info.event.extendedProps.tooltipContent
-                  .replace(/<br\/>/g, "\n")
-                  .replace(/<[^>]*>/g, "");
-                info.el.classList.add("calendar-event-v2");
+                info.el.title = info.event.extendedProps.tooltipContent;
+                info.el.classList.add("calendar-event-small"); // CSS nhỏ
+                info.el.style.fontSize = "0.75rem"; // chữ nhỏ hơn
+                info.el.style.padding = "2px 4px"; // padding nhỏ
               }}
-              /** ✅ Tô màu xanh cho ngày có lịch Approved */
               dayCellDidMount={(info) => {
-                const dayHasApproved = events.some((e) => {
-                  const eventDate = new Date(e.start).toDateString();
-                  const cellDate = new Date(info.date).toDateString();
-                  return (
-                    eventDate === cellDate &&
-                    e.extendedProps.status === "Approved"
-                  );
-                });
-                if (dayHasApproved) {
-                  info.el.style.backgroundColor = "#b9e1d9ff"; // xanh đậm hơn
-                  info.el.style.color = "white";
-                  info.el.style.borderRadius = "8px";
+                const hasApproved = events.some(
+                  (e) =>
+                    e.extendedProps.status === "Approved" &&
+                    new Date(e.start).toDateString() ===
+                      info.date.toDateString()
+                );
+                if (hasApproved) {
+                  info.el.style.backgroundColor = "#d1fae5";
+                  info.el.style.borderRadius = "6px";
                 }
               }}
             />
@@ -176,18 +173,64 @@ export default function DoctorSchedule({ doctorId }) {
 
       {/* 🔸 Modal hiển thị slot */}
       {showSlots && (
-        <div className="modal-overlay-v2" onClick={() => setShowSlots(false)}>
+        <div
+          className="modal-overlay-v2"
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 1000,
+          }}
+          onClick={() => setShowSlots(false)}
+        >
           <div
             className="modal-content-v2"
+            style={{
+              backgroundColor: "#fff",
+              borderRadius: "12px",
+              maxWidth: "500px",
+              width: "90%",
+              maxHeight: "80vh",
+              overflowY: "auto",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="modal-header-v2">
+            {/* Header */}
+            <div
+              className="modal-header-v2"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "16px 24px",
+                borderBottom: "1px solid #e0e0e0",
+              }}
+            >
               <div>
-                <h2 className="modal-title-v2">Chi tiết ca làm việc</h2>
-                <p className="modal-subtitle-v2">Danh sách các slot khả dụng</p>
+                <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 600 }}>
+                  Chi tiết ca làm việc
+                </h2>
+                <p
+                  style={{ margin: 0, color: "#6b7280", fontSize: "0.875rem" }}
+                >
+                  Danh sách các slot khả dụng
+                </p>
               </div>
               <button
-                className="modal-close-v2"
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: "1.25rem",
+                  cursor: "pointer",
+                  color: "#6b7280",
+                }}
                 onClick={() => setShowSlots(false)}
                 aria-label="Đóng modal"
               >
@@ -195,41 +238,82 @@ export default function DoctorSchedule({ doctorId }) {
               </button>
             </div>
 
-            <div className="modal-body-v2">
+            {/* Body */}
+            <div style={{ padding: "16px 24px" }}>
               {slots.length > 0 ? (
-                <div className="slots-grid-v2">
+                <div
+                  className="slots-grid-v2"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "12px",
+                  }}
+                >
                   {slots.map((slot) => (
                     <div
                       key={slot.slotId}
-                      className={`slot-card-v2 ${
-                        slot.isBooked ? "booked" : "available"
-                      }`}
+                      style={{
+                        padding: "12px",
+                        borderRadius: "8px",
+                        backgroundColor: slot.isBooked ? "#f87171" : "#34d399",
+                        color: "#fff",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        fontSize: "0.875rem",
+                        fontWeight: 500,
+                        boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                      }}
                     >
-                      <div className="slot-header-v2">
-                        <div className="slot-time-v2">
-                          🕒 {slot.startTime} - {slot.endTime}
-                        </div>
-                        <span
-                          className={`status-badge-v2 ${
-                            slot.isBooked ? "booked" : "available"
-                          }`}
-                        >
-                          {slot.isBooked ? "Đã đặt" : "Trống"}
-                        </span>
-                      </div>
+                      <span>
+                        🕒 {slot.startTime} - {slot.endTime}
+                      </span>
+                      <span
+                        style={{
+                          backgroundColor: "rgba(255,255,255,0.2)",
+                          padding: "2px 6px",
+                          borderRadius: "6px",
+                          fontSize: "0.75rem",
+                        }}
+                      >
+                        {slot.isBooked ? "Đã đặt" : "Trống"}
+                      </span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="empty-state-v2">
-                  <p>Không có dữ liệu slot</p>
+                <div
+                  style={{
+                    textAlign: "center",
+                    color: "#6b7280",
+                    padding: "24px 0",
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  Không có dữ liệu slot
                 </div>
               )}
             </div>
 
-            <div className="modal-footer-v2">
+            {/* Footer */}
+            <div
+              style={{
+                padding: "12px 24px",
+                borderTop: "1px solid #e0e0e0",
+                display: "flex",
+                justifyContent: "flex-end",
+              }}
+            >
               <button
-                className="btn-close-v2"
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "8px",
+                  border: "none",
+                  backgroundColor: "#3b82f6",
+                  color: "#fff",
+                  fontWeight: 500,
+                  cursor: "pointer",
+                }}
                 onClick={() => setShowSlots(false)}
               >
                 Đóng
