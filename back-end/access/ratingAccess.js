@@ -29,6 +29,26 @@ async function getServiceRatings(serviceId) {
   return result.recordset;
 }
 
+// Lấy đánh giá dịch vụ theo appointmentId và serviceId
+async function getServiceRatingByAppointment({ appointmentId, serviceId }) {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('appointmentId', sql.Int, appointmentId)
+    .input('serviceId', sql.Int, serviceId)
+    .query(`SELECT * FROM ServiceRatings WHERE appointmentId = @appointmentId AND serviceId = @serviceId`);
+  return result.recordset[0] || null;
+}
+
+// Lấy đánh giá bác sĩ theo appointmentId và doctorId
+async function getDoctorRatingByAppointment({ appointmentId, doctorId }) {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('appointmentId', sql.Int, appointmentId)
+    .input('doctorId', sql.Int, doctorId)
+    .query(`SELECT * FROM DoctorRatings WHERE appointmentId = @appointmentId AND doctorId = @doctorId`);
+  return result.recordset[0] || null;
+}
+
 async function updateServiceRating({ serviceId, patientId, rating, comment, appointmentId }) {
   const pool = await getPool();
   await pool.request()
@@ -99,6 +119,8 @@ async function deleteDoctorRating({ doctorId, patientId }) {
 module.exports = {
   insertOrUpdateServiceRating,
   getServiceRatings,
+  getServiceRatingByAppointment,
+  getDoctorRatingByAppointment,
   updateServiceRating,
   deleteServiceRating,
   insertOrUpdateDoctorRating,

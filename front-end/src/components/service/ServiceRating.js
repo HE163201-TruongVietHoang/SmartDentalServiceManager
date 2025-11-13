@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 
 
@@ -17,28 +17,28 @@ export default function ServiceRating({ serviceId, appointmentId }) {
   } catch {}
   const patientId = user?.userId;
 
-  // Lấy đánh giá của dịch vụ này
-  React.useEffect(() => {
+  // Lấy đánh giá của dịch vụ này theo appointmentId
+  useEffect(() => {
     async function fetchMyRating() {
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:5000/api/rating/service/${serviceId}`);
+        const res = await fetch(`http://localhost:5000/api/rating/service/${serviceId}/appointment/${appointmentId}`);
         if (res.ok) {
-          const ratings = await res.json();
-          const my = ratings.find(r => r.patientId === patientId);
-          if (my) {
-            setRating(my.rating);
-            setComment(my.comment || "");
-            setMyRatingId(my.ratingId);
+          const ratingData = await res.json();
+          if (ratingData && ratingData.ratingId) {
+            setRating(ratingData.rating);
+            setComment(ratingData.comment || "");
+            setMyRatingId(ratingData.ratingId);
             setSubmitted(true);
           }
         }
-      } catch {}
+      } catch (err) {
+        console.error("Error fetching rating:", err);
+      }
       setLoading(false);
     }
-    if (serviceId && patientId) fetchMyRating();
-    // eslint-disable-next-line
-  }, [serviceId, patientId]);
+    if (serviceId && appointmentId) fetchMyRating();
+  }, [serviceId, appointmentId]);
 
   const handleStarClick = (star) => {
     setRating(star);
@@ -63,12 +63,16 @@ export default function ServiceRating({ serviceId, appointmentId }) {
       });
       if (res.ok) {
         setSubmitted(true);
-        // Lấy lại ratingId
-        const getRes = await fetch(`http://localhost:5000/api/rating/service/${serviceId}`);
+        setIsEditing(false);
+        // Lấy lại ratingId từ response nếu có
+        const resData = await res.json();
+        // Tải lại đánh giá
+        const getRes = await fetch(`http://localhost:5000/api/rating/service/${serviceId}/appointment/${appointmentId}`);
         if (getRes.ok) {
-          const ratings = await getRes.json();
-          const my = ratings.find(r => r.patientId === patientId);
-          if (my) setMyRatingId(my.ratingId);
+          const ratingData = await getRes.json();
+          if (ratingData && ratingData.ratingId) {
+            setMyRatingId(ratingData.ratingId);
+          }
         }
       } else {
         const data = await res.json();

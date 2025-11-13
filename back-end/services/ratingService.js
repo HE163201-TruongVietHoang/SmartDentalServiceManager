@@ -16,6 +16,16 @@ async function getServiceRatings(serviceId) {
   return await ratingAccess.getServiceRatings(serviceId);
 }
 
+// Lấy đánh giá dịch vụ theo appointmentId và serviceId
+async function getServiceRatingByAppointment({ appointmentId, serviceId }) {
+  return await ratingAccess.getServiceRatingByAppointment({ appointmentId, serviceId });
+}
+
+// Lấy đánh giá bác sĩ theo appointmentId và doctorId
+async function getDoctorRatingByAppointment({ appointmentId, doctorId }) {
+  return await ratingAccess.getDoctorRatingByAppointment({ appointmentId, doctorId });
+}
+
 // Lấy danh sách đánh giá bác sĩ
 async function getDoctorRatings(doctorId) {
   return await ratingAccess.getDoctorRatings(doctorId);
@@ -42,4 +52,15 @@ async function deleteDoctorRating({ doctorId, patientId }) {
   await ratingAccess.deleteDoctorRating({ doctorId, patientId });
 }
 
-module.exports = { rateService, getServiceRatings, rateDoctor, getDoctorRatings, updateServiceRating, deleteServiceRating, updateDoctorRating, deleteDoctorRating };
+module.exports = { 
+  rateService, 
+  getServiceRatings, 
+  getServiceRatingByAppointment,
+  getDoctorRatingByAppointment,
+  rateDoctor, 
+  getDoctorRatings, 
+  updateServiceRating, 
+  deleteServiceRating, 
+  updateDoctorRating, 
+  deleteDoctorRating 
+};

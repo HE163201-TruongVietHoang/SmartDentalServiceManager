@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 
 export default function DoctorRating({ doctorId, appointmentId, patientId }) {
@@ -8,7 +8,7 @@ export default function DoctorRating({ doctorId, appointmentId, patientId }) {
   const [myRatingId, setMyRatingId] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
-console.log('DoctorRating props:', { doctorId, appointmentId, patientId });
+
 if (!patientId) {
   // Lấy patientId từ localStorage
   let user = null;
@@ -19,28 +19,28 @@ if (!patientId) {
 }
 
 
-  // Lấy đánh giá của bác sĩ này
-  React.useEffect(() => {
+  // Lấy đánh giá của bác sĩ này theo appointmentId
+  useEffect(() => {
     async function fetchMyRating() {
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:5000/api/rating/doctor/${doctorId}`);
+        const res = await fetch(`http://localhost:5000/api/rating/doctor/${doctorId}/appointment/${appointmentId}`);
         if (res.ok) {
-          const ratings = await res.json();
-          const my = ratings.find(r => r.patientId === patientId);
-          if (my) {
-            setRating(my.rating);
-            setComment(my.comment || "");
-            setMyRatingId(my.ratingId);
+          const ratingData = await res.json();
+          if (ratingData && ratingData.ratingId) {
+            setRating(ratingData.rating);
+            setComment(ratingData.comment || "");
+            setMyRatingId(ratingData.ratingId);
             setSubmitted(true);
           }
         }
-      } catch {}
+      } catch (err) {
+        console.error("Error fetching rating:", err);
+      }
       setLoading(false);
     }
-    if (doctorId && patientId) fetchMyRating();
-    // eslint-disable-next-line
-  }, [doctorId, patientId]);
+    if (doctorId && appointmentId) fetchMyRating();
+  }, [doctorId, appointmentId]);
 
   const handleStarClick = (star) => {
     setRating(star);
@@ -65,12 +65,14 @@ if (!patientId) {
       });
       if (res.ok) {
         setSubmitted(true);
-        // Lấy lại ratingId
-        const getRes = await fetch(`http://localhost:5000/api/rating/doctor/${doctorId}`);
+        setIsEditing(false);
+        // Tải lại đánh giá
+        const getRes = await fetch(`http://localhost:5000/api/rating/doctor/${doctorId}/appointment/${appointmentId}`);
         if (getRes.ok) {
-          const ratings = await getRes.json();
-          const my = ratings.find(r => r.patientId === patientId);
-          if (my) setMyRatingId(my.ratingId);
+          const ratingData = await getRes.json();
+          if (ratingData && ratingData.ratingId) {
+            setMyRatingId(ratingData.ratingId);
+          }
         }
       } else {
         const data = await res.json();

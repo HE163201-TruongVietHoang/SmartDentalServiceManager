@@ -1,5 +1,16 @@
 // controllers/ratingController.js
-const { rateService, getServiceRatings, rateDoctor, getDoctorRatings, updateServiceRating, deleteServiceRating, updateDoctorRating, deleteDoctorRating } = require('../services/ratingService');
+const { 
+  rateService, 
+  getServiceRatings, 
+  getServiceRatingByAppointment,
+  getDoctorRatingByAppointment,
+  rateDoctor, 
+  getDoctorRatings, 
+  updateServiceRating, 
+  deleteServiceRating, 
+  updateDoctorRating, 
+  deleteDoctorRating 
+} = require('../services/ratingService');
 
 // Đánh giá dịch vụ
 async function rateServiceController(req, res) {
@@ -34,6 +45,40 @@ async function getServiceRatingsController(req, res) {
     if (!serviceId) return res.status(400).json({ error: 'Thiếu serviceId' });
     const ratings = await getServiceRatings(serviceId);
     res.json(ratings);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+// Lấy đánh giá dịch vụ theo appointmentId và serviceId
+async function getServiceRatingByAppointmentController(req, res) {
+  try {
+    const { appointmentId, serviceId } = req.params;
+    if (!appointmentId || !serviceId) {
+      return res.status(400).json({ error: 'Thiếu appointmentId hoặc serviceId' });
+    }
+    const rating = await getServiceRatingByAppointment({ 
+      appointmentId: parseInt(appointmentId), 
+      serviceId: parseInt(serviceId) 
+    });
+    res.json(rating);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
+// Lấy đánh giá bác sĩ theo appointmentId và doctorId
+async function getDoctorRatingByAppointmentController(req, res) {
+  try {
+    const { appointmentId, doctorId } = req.params;
+    if (!appointmentId || !doctorId) {
+      return res.status(400).json({ error: 'Thiếu appointmentId hoặc doctorId' });
+    }
+    const rating = await getDoctorRatingByAppointment({ 
+      appointmentId: parseInt(appointmentId), 
+      doctorId: parseInt(doctorId) 
+    });
+    res.json(rating);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
@@ -105,6 +150,8 @@ module.exports = {
   rateServiceController, 
   rateDoctorController, 
   getServiceRatingsController, 
+  getServiceRatingByAppointmentController,
+  getDoctorRatingByAppointmentController,
   getDoctorRatingsController, 
   updateServiceRatingController, 
   deleteServiceRatingController, 
