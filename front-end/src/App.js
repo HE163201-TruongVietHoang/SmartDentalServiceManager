@@ -14,11 +14,8 @@ import DiagnosisPlan from "./components/doctor/DiagnosisPlan";
 import TreatmentProgress from "./components/doctor/TreatmentProgress";
 import ScheduleRequest from "./components/doctor/ScheduleRequest";
 
-import ProfilePage from "./pages/Profile/ProfileView";
+import ProfilePage from "./pages/profile/ProfileView";
 import ServicesPage from "./pages/Service/Service";
-
-import ScheduleRequests from "./pages/Manageclinic/ScheduleRequests";
-import ScheduleRequestDetail from "./pages/Manageclinic/ScheduleRequestDetail";
 
 import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
 
@@ -38,7 +35,6 @@ import MyAppointmentsPage from "./pages/Patient/MyAppointment";
 import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
 import Service from "./pages/ClinicManager/Services";
 import ClinicManagerProfile from "./pages/ClinicManager/ClinicManagerProfile";
-import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
 import ClinicManagerLayout from "./pages/ClinicManager/ClinicManagerLayout";
 
 import DoctorLayout from "./pages/Doctor/DoctorLayout";

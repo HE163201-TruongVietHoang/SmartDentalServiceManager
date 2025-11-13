@@ -1,10 +1,9 @@
-const sql = require('mssql');
-const config = require('../config/dbConfig');
+const { sql, getPool } = require('../config/db');
 
 // Lấy tất cả promotion
 exports.getAllPromotions = async (req, res) => {
   try {
-    const pool = await sql.connect(config);
+    const pool = await getPool();
     const result = await pool.request().query('SELECT * FROM Promotions ORDER BY createdAt DESC');
     res.json(result.recordset);
   } catch (err) {
@@ -17,7 +16,7 @@ exports.createPromotion = async (req, res) => {
   const { code, description, discountType, discountValue, startDate, endDate, isActive } = req.body;
 
   try {
-    const pool = await sql.connect(config);
+    const pool = await getPool();
     await pool.request()
       .input('code', sql.NVarChar, code)
       .input('description', sql.NVarChar, description)
@@ -42,7 +41,7 @@ exports.updatePromotion = async (req, res) => {
   const { code, description, discountType, discountValue, startDate, endDate, isActive } = req.body;
 
   try {
-    const pool = await sql.connect(config);
+    const pool = await getPool();
     await pool.request()
       .input('id', sql.Int, id)
       .input('code', sql.NVarChar, code)
@@ -69,7 +68,7 @@ exports.updatePromotion = async (req, res) => {
 exports.deletePromotion = async (req, res) => {
   const { id } = req.params;
   try {
-    const pool = await sql.connect(config);
+    const pool = await getPool();
     await pool.request()
       .input('id', sql.Int, id)
       .query('DELETE FROM Promotions WHERE promotionId=@id');
