@@ -86,7 +86,7 @@ export default function MyAppointmentsPage() {
                     <th>Khung giờ</th>
                     <th>Loại khám</th>
                     <th>Trạng thái</th>
-                    <th>Hành động</th>
+                    <th style={{ width: '200px' }}>Hành động</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -104,16 +104,25 @@ export default function MyAppointmentsPage() {
                       </td>
                       <td>{a.status}</td>
                       <td>
-                        {a.status === "Scheduled" ? (
-                          <button
-                            className="btn btn-danger btn-sm"
-                            onClick={() => handleCancel(a.appointmentId)}
-                          >
-                            Hủy
-                          </button>
-                        ) : (
-                          "-"
-                        )}
+                        <div className="d-flex gap-2">
+                          {a.status === "Scheduled" && (
+                            <button
+                              className="btn btn-danger btn-sm"
+                              onClick={() => handleCancel(a.appointmentId)}
+                            >
+                              Hủy
+                            </button>
+                          )}
+                          {a.status === "Completed" && (
+                            <button
+                              className="btn btn-success btn-sm"
+                              onClick={() => navigate(`/appointment/${a.appointmentId}/review?doctorId=${a.doctorId}&serviceId=${a.serviceId || ''}`)}
+                            >
+                              Đánh giá
+                            </button>
+                          )}
+                          {a.status !== "Scheduled" && a.status !== "Completed" && "-"}
+                        </div>
                       </td>
                     </tr>
                   ))}
