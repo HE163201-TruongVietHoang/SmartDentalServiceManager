@@ -1,8 +1,13 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FaServicestack, FaTags, FaSignOutAlt } from "react-icons/fa";
+import {
+  FaServicestack,
+  FaTags,
+  FaSignOutAlt,
+  FaUserCircle,
+} from "react-icons/fa";
 
-function StaffLayout({ children }) {
+function ClinicManagerLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -40,8 +45,8 @@ function StaffLayout({ children }) {
         {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
         }
       );
@@ -50,7 +55,6 @@ function StaffLayout({ children }) {
         const data = await res.json();
         console.error(data.message || "Logout thất bại");
       }
-
     } catch (err) {
       console.error("Lỗi khi logout:", err);
     } finally {
@@ -100,8 +104,16 @@ function StaffLayout({ children }) {
           ))}
         </ul>
 
+        <button
+          onClick={() => navigate("/clinicmanager/profile")}
+          className="btn btn-outline-light w-100 mb-2 d-flex align-items-center justify-content-center"
+        >
+          <FaUserCircle className="me-2" />
+          Trang cá nhân
+        </button>
+
         {/* Logout Button */}
-        <div className="mt-auto">
+        <div>
           <button
             onClick={handleLogout}
             className="btn btn-light w-100 d-flex align-items-center justify-content-center"
@@ -132,4 +144,4 @@ function StaffLayout({ children }) {
   );
 }
 
-export default StaffLayout;
+export default ClinicManagerLayout;

@@ -18,9 +18,9 @@ function ReceptionistLayout({ children }) {
       path: "/receptionist/patient/appointment",
     },
     {
-      //   name: "Quản lý vật tư",
-      //   icon: <FaTags />,
-      //   path: "/clinicmanager/material",
+      name: "Bệnh nhân",
+      icon: <FaTags />,
+      path: "/receptionist/patients",
     },
     {
       //   name: "Quản lý lịch làm việc bác sĩ",
@@ -80,7 +80,7 @@ function ReceptionistLayout({ children }) {
         </ul>
 
         <button
-          onClick={() => navigate("/nurse/profile")}
+          onClick={() => navigate("/receptionist/profile")}
           className="btn btn-outline-light w-100 mb-2 d-flex align-items-center justify-content-center"
         >
           <FaUserCircle className="me-2" />
@@ -119,4 +119,4 @@ function ReceptionistLayout({ children }) {
   );
 }
 
-export default NurseLayout;
+export default ReceptionistLayout;
