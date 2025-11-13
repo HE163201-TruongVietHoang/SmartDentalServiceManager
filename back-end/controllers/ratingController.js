@@ -4,10 +4,10 @@ const { rateService, getServiceRatings, rateDoctor, getDoctorRatings, updateServ
 // Đánh giá dịch vụ
 async function rateServiceController(req, res) {
   try {
-    const { serviceId, rating, comment } = req.body;
+    const { serviceId, rating, comment, appointmentId } = req.body;
     const patientId = req.user.userId;
     if (!serviceId || !rating) return res.status(400).json({ error: 'Thiếu thông tin' });
-    await rateService({ serviceId, patientId, rating, comment });
+    await rateService({ serviceId, patientId, rating, comment, appointmentId });
     res.json({ message: 'Đánh giá dịch vụ thành công!' });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -17,17 +17,15 @@ async function rateServiceController(req, res) {
 // Đánh giá bác sĩ
 async function rateDoctorController(req, res) {
   try {
-    const { doctorId, rating, comment } = req.body;
+    const { doctorId, rating, comment, appointmentId } = req.body;
     const patientId = req.user.userId;
     if (!doctorId || !rating) return res.status(400).json({ error: 'Thiếu thông tin' });
-    await rateDoctor({ doctorId, patientId, rating, comment });
+    await rateDoctor({ doctorId, patientId, rating, comment, appointmentId });
     res.json({ message: 'Đánh giá bác sĩ thành công!' });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 }
-
-module.exports = { rateServiceController, rateDoctorController };
 
 // Lấy danh sách đánh giá dịch vụ
 async function getServiceRatingsController(req, res) {
@@ -53,16 +51,13 @@ async function getDoctorRatingsController(req, res) {
   }
 }
 
-module.exports.getServiceRatingsController = getServiceRatingsController;
-module.exports.getDoctorRatingsController = getDoctorRatingsController;
-
 // Sửa đánh giá dịch vụ
 async function updateServiceRatingController(req, res) {
   try {
     const { serviceId } = req.params;
     const patientId = req.user.userId;
-    const { rating, comment } = req.body;
-    await updateServiceRating({ serviceId, patientId, rating, comment });
+    const { rating, comment, appointmentId } = req.body;
+    await updateServiceRating({ serviceId, patientId, rating, comment, appointmentId });
     res.json({ message: 'Cập nhật đánh giá dịch vụ thành công!' });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -86,8 +81,8 @@ async function updateDoctorRatingController(req, res) {
   try {
     const { doctorId } = req.params;
     const patientId = req.user.userId;
-    const { rating, comment } = req.body;
-    await updateDoctorRating({ doctorId, patientId, rating, comment });
+    const { rating, comment, appointmentId } = req.body;
+    await updateDoctorRating({ doctorId, patientId, rating, comment, appointmentId });
     res.json({ message: 'Cập nhật đánh giá bác sĩ thành công!' });
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -106,7 +101,13 @@ async function deleteDoctorRatingController(req, res) {
   }
 }
 
-module.exports.updateServiceRatingController = updateServiceRatingController;
-module.exports.deleteServiceRatingController = deleteServiceRatingController;
-module.exports.updateDoctorRatingController = updateDoctorRatingController;
-module.exports.deleteDoctorRatingController = deleteDoctorRatingController;
+module.exports = { 
+  rateServiceController, 
+  rateDoctorController, 
+  getServiceRatingsController, 
+  getDoctorRatingsController, 
+  updateServiceRatingController, 
+  deleteServiceRatingController, 
+  updateDoctorRatingController, 
+  deleteDoctorRatingController 
+};
