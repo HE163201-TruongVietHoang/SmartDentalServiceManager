@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 
-export default function DoctorRating({ doctorId }) {
+export default function DoctorRating({ doctorId, appointmentId }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -58,7 +58,7 @@ export default function DoctorRating({ doctorId }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ doctorId, rating, comment }),
+        body: JSON.stringify({ doctorId, rating, comment, appointmentId }),
       });
       if (res.ok) {
         setSubmitted(true);
@@ -97,7 +97,7 @@ export default function DoctorRating({ doctorId }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ rating, comment }),
+        body: JSON.stringify({ rating, comment, appointmentId }),
       });
       if (res.ok) {
         setIsEditing(false);
