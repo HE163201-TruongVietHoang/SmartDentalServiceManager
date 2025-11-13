@@ -2,13 +2,13 @@
 const ratingAccess = require('../access/ratingAccess');
 
 // Thêm hoặc cập nhật đánh giá dịch vụ
-async function rateService({ serviceId, patientId, rating, comment }) {
-  await ratingAccess.insertOrUpdateServiceRating({ serviceId, patientId, rating, comment });
+async function rateService({ serviceId, patientId, rating, comment, appointmentId }) {
+  await ratingAccess.insertOrUpdateServiceRating({ serviceId, patientId, rating, comment, appointmentId });
 }
 
 // Thêm hoặc cập nhật đánh giá bác sĩ
-async function rateDoctor({ doctorId, patientId, rating, comment }) {
-  await ratingAccess.insertOrUpdateDoctorRating({ doctorId, patientId, rating, comment });
+async function rateDoctor({ doctorId, patientId, rating, comment, appointmentId }) {
+  await ratingAccess.insertOrUpdateDoctorRating({ doctorId, patientId, rating, comment, appointmentId });
 }
 
 // Lấy danh sách đánh giá dịch vụ
@@ -23,8 +23,8 @@ async function getDoctorRatings(doctorId) {
 
 
 // Sửa đánh giá dịch vụ
-async function updateServiceRating({ serviceId, patientId, rating, comment }) {
-  await ratingAccess.updateServiceRating({ serviceId, patientId, rating, comment });
+async function updateServiceRating({ serviceId, patientId, rating, comment, appointmentId }) {
+  await ratingAccess.updateServiceRating({ serviceId, patientId, rating, comment, appointmentId });
 }
 
 // Xóa đánh giá dịch vụ
@@ -33,8 +33,8 @@ async function deleteServiceRating({ serviceId, patientId }) {
 }
 
 // Sửa đánh giá bác sĩ
-async function updateDoctorRating({ doctorId, patientId, rating, comment }) {
-  await ratingAccess.updateDoctorRating({ doctorId, patientId, rating, comment });
+async function updateDoctorRating({ doctorId, patientId, rating, comment, appointmentId }) {
+  await ratingAccess.updateDoctorRating({ doctorId, patientId, rating, comment, appointmentId });
 }
 
 // Xóa đánh giá bác sĩ
