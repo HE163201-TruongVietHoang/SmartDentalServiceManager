@@ -31,6 +31,7 @@ import ServiceRatingTestPage from "./pages/Test/ServiceRatingTestPage";
 import NurseMaterialPage from "./pages/Nurse/NurseMaterialPage";
 import AppointmentPage from "./pages/AppointmentPage";
 import MyAppointmentsPage from "./pages/Patient/MyAppointment";
+import AppointmentReview from "./pages/Patient/AppointmentReview";
 
 import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
 import Service from "./pages/ClinicManager/Services";
@@ -99,6 +100,7 @@ function App() {
         <Route path="/admin/users" element={<UserManagement />} />
         <Route path="/appointment" element={<AppointmentPage />} />
         <Route path="/appointment/me" element={<MyAppointmentsPage />} />
+        <Route path="/appointment/:appointmentId/review" element={<AppointmentReview />} />
         {/*clinic Manager*/}
 
         <Route
