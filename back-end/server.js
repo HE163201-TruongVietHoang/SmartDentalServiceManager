@@ -43,7 +43,7 @@ app.use("/api/patients", patientRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/diagnoses", doctorDiagnosisRoutes);
 
-cron.schedule("*/1 * * * *", async () => {
+cron.schedule("*/30 * * * *", async () => {
   console.log("Running auto-cancel job...");
   await appointmentService.autoCancelNoShow(initSocket);
 });

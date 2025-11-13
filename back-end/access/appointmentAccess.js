@@ -1,7 +1,7 @@
 const { sql, getPool } = require("../config/db");
-
+const nodemailer = require("nodemailer");
 // Tạo appointment, dùng transaction
-async function create({ patientId, doctorId, slotId, reason, workDate, appointmentType  }, transaction) {
+async function create({ patientId, doctorId, slotId, reason, workDate, appointmentType }, transaction) {
   const request = transaction.request();
   const result = await request
     .input("patientId", sql.Int, patientId)
@@ -98,4 +98,83 @@ async function updateStatus(appointmentId, status, transaction = null) {
       WHERE appointmentId = @appointmentId
     `);
 }
-module.exports = { create ,getByUser, getAll, getById, cancelAppointment, countUserCancellations, updateStatus };
+const bcrypt = require("bcrypt");
+const { v4: uuidv4 } = require("uuid");
+
+async function findUserByEmailOrPhone(email, phone) {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input("email", sql.NVarChar, email || "")
+    .input("phone", sql.NVarChar, phone || "")
+    .query(`SELECT * FROM Users WHERE email = @email OR phone = @phone`);
+  return result.recordset[0] || null;
+}
+
+async function createUser({ email, phone, fullName, gender, dob, address }) {
+  const pool = await getPool();
+  const password = uuidv4();
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const roleResult = await pool
+    .request()
+    .input("roleName", sql.NVarChar, "Patient")
+    .query(`SELECT roleId FROM dbo.Roles WHERE roleName = @roleName`);
+
+  if (roleResult.recordset.length === 0) {
+    throw new Error("Role 'Patient' not found in Roles table.");
+  }
+
+  const roleId = roleResult.recordset[0].roleId;
+  const result = await pool.request()
+    .input("email", sql.NVarChar, email || null)
+    .input("phone", sql.NVarChar, phone || null)
+    .input("fullName", sql.NVarChar, fullName || null)
+    .input("password", sql.NVarChar, hashedPassword)
+    .input("gender", sql.NVarChar, gender || null)
+    .input("dob", sql.Date, dob || null)
+    .input("address", sql.NVarChar, address || null)
+    .input("roleId", sql.Int, roleId || null)
+    .input("isActive", sql.Bit, 1)
+    .input("isVerify", sql.Bit, 1)
+    .query(`
+      INSERT INTO Users (email, phone, fullName, password, gender, dob, address,roleId, isActive, isVerify )
+      OUTPUT INSERTED.userId
+      VALUES (@email, @phone, @fullName, @password, @gender, @dob, @address, @roleId, @isActive, @isVerify)
+    `);
+
+  const userId = result.recordset[0].userId;
+
+  // Gửi email thông tin tài khoản
+  await sendAccountEmail({ email, password, fullName });
+
+  return { userId, isNew: true };
+}
+async function sendAccountEmail({ email, fullName, password  }) {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.SMTP_EMAIL,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+
+  await transporter.sendMail({
+    from: `"Smart Dental Clinic" <${process.env.SMTP_EMAIL}>`,
+    to: email,
+    subject: "Thông tin tài khoản Smart Dental Clinic",
+    html: `
+      <h2>Xin chào ${fullName}</h2>
+      <p>Tài khoản của bạn đã được tạo trên hệ thống Smart Dental Clinic.</p>
+      <ul>
+        <li>Email: ${email}</li>
+        <li>Password: <b>${password }</b></li>
+      </ul>
+      <p>Vui lòng đăng nhập và đổi mật khẩu sau khi đăng nhập lần đầu.</p>
+      <br>
+      <p>Smart Dental Team</p>
+    `,
+  });
+
+  console.log(" Email tài khoản đã gửi tới:", email);
+}
+
+module.exports = { create, getByUser, getAll, getById, cancelAppointment, countUserCancellations, updateStatus, findUserByEmailOrPhone, createUser };
