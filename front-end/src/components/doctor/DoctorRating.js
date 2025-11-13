@@ -1,20 +1,23 @@
 import React, { useState } from "react";
 
 
-export default function DoctorRating({ doctorId, appointmentId }) {
+export default function DoctorRating({ doctorId, appointmentId, patientId }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [myRatingId, setMyRatingId] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
-
+console.log('DoctorRating props:', { doctorId, appointmentId, patientId });
+if (!patientId) {
   // Lấy patientId từ localStorage
   let user = null;
   try {
     user = JSON.parse(localStorage.getItem("user"));
   } catch {}
-  const patientId = user?.userId;
+  patientId = user?.userId;
+}
+
 
   // Lấy đánh giá của bác sĩ này
   React.useEffect(() => {
@@ -137,7 +140,7 @@ export default function DoctorRating({ doctorId, appointmentId }) {
       alert("Lỗi kết nối máy chủ");
     }
   };
-
+  
   return (
     <div style={{ marginTop: 32, marginBottom: 32 }}>
       <h5 className="fw-bold mb-2">Đánh giá bác sĩ</h5>

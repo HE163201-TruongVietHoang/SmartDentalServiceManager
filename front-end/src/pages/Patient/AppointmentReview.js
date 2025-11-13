@@ -146,7 +146,7 @@ export default function AppointmentReview() {
                 border: "1px solid #dee2e6",
               }}
             >
-              <DoctorRating doctorId={doctorId} appointmentId={parseInt(appointmentId)} />
+              <DoctorRating doctorId={doctorId} appointmentId={parseInt(appointmentId)} patientId={appointment.patientId} />
             </div>
 
             {/* Đánh giá dịch vụ */}

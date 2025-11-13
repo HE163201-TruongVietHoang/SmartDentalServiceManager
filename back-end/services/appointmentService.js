@@ -240,6 +240,18 @@ const appointmentService = {
       await transaction.rollback();
       throw err;
     }
+  },
+
+  async getAppointmentById(appointmentId) {
+    const appointment = await getById(appointmentId);
+    if (!appointment) throw new Error("Không tìm thấy cuộc hẹn");
+    
+    return {
+      ...appointment,
+      workDate: appointment.workDate ? appointment.workDate.toISOString().slice(0, 10) : null,
+      startTime: appointment.startTime.toISOString().slice(11, 16),
+      endTime: appointment.endTime.toISOString().slice(11, 16)
+    };
   }
 };
 module.exports = { appointmentService };

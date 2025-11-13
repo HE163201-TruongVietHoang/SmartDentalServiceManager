@@ -68,7 +68,7 @@ const appointmentController = {
     res.status(400).json({ success: false, message: err.message });
   }
 },
-async  makeAppointmentReceptionistController(req, res) {
+  async  makeAppointmentReceptionistController(req, res) {
   try {
     const appointmentData = req.body;
     const io = req.app.get("io"); // nếu dùng socket.io
@@ -77,6 +77,16 @@ async  makeAppointmentReceptionistController(req, res) {
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
   }
-}
+},
+
+  async getAppointmentById(req, res) {
+    try {
+      const appointmentId = parseInt(req.params.appointmentId);
+      const appointment = await appointmentService.getAppointmentById(appointmentId);
+      res.json({ success: true, appointment });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  }
 };
 module.exports = { appointmentController };

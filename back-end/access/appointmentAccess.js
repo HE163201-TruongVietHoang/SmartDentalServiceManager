@@ -55,14 +55,40 @@ async function getById(appointmentId) {
   const result = await pool.request()
     .input("appointmentId", sql.Int, appointmentId)
     .query(`
-      SELECT a.*, s.startTime, s.endTime, sch.workDate, u.fullName AS patientName
+      SELECT 
+        a.*,
+        s.slotId, s.startTime, s.endTime,
+        sch.scheduleId, sch.workDate, sch.roomId,
+        u.fullName AS patientName, u.email AS patientEmail, u.phone AS patientPhone,
+        d.userId AS doctorId, d.fullName AS doctorName, d.email AS doctorEmail, d.phone AS doctorPhone,
+        (
+          SELECT 
+            srv.serviceId,
+            srv.serviceName,
+            srv.description AS serviceDescription,
+            srv.price AS servicePrice,
+            aps.createdAt AS addedAt
+          FROM AppointmentServices aps
+          JOIN Services srv ON aps.serviceId = srv.serviceId
+          WHERE aps.appointmentId = a.appointmentId
+          FOR JSON PATH
+        ) AS services
       FROM Appointments a
       JOIN Slots s ON a.slotId = s.slotId
       JOIN Schedules sch ON s.scheduleId = sch.scheduleId
       JOIN Users u ON a.patientId = u.userId
+      JOIN Users d ON a.doctorId = d.userId
       WHERE a.appointmentId = @appointmentId
     `);
-  return result.recordset[0];
+  
+  const appointment = result.recordset[0];
+  if (appointment && appointment.services) {
+    appointment.services = JSON.parse(appointment.services);
+  } else {
+    appointment.services = [];
+  }
+  
+  return appointment;
 }
 
 async function cancelAppointment(appointmentId, transaction) {
