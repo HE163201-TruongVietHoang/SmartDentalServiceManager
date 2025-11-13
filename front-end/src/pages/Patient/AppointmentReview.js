@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../components/home/Header/Header";
 import Footer from "../../components/home/Footer/Footer";
 import DoctorRating from "../../components/doctor/DoctorRating";
@@ -7,16 +7,15 @@ import ServiceRating from "../../components/service/ServiceRating";
 
 export default function AppointmentReview() {
   const { appointmentId } = useParams();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
   const [appointment, setAppointment] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Lấy doctorId và serviceId từ URL params
-  const doctorId = parseInt(searchParams.get("doctorId"));
-  const serviceId = searchParams.get("serviceId") ? parseInt(searchParams.get("serviceId")) : null;
+  // Lấy doctorId và serviceId từ response data
+  const doctorId = appointment?.doctorId?.[0] || appointment?.doctorId;
+  const services = appointment?.services || [];
 
   // Lấy thông tin appointment
   useEffect(() => {
@@ -32,7 +31,14 @@ export default function AppointmentReview() {
         if (!res.ok) throw new Error("Không thể tải thông tin lịch hẹn");
 
         const data = await res.json();
-        setAppointment(data);
+        
+        // Xử lý response theo cấu trúc { success: true, appointment: {...} }
+        if (data.success && data.appointment) {
+          setAppointment(data.appointment);
+        } else {
+          // Fallback nếu response không có wrapper
+          setAppointment(data);
+        }
       } catch (err) {
         console.error(err);
         alert("Không thể tải thông tin lịch hẹn!");
@@ -131,7 +137,9 @@ export default function AppointmentReview() {
                   </p>
                   <p className="mb-2">
                     <strong>💊 Dịch vụ:</strong>{" "}
-                    {appointment.serviceName || "Không rõ"}
+                    {services.length > 0 
+                      ? services.map(s => s.serviceName).join(", ") 
+                      : "Không rõ"}
                   </p>
                 </div>
               </div>
@@ -149,9 +157,10 @@ export default function AppointmentReview() {
               <DoctorRating doctorId={doctorId} appointmentId={parseInt(appointmentId)} patientId={appointment.patientId} />
             </div>
 
-            {/* Đánh giá dịch vụ */}
-            {serviceId && (
+            {/* Đánh giá dịch vụ - hiển thị cho từng dịch vụ */}
+            {services.length > 0 && services.map((service, index) => (
               <div
+                key={service.serviceId || index}
                 className="mb-4 p-4"
                 style={{
                   backgroundColor: "#fff",
@@ -159,9 +168,20 @@ export default function AppointmentReview() {
                   border: "1px solid #dee2e6",
                 }}
               >
-                <ServiceRating serviceId={serviceId} appointmentId={parseInt(appointmentId)} />
+                <div className="mb-3">
+                  <h5 className="text-primary mb-2">
+                    💊 Đánh giá dịch vụ: <span className="fw-bold">{service.serviceName}</span>
+                  </h5>
+                  <p className="text-muted small mb-0">
+                    {service.serviceDescription}
+                  </p>
+                </div>
+                <ServiceRating 
+                  serviceId={service.serviceId} 
+                  appointmentId={parseInt(appointmentId)} 
+                />
               </div>
-            )}
+            ))}
 
             {/* Nút quay lại */}
             <div className="text-center mt-4">
