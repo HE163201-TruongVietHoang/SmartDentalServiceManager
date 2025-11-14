@@ -9,7 +9,8 @@ const {
   updateServiceRating, 
   deleteServiceRating, 
   updateDoctorRating, 
-  deleteDoctorRating 
+  deleteDoctorRating,
+  getAllRatingsForHomepage
 } = require('../services/ratingService');
 
 // Đánh giá dịch vụ
@@ -146,6 +147,17 @@ async function deleteDoctorRatingController(req, res) {
   }
 }
 
+// Lấy tất cả đánh giá cho homepage
+async function getAllRatingsForHomepageController(req, res) {
+  try {
+    const limit = parseInt(req.query.limit) || 6;
+    const ratings = await getAllRatingsForHomepage(limit);
+    res.json({ success: true, ratings });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}
+
 module.exports = { 
   rateServiceController, 
   rateDoctorController, 
@@ -156,5 +168,6 @@ module.exports = {
   updateServiceRatingController, 
   deleteServiceRatingController, 
   updateDoctorRatingController, 
-  deleteDoctorRatingController 
+  deleteDoctorRatingController,
+  getAllRatingsForHomepageController
 };

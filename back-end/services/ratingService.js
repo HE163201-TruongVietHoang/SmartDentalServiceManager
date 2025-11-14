@@ -52,6 +52,11 @@ async function deleteDoctorRating({ doctorId, patientId }) {
   await ratingAccess.deleteDoctorRating({ doctorId, patientId });
 }
 
+// Lấy tất cả đánh giá cho homepage
+async function getAllRatingsForHomepage(limit) {
+  return await ratingAccess.getAllRatingsForHomepage(limit);
+}
+
 module.exports = { 
   rateService, 
   getServiceRatings, 
@@ -62,5 +67,6 @@ module.exports = {
   updateServiceRating, 
   deleteServiceRating, 
   updateDoctorRating, 
-  deleteDoctorRating 
+  deleteDoctorRating,
+  getAllRatingsForHomepage
 };

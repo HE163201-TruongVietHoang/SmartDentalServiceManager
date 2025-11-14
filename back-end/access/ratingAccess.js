@@ -116,6 +116,59 @@ async function deleteDoctorRating({ doctorId, patientId }) {
     .query(`DELETE FROM DoctorRatings WHERE doctorId = @doctorId AND patientId = @patientId`);
 }
 
+// Lấy tất cả đánh giá cho homepage (kết hợp Doctor và Service ratings)
+async function getAllRatingsForHomepage(limit = 6) {
+  const pool = await getPool();
+  
+  // Lấy đánh giá bác sĩ với thông tin bệnh nhân và bác sĩ
+  const doctorRatingsQuery = `
+    SELECT TOP ${limit}
+      dr.ratingId,
+      dr.rating,
+      dr.comment,
+      dr.createdAt,
+      'doctor' as ratingType,
+      u1.fullName as patientName,
+      u2.fullName as doctorName,
+      dr.doctorId as targetId,
+      u2.fullName as targetName
+    FROM DoctorRatings dr
+    INNER JOIN Users u1 ON dr.patientId = u1.userId
+    INNER JOIN Users u2 ON dr.doctorId = u2.userId
+    WHERE dr.comment IS NOT NULL AND dr.comment != '' AND dr.rating >= 4
+    ORDER BY dr.createdAt DESC
+  `;
+  
+  // Lấy đánh giá dịch vụ với thông tin bệnh nhân và dịch vụ
+  const serviceRatingsQuery = `
+    SELECT TOP ${limit}
+      sr.ratingId,
+      sr.rating,
+      sr.comment,
+      sr.createdAt,
+      'service' as ratingType,
+      u.fullName as patientName,
+      s.serviceName as targetName,
+      sr.serviceId as targetId
+    FROM ServiceRatings sr
+    INNER JOIN Users u ON sr.patientId = u.userId
+    INNER JOIN Services s ON sr.serviceId = s.serviceId
+    WHERE sr.comment IS NOT NULL AND sr.comment != '' AND sr.rating >= 4
+    ORDER BY sr.createdAt DESC
+  `;
+  
+  const doctorResult = await pool.request().query(doctorRatingsQuery);
+  const serviceResult = await pool.request().query(serviceRatingsQuery);
+  
+  // Kết hợp và sắp xếp theo thời gian
+  const allRatings = [
+    ...doctorResult.recordset,
+    ...serviceResult.recordset
+  ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  
+  return allRatings.slice(0, limit);
+}
+
 module.exports = {
   insertOrUpdateServiceRating,
   getServiceRatings,
@@ -126,5 +179,6 @@ module.exports = {
   insertOrUpdateDoctorRating,
   getDoctorRatings,
   updateDoctorRating,
-  deleteDoctorRating
+  deleteDoctorRating,
+  getAllRatingsForHomepage
 };

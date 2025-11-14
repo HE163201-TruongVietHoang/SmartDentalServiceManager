@@ -11,13 +11,17 @@ const {
   updateServiceRatingController, 
   deleteServiceRatingController, 
   updateDoctorRatingController, 
-  deleteDoctorRatingController 
+  deleteDoctorRatingController,
+  getAllRatingsForHomepageController
 } = require('../controllers/ratingController');
 
 // Đánh giá dịch vụ
 router.post('/service', authMiddleware, rateServiceController);
 // Đánh giá bác sĩ
 router.post('/doctor', authMiddleware, rateDoctorController);
+
+// Lấy tất cả đánh giá cho homepage (public route)
+router.get('/homepage', getAllRatingsForHomepageController);
 
 // Sửa đánh giá dịch vụ
 router.put('/service/:serviceId', authMiddleware, updateServiceRatingController);
