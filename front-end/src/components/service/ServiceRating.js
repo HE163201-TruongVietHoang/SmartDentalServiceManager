@@ -9,6 +9,8 @@ export default function ServiceRating({ serviceId, appointmentId }) {
   const [myRatingId, setMyRatingId] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [createdAt, setCreatedAt] = useState(null);
+  const [canEdit, setCanEdit] = useState(true);
 
   // Lấy patientId từ localStorage
   let user = null;
@@ -29,7 +31,17 @@ export default function ServiceRating({ serviceId, appointmentId }) {
             setRating(ratingData.rating);
             setComment(ratingData.comment || "");
             setMyRatingId(ratingData.ratingId);
+            setCreatedAt(ratingData.createdAt);
             setSubmitted(true);
+            
+            // Kiểm tra xem đã quá 24 giờ chưa
+            // Trừ 7 tiếng (25200000 milliseconds) để convert về múi giờ Việt Nam
+            const ratingTime = new Date(new Date(ratingData.createdAt).getTime() - 7 * 60 * 60 * 1000);
+            const currentTime = new Date();
+            const hoursDiff = (currentTime - ratingTime) / (1000 * 60 * 60);
+            
+            // Chỉ cho phép sửa nếu: đã qua thời gian đánh giá VÀ chưa quá 24 giờ
+            setCanEdit(hoursDiff >= 0 && hoursDiff < 24);
           }
         }
       } catch (err) {

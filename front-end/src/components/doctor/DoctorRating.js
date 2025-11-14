@@ -8,6 +8,8 @@ export default function DoctorRating({ doctorId, appointmentId, patientId }) {
   const [myRatingId, setMyRatingId] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [createdAt, setCreatedAt] = useState(null);
+  const [canEdit, setCanEdit] = useState(true);
 
 if (!patientId) {
   // Lấy patientId từ localStorage
@@ -31,7 +33,20 @@ if (!patientId) {
             setRating(ratingData.rating);
             setComment(ratingData.comment || "");
             setMyRatingId(ratingData.ratingId);
+            setCreatedAt(ratingData.createdAt);
             setSubmitted(true);
+        
+            const ratingTime = new Date(new Date(ratingData.createdAt).getTime() - 7 * 60 * 60 * 1000);
+            const currentTime = new Date();
+            // const minutesDiff = (currentTime - ratingTime) / (1000 * 60);
+            const hoursDiff = (currentTime - ratingTime) / (1000 * 60 * 60);
+            console.log('Rating Time (after -7h):', ratingTime.toLocaleString('vi-VN'));
+            console.log('Current Time:', currentTime.toLocaleString('vi-VN'));
+            // console.log('Minutes Diff:', minutesDiff);
+            // console.log('Can Edit (>= 0 and < 5):', minutesDiff >= 0 && minutesDiff < 5);
+            
+            // setCanEdit(minutesDiff >= 0 && minutesDiff < 5);
+            setCanEdit(hoursDiff >= 0 && hoursDiff < 24);
           }
         }
       } catch (err) {
@@ -193,8 +208,16 @@ if (!patientId) {
               ))}
             </div>
             <div className="mb-2">{comment}</div>
-            <button className="btn btn-warning me-2" onClick={handleEdit}>Sửa</button>
-            <button className="btn btn-danger" onClick={handleDelete}>Xóa</button>
+            {canEdit ? (
+              <>
+                <button className="btn btn-warning me-2" onClick={handleEdit}>Sửa</button>
+                <button className="btn btn-danger" onClick={handleDelete}>Xóa</button>
+              </>
+            ) : (
+              <small className="text-muted d-block mt-2">
+                ⏰ Bạn chỉ có thể sửa/xóa đánh giá trong vòng 24 giờ sau khi đăng
+              </small>
+            )}
           </div>
         )
       ) : submitted ? (

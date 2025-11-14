@@ -14,7 +14,7 @@ async function insertOrUpdateServiceRating({ serviceId, patientId, rating, comme
       USING (SELECT @serviceId AS serviceId, @patientId AS patientId) AS source
       ON (target.serviceId = source.serviceId AND target.patientId = source.patientId)
       WHEN MATCHED THEN
-        UPDATE SET rating = @rating, comment = @comment, appointmentId = @appointmentId, createdAt = GETDATE()
+        UPDATE SET rating = @rating, comment = @comment, appointmentId = @appointmentId, createdAt = GETUTCDATE()
       WHEN NOT MATCHED THEN
         INSERT (serviceId, patientId, rating, comment, appointmentId)
         VALUES (@serviceId, @patientId, @rating, @comment, @appointmentId);
@@ -57,7 +57,7 @@ async function updateServiceRating({ serviceId, patientId, rating, comment, appo
     .input('rating', sql.TinyInt, rating)
     .input('comment', sql.NVarChar, comment || null)
     .input('appointmentId', sql.Int, appointmentId || null)
-    .query(`UPDATE ServiceRatings SET rating = @rating, comment = @comment, appointmentId = @appointmentId, createdAt = GETDATE() WHERE serviceId = @serviceId AND patientId = @patientId`);
+    .query(`UPDATE ServiceRatings SET rating = @rating, comment = @comment, appointmentId = @appointmentId, createdAt = GETUTCDATE() WHERE serviceId = @serviceId AND patientId = @patientId`);
 }
 
 async function deleteServiceRating({ serviceId, patientId }) {
@@ -82,7 +82,7 @@ async function insertOrUpdateDoctorRating({ doctorId, patientId, rating, comment
       USING (SELECT @doctorId AS doctorId, @patientId AS patientId) AS source
       ON (target.doctorId = source.doctorId AND target.patientId = source.patientId)
       WHEN MATCHED THEN
-        UPDATE SET rating = @rating, comment = @comment, appointmentId = @appointmentId, createdAt = GETDATE()
+        UPDATE SET rating = @rating, comment = @comment, appointmentId = @appointmentId, createdAt = GETUTCDATE()
       WHEN NOT MATCHED THEN
         INSERT (doctorId, patientId, rating, comment, appointmentId)
         VALUES (@doctorId, @patientId, @rating, @comment, @appointmentId);
@@ -105,7 +105,7 @@ async function updateDoctorRating({ doctorId, patientId, rating, comment, appoin
     .input('rating', sql.TinyInt, rating)
     .input('comment', sql.NVarChar, comment || null)
     .input('appointmentId', sql.Int, appointmentId || null)
-    .query(`UPDATE DoctorRatings SET rating = @rating, comment = @comment, appointmentId = @appointmentId, createdAt = GETDATE() WHERE doctorId = @doctorId AND patientId = @patientId`);
+    .query(`UPDATE DoctorRatings SET rating = @rating, comment = @comment, appointmentId = @appointmentId, createdAt = GETUTCDATE() WHERE doctorId = @doctorId AND patientId = @patientId`);
 }
 
 async function deleteDoctorRating({ doctorId, patientId }) {
