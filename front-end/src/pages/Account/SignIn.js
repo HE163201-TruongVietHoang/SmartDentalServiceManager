@@ -46,7 +46,7 @@ function SignIn() {
             navigate("/clinicmanager/services");
             break;
           case "Receptionist":
-            navigate("/receptionist/appointments");
+            navigate("/receptionist/patient/appointment");
             break;
           case "Admin":
             navigate("/admin/settings");
@@ -95,7 +95,6 @@ function SignIn() {
             maxWidth: "420px",
           }}
         >
-
           <h2
             style={{
               textAlign: "center",

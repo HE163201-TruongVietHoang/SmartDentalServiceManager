@@ -35,8 +35,8 @@ export default function Header() {
         {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json"
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
         }
       );
@@ -45,7 +45,6 @@ export default function Header() {
         const data = await res.json();
         console.error(data.message || "Logout thất bại");
       }
-
     } catch (err) {
       console.error("Lỗi khi logout:", err);
     } finally {
@@ -83,28 +82,29 @@ export default function Header() {
           className="dropdown-menu dropdown-menu-end shadow-sm"
           aria-labelledby="dropdownMenuButton"
         >
-
           {user.roleName === "Patient" && (
             <>
               <li>
                 <button
                   className="dropdown-item"
-                  onClick={() => navigate("/patient/appointments")}
+                  onClick={() => navigate("/appointment/me")}
                 >
                   Lịch hẹn của tôi
                 </button>
               </li>
-              <li><hr className="dropdown-divider" /></li>
+              <li>
+                <hr className="dropdown-divider" />
+              </li>
             </>
           )}
           <li>
-                <button
-                  className="dropdown-item"
-                  onClick={() => navigate("/profile")}
-                >
-                  Hồ sơ cá nhân
-                </button>
-              </li>
+            <button
+              className="dropdown-item"
+              onClick={() => navigate("/profile")}
+            >
+              Hồ sơ cá nhân
+            </button>
+          </li>
           <li>
             <button
               className="dropdown-item"
@@ -127,35 +127,59 @@ export default function Header() {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm" style={{ padding: "12px 0" }}>
+    <nav
+      className="navbar navbar-expand-lg navbar-light bg-white sticky-top shadow-sm"
+      style={{ padding: "12px 0" }}
+    >
       <div className="container-lg">
         <a
           className="navbar-brand fw-bold fs-4 d-flex align-items-center"
           href="/"
           style={{ color: "#2ECCB6", textDecoration: "none" }}
         >
-          <i className="fas fa-tooth me-2" style={{ color: "#2ECCB6", fontSize: "1.4rem" }}></i>
+          <i
+            className="fas fa-tooth me-2"
+            style={{ color: "#2ECCB6", fontSize: "1.4rem" }}
+          ></i>
           Smart Dental Clinic
         </a>
 
-        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <button
+          className="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
           <span className="navbar-toggler-icon"></span>
         </button>
 
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto">
             <li className="nav-item">
-              <a className="nav-link" href="/service" style={{ color: "#333", fontWeight: 500 }}
-                onMouseEnter={(e) => e.target.style.color = "#2ECCB6"}
-                onMouseLeave={(e) => e.target.style.color = "#333"}
-              >Dịch vụ</a>
+              <a
+                className="nav-link"
+                href="/service"
+                style={{ color: "#333", fontWeight: 500 }}
+                onMouseEnter={(e) => (e.target.style.color = "#2ECCB6")}
+                onMouseLeave={(e) => (e.target.style.color = "#333")}
+              >
+                Dịch vụ
+              </a>
             </li>
             <li className="nav-item">
-              <a className="nav-link" href="#" style={{ color: "#333", fontWeight: 500 }}
-                onClick={(e) => { e.preventDefault(); handleScroll("contact"); }}
-                onMouseEnter={(e) => e.target.style.color = "#2ECCB6"}
-                onMouseLeave={(e) => e.target.style.color = "#333"}
-              >Liên hệ</a>
+              <a
+                className="nav-link"
+                href="#"
+                style={{ color: "#333", fontWeight: 500 }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleScroll("contact");
+                }}
+                onMouseEnter={(e) => (e.target.style.color = "#2ECCB6")}
+                onMouseLeave={(e) => (e.target.style.color = "#333")}
+              >
+                Liên hệ
+              </a>
             </li>
           </ul>
 
@@ -171,9 +195,11 @@ export default function Header() {
               }}
               onClick={() => navigate("/signin")}
             >
-              Đặt lịch
+              Đăng nhập
             </button>
-          ) : renderDropdown()}
+          ) : (
+            renderDropdown()
+          )}
         </div>
       </div>
     </nav>

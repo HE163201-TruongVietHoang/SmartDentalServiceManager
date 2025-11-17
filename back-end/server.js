@@ -18,6 +18,8 @@ const doctorRoutes = require("./routes/doctorRoutes");
 const patientRoutes = require("./routes/patientRoutes");
 const doctorDiagnosisRoutes = require("./routes/doctorDiagnosisRoutes");
 const { getPool } = require("./config/db");
+const promotionRoutes = require('./routes/promotionRoutes');
+
 const app = express();
 const http = require("http");
 const { initSocket } = require("./utils/socket");
@@ -26,8 +28,8 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-
 app.use("/api/auth", authRoutes);
+app.use('/api/promotions', promotionRoutes);
 app.use("/api/chat", chatRoutes);
 
 app.use("/api/materials", materialRoutes);
@@ -41,7 +43,7 @@ app.use("/api/patients", patientRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/diagnoses", doctorDiagnosisRoutes);
 
-cron.schedule("*/1 * * * *", async () => {
+cron.schedule("*/30 * * * *", async () => {
   console.log("Running auto-cancel job...");
   await appointmentService.autoCancelNoShow(initSocket);
 });

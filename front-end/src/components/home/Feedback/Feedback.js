@@ -1,26 +1,57 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 export default function Feedback() {
-  const testimonials = [
-    {
-      name: "Nguyễn Văn A",
-      role: "Bệnh nhân",
-      content: "Dịch vụ tuyệt vời, đội ngũ chuyên nghiệp và thân thiện.",
-      rating: 5,
-    },
-    {
-      name: "Trần Thị B",
-      role: "Bệnh nhân",
-      content: "Phòng khám sạch sẽ, hiện đại. Bác sĩ rất tận tâm.",
-      rating: 5,
-    },
-    {
-      name: "Lê Văn C",
-      role: "Bệnh nhân",
-      content: "Điều trị nhẹ nhàng, không đau. Rất đáng tin cậy!",
-      rating: 5,
-    },
-  ];
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRatings = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/rating/homepage?limit=6');
+        const data = await response.json();
+        
+        if (data.success && data.ratings) {
+          // Chuyển đổi dữ liệu từ API sang format phù hợp với UI
+          const formattedRatings = data.ratings.map(rating => ({
+            name: rating.patientName,
+            role: rating.ratingType === 'doctor' 
+              ? `Đánh giá bác sĩ ${rating.targetName}` 
+              : `Đánh giá dịch vụ ${rating.targetName}`,
+            content: rating.comment,
+            rating: rating.rating,
+          }));
+          setTestimonials(formattedRatings);
+        }
+      } catch (error) {
+        console.error('Error fetching ratings:', error);
+        // Fallback sang dữ liệu mẫu nếu API lỗi
+        setTestimonials([
+          {
+            name: "Nguyễn Văn A",
+            role: "Bệnh nhân",
+            content: "Dịch vụ tuyệt vời, đội ngũ chuyên nghiệp và thân thiện.",
+            rating: 5,
+          },
+          {
+            name: "Trần Thị B",
+            role: "Bệnh nhân",
+            content: "Phòng khám sạch sẽ, hiện đại. Bác sĩ rất tận tâm.",
+            rating: 5,
+          },
+          {
+            name: "Lê Văn C",
+            role: "Bệnh nhân",
+            content: "Điều trị nhẹ nhàng, không đau. Rất đáng tin cậy!",
+            rating: 5,
+          },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRatings();
+  }, []);
 
   return (
     <section
@@ -34,11 +65,25 @@ export default function Feedback() {
             Đánh giá từ bệnh nhân
           </h2>
           <p className="lead text-muted">
-            Hàng nghìn bệnh nhân đã hài lòng với dịch vụ của SmileCare
+            {testimonials.length > 0 
+              ? `${testimonials.length} đánh giá gần đây từ bệnh nhân của chúng tôi` 
+              : "Hàng nghìn bệnh nhân đã hài lòng với dịch vụ của SmileCare"}
           </p>
         </div>
 
-        <div className="row g-4">
+        {loading ? (
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Đang tải...</span>
+            </div>
+            <p className="mt-3 text-muted">Đang tải đánh giá...</p>
+          </div>
+        ) : testimonials.length === 0 ? (
+          <div className="text-center py-5">
+            <p className="text-muted">Chưa có đánh giá nào.</p>
+          </div>
+        ) : (
+          <div className="row g-4">
           {testimonials.map((t, i) => (
             <div key={i} className="col-md-6 col-lg-4">
               <div
@@ -76,8 +121,9 @@ export default function Feedback() {
                 </div>
               </div>
             </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

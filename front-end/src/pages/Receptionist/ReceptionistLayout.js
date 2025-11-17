@@ -7,63 +7,38 @@ import {
   FaUserCircle,
 } from "react-icons/fa";
 
-function ClinicManagerLayout({ children }) {
+function ReceptionistLayout({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
 
   const menu = [
     {
-      name: "Quản lý dịch vụ",
+      name: "Lịch khám bệnh nhân",
       icon: <FaServicestack />,
-      path: "/clinicmanager/services",
+      path: "/receptionist/patient/appointment",
     },
     {
-      name: "Quản lý vật tư",
+      name: "Bệnh nhân",
       icon: <FaTags />,
-      path: "/clinicmanager/material",
+      path: "/receptionist/patients",
     },
     {
-      name: "Quản lý lịch làm việc bác sĩ",
-      icon: <FaTags />,
-      path: "/clinicmanager/doctorschedule",
+      //   name: "Quản lý lịch làm việc bác sĩ",
+      //   icon: <FaTags />,
+      //   path: "/clinicmanager/doctorschedule",
     },
   ];
 
-  const handleLogout = async () => {
-    const token = localStorage.getItem("token");
-    const sessionId = localStorage.getItem("sessionId");
+  // 🧠 Hàm xử lý đăng xuất
+  const handleLogout = () => {
+    // Xóa token & thông tin user
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.removeItem("refreshToken");
 
-    if (!token || !sessionId) {
-      localStorage.clear();
-      window.location.href = "/signin";
-      return;
-    }
-
-    try {
-      const res = await fetch(
-        `http://localhost:5000/api/auth/devices/${sessionId}/logout`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!res.ok) {
-        const data = await res.json();
-        console.error(data.message || "Logout thất bại");
-      }
-    } catch (err) {
-      console.error("Lỗi khi logout:", err);
-    } finally {
-      // Luôn clear token, sessionId và user sau logout
-      localStorage.removeItem("token");
-      localStorage.removeItem("sessionId");
-      localStorage.removeItem("user");
-      window.location.href = "/signin";
-    }
+    // Chuyển về trang login
+    navigate("/");
+    setTimeout(() => window.location.reload(), 300);
   };
 
   return (
@@ -105,7 +80,7 @@ function ClinicManagerLayout({ children }) {
         </ul>
 
         <button
-          onClick={() => navigate("/clinicmanager/profile")}
+          onClick={() => navigate("/receptionist/profile")}
           className="btn btn-outline-light w-100 mb-2 d-flex align-items-center justify-content-center"
         >
           <FaUserCircle className="me-2" />
@@ -144,4 +119,4 @@ function ClinicManagerLayout({ children }) {
   );
 }
 
-export default ClinicManagerLayout;
+export default ReceptionistLayout;

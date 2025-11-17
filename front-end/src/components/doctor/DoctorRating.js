@@ -1,43 +1,61 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 
-export default function DoctorRating({ doctorId }) {
+export default function DoctorRating({ doctorId, appointmentId, patientId }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [myRatingId, setMyRatingId] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [createdAt, setCreatedAt] = useState(null);
+  const [canEdit, setCanEdit] = useState(true);
 
+if (!patientId) {
   // Lấy patientId từ localStorage
   let user = null;
   try {
     user = JSON.parse(localStorage.getItem("user"));
   } catch {}
-  const patientId = user?.userId;
+  patientId = user?.userId;
+}
 
-  // Lấy đánh giá của bác sĩ này
-  React.useEffect(() => {
+
+  // Lấy đánh giá của bác sĩ này theo appointmentId
+  useEffect(() => {
     async function fetchMyRating() {
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:5000/api/rating/doctor/${doctorId}`);
+        const res = await fetch(`http://localhost:5000/api/rating/doctor/${doctorId}/appointment/${appointmentId}`);
         if (res.ok) {
-          const ratings = await res.json();
-          const my = ratings.find(r => r.patientId === patientId);
-          if (my) {
-            setRating(my.rating);
-            setComment(my.comment || "");
-            setMyRatingId(my.ratingId);
+          const ratingData = await res.json();
+          if (ratingData && ratingData.ratingId) {
+            setRating(ratingData.rating);
+            setComment(ratingData.comment || "");
+            setMyRatingId(ratingData.ratingId);
+            setCreatedAt(ratingData.createdAt);
             setSubmitted(true);
+        
+            const ratingTime = new Date(new Date(ratingData.createdAt).getTime() - 7 * 60 * 60 * 1000);
+            const currentTime = new Date();
+            // const minutesDiff = (currentTime - ratingTime) / (1000 * 60);
+            const hoursDiff = (currentTime - ratingTime) / (1000 * 60 * 60);
+            console.log('Rating Time (after -7h):', ratingTime.toLocaleString('vi-VN'));
+            console.log('Current Time:', currentTime.toLocaleString('vi-VN'));
+            // console.log('Minutes Diff:', minutesDiff);
+            // console.log('Can Edit (>= 0 and < 5):', minutesDiff >= 0 && minutesDiff < 5);
+            
+            // setCanEdit(minutesDiff >= 0 && minutesDiff < 5);
+            setCanEdit(hoursDiff >= 0 && hoursDiff < 24);
           }
         }
-      } catch {}
+      } catch (err) {
+        console.error("Error fetching rating:", err);
+      }
       setLoading(false);
     }
-    if (doctorId && patientId) fetchMyRating();
-    // eslint-disable-next-line
-  }, [doctorId, patientId]);
+    if (doctorId && appointmentId) fetchMyRating();
+  }, [doctorId, appointmentId]);
 
   const handleStarClick = (star) => {
     setRating(star);
@@ -58,16 +76,18 @@ export default function DoctorRating({ doctorId }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ doctorId, rating, comment }),
+        body: JSON.stringify({ doctorId, rating, comment, appointmentId }),
       });
       if (res.ok) {
         setSubmitted(true);
-        // Lấy lại ratingId
-        const getRes = await fetch(`http://localhost:5000/api/rating/doctor/${doctorId}`);
+        setIsEditing(false);
+        // Tải lại đánh giá
+        const getRes = await fetch(`http://localhost:5000/api/rating/doctor/${doctorId}/appointment/${appointmentId}`);
         if (getRes.ok) {
-          const ratings = await getRes.json();
-          const my = ratings.find(r => r.patientId === patientId);
-          if (my) setMyRatingId(my.ratingId);
+          const ratingData = await getRes.json();
+          if (ratingData && ratingData.ratingId) {
+            setMyRatingId(ratingData.ratingId);
+          }
         }
       } else {
         const data = await res.json();
@@ -97,7 +117,7 @@ export default function DoctorRating({ doctorId }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ rating, comment }),
+        body: JSON.stringify({ rating, comment, appointmentId }),
       });
       if (res.ok) {
         setIsEditing(false);
@@ -137,7 +157,7 @@ export default function DoctorRating({ doctorId }) {
       alert("Lỗi kết nối máy chủ");
     }
   };
-
+  
   return (
     <div style={{ marginTop: 32, marginBottom: 32 }}>
       <h5 className="fw-bold mb-2">Đánh giá bác sĩ</h5>
@@ -188,8 +208,16 @@ export default function DoctorRating({ doctorId }) {
               ))}
             </div>
             <div className="mb-2">{comment}</div>
-            <button className="btn btn-warning me-2" onClick={handleEdit}>Sửa</button>
-            <button className="btn btn-danger" onClick={handleDelete}>Xóa</button>
+            {canEdit ? (
+              <>
+                <button className="btn btn-warning me-2" onClick={handleEdit}>Sửa</button>
+                <button className="btn btn-danger" onClick={handleDelete}>Xóa</button>
+              </>
+            ) : (
+              <small className="text-muted d-block mt-2">
+                ⏰ Bạn chỉ có thể sửa/xóa đánh giá trong vòng 24 giờ sau khi đăng
+              </small>
+            )}
           </div>
         )
       ) : submitted ? (

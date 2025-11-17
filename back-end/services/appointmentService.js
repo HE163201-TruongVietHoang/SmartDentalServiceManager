@@ -1,6 +1,6 @@
 const { getPool, sql } = require("../config/db");
 const { checkSlot, markAsBooked, unmarkAsBooked } = require("../access/slotAccess");
-const { create, getByUser, getAll, getById, cancelAppointment, countUserCancellations, updateStatus } = require("../access/appointmentAccess");
+const { create, getByUser, getAll, getById, cancelAppointment, countUserCancellations, updateStatus, findUserByEmailOrPhone, createUser } = require("../access/appointmentAccess");
 const { normalizeTime } = require("../utils/timeUtils");
 const appointmentService = {
   async makeAppointment({ patientId, doctorId, slotId, reason, workDate, appointmentType }, io) {
@@ -198,6 +198,60 @@ const appointmentService = {
     } catch (err) {
       console.error("Error in auto-cancel no-show:", err);
     }
+  },
+  async makeAppointmentForReceptionist({ email, phone, fullName,gender, dob, address, doctorId, slotId, reason, workDate, appointmentType }, io) {
+    const pool = await getPool();
+    const transaction = new sql.Transaction(pool);
+    await transaction.begin();
+
+    try {
+      // 1️⃣ Tìm user theo email hoặc sđt
+      let patient = await findUserByEmailOrPhone(email, phone);
+
+      // 2️⃣ Nếu chưa tồn tại thì tạo mới
+      if (!patient) {
+        patient = await createUser({ email, phone, fullName, gender, dob, address });
+      }
+
+      // 3️⃣ Kiểm tra slot
+      const slot = await checkSlot(slotId, transaction);
+      if (!slot) throw new Error("Slot không tồn tại");
+      if (slot.isBooked) throw new Error("Slot đã được đặt");
+
+      await markAsBooked(slotId, transaction);
+
+      // 4️⃣ Tạo appointment
+      const appointment = await create({
+        patientId: patient.userId,
+        doctorId,
+        slotId,
+        reason,
+        workDate,
+        appointmentType
+      }, transaction);
+
+      await transaction.commit();
+
+      if (io) io.emit("slotBooked", { slotId });
+
+      return { success: true, appointment, patientId: patient.userId };
+
+    } catch (err) {
+      await transaction.rollback();
+      throw err;
+    }
+  },
+
+  async getAppointmentById(appointmentId) {
+    const appointment = await getById(appointmentId);
+    if (!appointment) throw new Error("Không tìm thấy cuộc hẹn");
+    
+    return {
+      ...appointment,
+      workDate: appointment.workDate ? appointment.workDate.toISOString().slice(0, 10) : null,
+      startTime: appointment.startTime.toISOString().slice(11, 16),
+      endTime: appointment.endTime.toISOString().slice(11, 16)
+    };
   }
 };
 module.exports = { appointmentService };

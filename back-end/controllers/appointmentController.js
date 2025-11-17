@@ -1,9 +1,9 @@
 const { appointmentService } = require("../services/appointmentService");
-
+const {getIO} = require("../utils/socket");
 const appointmentController = {
   async makeAppointment(req, res) {
     try {
-      const io = req.app.get("io"); // Lấy socket instance
+      const io = getIO(); // Lấy socket instance
       const appointment = await appointmentService.makeAppointment(req.body, io);
       res.json({ success: true, appointment });
     } catch (err) {
@@ -67,6 +67,26 @@ const appointmentController = {
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
   }
-}
+},
+  async  makeAppointmentReceptionistController(req, res) {
+  try {
+    const appointmentData = req.body;
+    const io = req.app.get("io"); // nếu dùng socket.io
+    const result = await appointmentService.makeAppointmentForReceptionist(appointmentData, io);
+    res.status(201).json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+},
+
+  async getAppointmentById(req, res) {
+    try {
+      const appointmentId = parseInt(req.params.appointmentId);
+      const appointment = await appointmentService.getAppointmentById(appointmentId);
+      res.json({ success: true, appointment });
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  }
 };
 module.exports = { appointmentController };

@@ -1,14 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 
 
-export default function ServiceRating({ serviceId }) {
+export default function ServiceRating({ serviceId, appointmentId }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [myRatingId, setMyRatingId] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [createdAt, setCreatedAt] = useState(null);
+  const [canEdit, setCanEdit] = useState(true);
 
   // Lấy patientId từ localStorage
   let user = null;
@@ -17,28 +19,38 @@ export default function ServiceRating({ serviceId }) {
   } catch {}
   const patientId = user?.userId;
 
-  // Lấy đánh giá của dịch vụ này
-  React.useEffect(() => {
+  // Lấy đánh giá của dịch vụ này theo appointmentId
+  useEffect(() => {
     async function fetchMyRating() {
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:5000/api/rating/service/${serviceId}`);
+        const res = await fetch(`http://localhost:5000/api/rating/service/${serviceId}/appointment/${appointmentId}`);
         if (res.ok) {
-          const ratings = await res.json();
-          const my = ratings.find(r => r.patientId === patientId);
-          if (my) {
-            setRating(my.rating);
-            setComment(my.comment || "");
-            setMyRatingId(my.ratingId);
+          const ratingData = await res.json();
+          if (ratingData && ratingData.ratingId) {
+            setRating(ratingData.rating);
+            setComment(ratingData.comment || "");
+            setMyRatingId(ratingData.ratingId);
+            setCreatedAt(ratingData.createdAt);
             setSubmitted(true);
+            
+            // Kiểm tra xem đã quá 24 giờ chưa
+            // Trừ 7 tiếng (25200000 milliseconds) để convert về múi giờ Việt Nam
+            const ratingTime = new Date(new Date(ratingData.createdAt).getTime() - 7 * 60 * 60 * 1000);
+            const currentTime = new Date();
+            const hoursDiff = (currentTime - ratingTime) / (1000 * 60 * 60);
+            
+            // Chỉ cho phép sửa nếu: đã qua thời gian đánh giá VÀ chưa quá 24 giờ
+            setCanEdit(hoursDiff >= 0 && hoursDiff < 24);
           }
         }
-      } catch {}
+      } catch (err) {
+        console.error("Error fetching rating:", err);
+      }
       setLoading(false);
     }
-    if (serviceId && patientId) fetchMyRating();
-    // eslint-disable-next-line
-  }, [serviceId, patientId]);
+    if (serviceId && appointmentId) fetchMyRating();
+  }, [serviceId, appointmentId]);
 
   const handleStarClick = (star) => {
     setRating(star);
@@ -59,16 +71,20 @@ export default function ServiceRating({ serviceId }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ serviceId, rating, comment }),
+        body: JSON.stringify({ serviceId, rating, comment, appointmentId }),
       });
       if (res.ok) {
         setSubmitted(true);
-        // Lấy lại ratingId
-        const getRes = await fetch(`http://localhost:5000/api/rating/service/${serviceId}`);
+        setIsEditing(false);
+        // Lấy lại ratingId từ response nếu có
+        const resData = await res.json();
+        // Tải lại đánh giá
+        const getRes = await fetch(`http://localhost:5000/api/rating/service/${serviceId}/appointment/${appointmentId}`);
         if (getRes.ok) {
-          const ratings = await getRes.json();
-          const my = ratings.find(r => r.patientId === patientId);
-          if (my) setMyRatingId(my.ratingId);
+          const ratingData = await getRes.json();
+          if (ratingData && ratingData.ratingId) {
+            setMyRatingId(ratingData.ratingId);
+          }
         }
       } else {
         const data = await res.json();
@@ -98,7 +114,7 @@ export default function ServiceRating({ serviceId }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ rating, comment }),
+        body: JSON.stringify({ rating, comment, appointmentId }),
       });
       if (res.ok) {
         setIsEditing(false);

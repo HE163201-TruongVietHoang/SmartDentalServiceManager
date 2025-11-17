@@ -1,6 +1,11 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FaServicestack, FaTags, FaSignOutAlt } from "react-icons/fa";
+import {
+  FaServicestack,
+  FaTags,
+  FaSignOutAlt,
+  FaUserCircle,
+} from "react-icons/fa";
 
 function DoctorLayout({ children }) {
   const location = useLocation();
@@ -68,9 +73,16 @@ function DoctorLayout({ children }) {
             </li>
           ))}
         </ul>
+        <button
+          onClick={() => navigate("/doctor/profile")}
+          className="btn btn-outline-light w-100 mb-2 d-flex align-items-center justify-content-center"
+        >
+          <FaUserCircle className="me-2" />
+          Trang cá nhân
+        </button>
 
         {/* Logout Button */}
-        <div className="mt-auto">
+        <div>
           <button
             onClick={handleLogout}
             className="btn btn-light w-100 d-flex align-items-center justify-content-center"

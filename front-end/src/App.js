@@ -17,9 +17,6 @@ import ScheduleRequest from "./components/doctor/ScheduleRequest";
 import ProfilePage from "./pages/profile/ProfileView";
 import ServicesPage from "./pages/Service/Service";
 
-import ScheduleRequests from "./pages/manageclinic/ScheduleRequests";
-import ScheduleRequestDetail from "./pages/manageclinic/ScheduleRequestDetail";
-
 import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
 
 import SignIn from "./pages/Account/SignIn";
@@ -31,16 +28,30 @@ import UserManagement from "./pages/Admin/UserManagement";
 
 import DoctorRatingTestPage from "./pages/Test/DoctorRatingTestPage";
 import ServiceRatingTestPage from "./pages/Test/ServiceRatingTestPage";
-import StaffLayout from "./pages/ClinicManager/ClinicManagerLayout";
-import Service from "./pages/ClinicManager/Services";
 import NurseMaterialPage from "./pages/Nurse/NurseMaterialPage";
 import AppointmentPage from "./pages/AppointmentPage";
+import MyAppointmentsPage from "./pages/Patient/MyAppointment";
+import AppointmentReview from "./pages/Patient/AppointmentReview";
+
 import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
+import Service from "./pages/ClinicManager/Services";
+import ClinicManagerProfile from "./pages/ClinicManager/ClinicManagerProfile";
+import ClinicManagerLayout from "./pages/ClinicManager/ClinicManagerLayout";
+
 import DoctorLayout from "./pages/Doctor/DoctorLayout";
 import DoctorScheduleCalendar from "./pages/Doctor/DoctorSchedule";
 import DoctorCreateSchedule from "./pages/Doctor/DotorCreateSchedule";
+import DoctorProfile from "./pages/Doctor/DoctorProfile";
 
 import DoctorDiagnosis from "./components/doctor/DoctorDiagnosis";
+
+
+import PatientAppointmentsPage from "./pages/Receptionist/PatientAppointmentsPage";
+import ReceptionistLayout from "./pages/Receptionist/ReceptionistLayout";
+import ReceptionistProfile from "./pages/Receptionist/ReceptionistProfile";
+import PatientListPage from "./pages/Receptionist/PatientListPage";
+import PatientDetailPage from "./pages/Receptionist/PatientDetailPage";
+
 
 import NurseLayout from "./pages/Nurse/NurseLayout";
 import NurseProfile from "./pages/Nurse/NurseProfile";
@@ -76,11 +87,11 @@ function App() {
           element={<ServiceRatingTestPage />}
         />
 
-        <Route path="/schedule-requests" element={<ScheduleRequests />} />
+        {/* <Route path="/schedule-requests" element={<ScheduleRequests />} />
         <Route
           path="/schedule-requests/:id"
           element={<ScheduleRequestDetail />}
-        />
+        /> */}
 
         <Route path="/profile" element={<ProfilePage />} />
 
@@ -91,8 +102,9 @@ function App() {
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/admin/users" element={<UserManagement />} />
         <Route path="/appointment" element={<AppointmentPage />} />
+        <Route path="/appointment/me" element={<MyAppointmentsPage />} />
+        <Route path="/appointment/:appointmentId/review" element={<AppointmentReview />} />
         {/*clinic Manager*/}
-        <Route path="/nurse/materials" element={<NurseMaterialPage />} />
 
         <Route
           path="/test/doctor-rating/:doctorId"
@@ -103,6 +115,7 @@ function App() {
           element={<ServiceRatingTestPage />}
         />
 
+        {/* Trang cho Clinic Manager */}
         <Route
           path="/doctor/diagnosis-history"
           element={<DoctorDiagnosisHistory />}
@@ -111,25 +124,33 @@ function App() {
         <Route
           path="/clinicmanager/services"
           element={
-            <StaffLayout>
+            <ClinicManagerLayout>
               <Service />
-            </StaffLayout>
+            </ClinicManagerLayout>
           }
         />
         <Route
           path="/clinicmanager/material"
           element={
-            <StaffLayout>
+            <ClinicManagerLayout>
               <MaterialClinicPage />
-            </StaffLayout>
+            </ClinicManagerLayout>
           }
         />
         <Route
           path="/clinicmanager/doctorschedule"
           element={
-            <StaffLayout>
+            <ClinicManagerLayout>
               <ClinicManagerScheduleRequests />
-            </StaffLayout>
+            </ClinicManagerLayout>
+          }
+        />
+        <Route
+          path="/clinicmanager/profile"
+          element={
+            <ClinicManagerLayout>
+              <ClinicManagerProfile />
+            </ClinicManagerLayout>
           }
         />
 
@@ -150,7 +171,16 @@ function App() {
             </DoctorLayout>
           }
         />
+        <Route
+          path="/doctor/profile"
+          element={
+            <DoctorLayout>
+              <DoctorProfile />
+            </DoctorLayout>
+          }
+        />
 
+        {/* Trang cho Nurse */}
         <Route
           path="/nurse/profile"
           element={
@@ -165,6 +195,41 @@ function App() {
             <NurseLayout>
               <NurseMaterialPage />
             </NurseLayout>
+          }
+        />
+        <Route path="/nurse/materials" element={<NurseMaterialPage />} />
+
+        {/* Receptionist */}
+        <Route
+          path="/receptionist/patient/appointment"
+          element={
+            <ReceptionistLayout>
+              <PatientAppointmentsPage />
+            </ReceptionistLayout>
+          }
+        />
+        <Route
+          path="/receptionist/profile"
+          element={
+            <ReceptionistLayout>
+              <ReceptionistProfile />
+            </ReceptionistLayout>
+          }
+        />
+        <Route
+          path="/receptionist/patients"
+          element={
+            <ReceptionistLayout>
+              <PatientListPage />
+            </ReceptionistLayout>
+          }
+        />
+        <Route
+          path="/receptionist/patients/:userId"
+          element={
+            <ReceptionistLayout>
+              <PatientDetailPage />
+            </ReceptionistLayout>
           }
         />
       </Routes>

@@ -6,6 +6,8 @@ const { authMiddleware } = require("../middlewares/authMiddleware");
 router.get("/slots", appointmentController.getAvailableSlots); // Lấy slot trống
 router.post("/", authMiddleware, appointmentController.makeAppointment); // Đặt appointment
 router.get("/", authMiddleware, appointmentController.getAllAppointment); // Lấy tất cả lịch hẹn (Receptionist)
+router.get("/me",authMiddleware, appointmentController.getMyAppointments); // Lấy lịch hẹn của user hiện tại
+router.get("/:appointmentId", authMiddleware, appointmentController.getAppointmentById); // Lấy chi tiết 1 lịch hẹn
 router.put("/:appointmentId/inprogress", appointmentController.markInProgress);
 router.get("/me",authMiddleware, appointmentController.getMyAppointments); // Lấy lịch hẹn của user hiện tại
 router.put("/:id/cancel", authMiddleware, appointmentController.cancelAppointment);
@@ -17,4 +19,5 @@ router.put("/:id/cancel", authMiddleware, appointmentController.cancelAppointmen
 //     res.status(500).json({ success: false, message: err.message });
 //   }
 // });
+router.post("/receptionist", appointmentController.makeAppointmentReceptionistController);
 module.exports = router;
