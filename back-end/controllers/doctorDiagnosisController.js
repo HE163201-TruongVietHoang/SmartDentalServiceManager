@@ -56,3 +56,22 @@ exports.addDiagnosisServices = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.getDiagnosisHistory = async (req, res) => {
+  try {
+    const doctorId = req.user.userId;
+    const { date, patient, serviceId } = req.query;
+
+    const data = await doctorDiagnosisService.getDiagnosisHistory({
+      doctorId,
+      date,
+      patient,
+      serviceId,
+    });
+
+    res.json(data);
+  } catch (err) {
+    console.error("getDiagnosisHistory error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};

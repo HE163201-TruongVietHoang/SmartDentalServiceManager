@@ -45,14 +45,17 @@ import DoctorProfile from "./pages/Doctor/DoctorProfile";
 
 import DoctorDiagnosis from "./components/doctor/DoctorDiagnosis";
 
+
 import PatientAppointmentsPage from "./pages/Receptionist/PatientAppointmentsPage";
 import ReceptionistLayout from "./pages/Receptionist/ReceptionistLayout";
 import ReceptionistProfile from "./pages/Receptionist/ReceptionistProfile";
 import PatientListPage from "./pages/Receptionist/PatientListPage";
 import PatientDetailPage from "./pages/Receptionist/PatientDetailPage";
 
+
 import NurseLayout from "./pages/Nurse/NurseLayout";
 import NurseProfile from "./pages/Nurse/NurseProfile";
+import DoctorDiagnosisHistory from "./components/doctor/DoctorDiagnosisHistory";
 
 function App() {
   return (
@@ -113,6 +116,11 @@ function App() {
         />
 
         {/* Trang cho Clinic Manager */}
+        <Route
+          path="/doctor/diagnosis-history"
+          element={<DoctorDiagnosisHistory />}
+        />
+
         <Route
           path="/clinicmanager/services"
           element={
