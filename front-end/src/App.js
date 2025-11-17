@@ -42,9 +42,9 @@ import DoctorCreateSchedule from "./pages/Doctor/DotorCreateSchedule";
 
 import DoctorDiagnosis from "./components/doctor/DoctorDiagnosis";
 
-
 import NurseLayout from "./pages/Nurse/NurseLayout";
 import NurseProfile from "./pages/Nurse/NurseProfile";
+import DoctorDiagnosisHistory from "./components/doctor/DoctorDiagnosisHistory";
 
 function App() {
   return (
@@ -101,6 +101,11 @@ function App() {
         <Route
           path="/test/service-rating/:serviceId"
           element={<ServiceRatingTestPage />}
+        />
+
+        <Route
+          path="/doctor/diagnosis-history"
+          element={<DoctorDiagnosisHistory />}
         />
 
         <Route
