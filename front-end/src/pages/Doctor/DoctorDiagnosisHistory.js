@@ -71,9 +71,18 @@ export default function DoctorDiagnosisHistory() {
 
   // ---------- UI ----------
   return (
-    <div style={{ background: "#f0f8ff", minHeight: "100vh", padding: "30px" }}>
+    <div style={{ minHeight: "100vh", padding: "30px" }}>
       <div style={containerStyle}>
-        <h2 style={titleStyle}>LỊCH SỬ CHẨN ĐOÁN</h2>
+        <h2
+          style={{
+            color: "#2ECCB6",
+            textAlign: "center",
+            marginBottom: "30px",
+            fontWeight: "bold",
+          }}
+        >
+          LỊCH SỬ CHẨN ĐOÁN
+        </h2>
 
         {/* FILTERS */}
         <div style={filterGrid}>

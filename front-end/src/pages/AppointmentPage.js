@@ -139,7 +139,10 @@ export default function AppointmentPage() {
             className="card shadow-sm border-0 p-4 mx-auto"
             style={{ maxWidth: "700px", borderRadius: "20px" }}
           >
-            <h4 className="fw-bold mb-4 text-center text-primary">
+            <h4
+              className="fw-bold mb-4 text-center "
+              style={{ color: "#2ECCB6" }}
+            >
               Đặt lịch khám
             </h4>
 
