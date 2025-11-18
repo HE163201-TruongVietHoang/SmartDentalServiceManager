@@ -200,7 +200,6 @@ export default function ClinicManagerMaterialPage() {
   return (
     <div
       style={{
-        background: "#f0fffa",
         minHeight: "100vh",
         padding: "40px 20px",
       }}
