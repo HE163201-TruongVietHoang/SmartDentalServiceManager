@@ -90,7 +90,7 @@ export default function DoctorCreateSchedule() {
   };
 
   return (
-    <div style={{ backgroundColor: "#f0fffa", minHeight: "100vh" }}>
+    <div style={{ minHeight: "100vh" }}>
       {/* Main Form Section */}
       <section className="py-5">
         <div className="container" style={{ maxWidth: 900 }}>

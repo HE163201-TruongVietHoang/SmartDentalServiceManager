@@ -42,8 +42,8 @@ import DoctorLayout from "./pages/Doctor/DoctorLayout";
 import DoctorScheduleCalendar from "./pages/Doctor/DoctorSchedule";
 import DoctorCreateSchedule from "./pages/Doctor/DotorCreateSchedule";
 import DoctorProfile from "./pages/Doctor/DoctorProfile";
-
-import DoctorDiagnosis from "./components/doctor/DoctorDiagnosis";
+import DoctorDiagnosis from "./pages/Doctor/DoctorDiagnosis";
+import DoctorDiagnosisHistory from "./pages/Doctor/DoctorDiagnosisHistory";
 
 import PatientAppointmentsPage from "./pages/Receptionist/PatientAppointmentsPage";
 import ReceptionistLayout from "./pages/Receptionist/ReceptionistLayout";
@@ -77,8 +77,6 @@ function App() {
           element={<DoctorRatingTestPage />}
         />
 
-        <Route path="/doctor/diagnosis" element={<DoctorDiagnosis />} />
-
         <Route
           path="/test/service-rating/:serviceId"
           element={<ServiceRatingTestPage />}
@@ -100,7 +98,10 @@ function App() {
         <Route path="/admin/users" element={<UserManagement />} />
         <Route path="/appointment" element={<AppointmentPage />} />
         <Route path="/appointment/me" element={<MyAppointmentsPage />} />
-        <Route path="/appointment/:appointmentId/review" element={<AppointmentReview />} />
+        <Route
+          path="/appointment/:appointmentId/review"
+          element={<AppointmentReview />}
+        />
         {/*clinic Manager*/}
 
         <Route
@@ -168,6 +169,22 @@ function App() {
           element={
             <DoctorLayout>
               <DoctorProfile />
+            </DoctorLayout>
+          }
+        />
+        <Route
+          path="/doctor/diagnosis"
+          element={
+            <DoctorLayout>
+              <DoctorDiagnosis />
+            </DoctorLayout>
+          }
+        />
+        <Route
+          path="/doctor/diagnosis/history"
+          element={
+            <DoctorLayout>
+              <DoctorDiagnosisHistory />
             </DoctorLayout>
           }
         />

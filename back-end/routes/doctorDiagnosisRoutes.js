@@ -29,4 +29,10 @@ router.post(
   controller.addDiagnosisServices
 );
 
+router.get(
+  "/history",
+  authMiddleware,
+  authorizeRoles("Doctor"),
+  controller.getDiagnosisHistory
+);
 module.exports = router;
