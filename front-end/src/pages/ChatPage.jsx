@@ -16,6 +16,7 @@ const ChatPage = () => {
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [unreadCounts, setUnreadCounts] = useState({});  // Theo dõi số tin nhắn chưa đọc cho mỗi cuộc trò chuyện
 
   // Load danh sách cuộc trò chuyện
   useEffect(() => {
@@ -24,9 +25,13 @@ const ChatPage = () => {
 
   // Realtime: nhận tin nhắn mới qua socket
   useChatSocket((message) => {
-    // Nếu đang xem đúng cuộc trò chuyện thì thêm vào messages
+    // Nếu đang xem đúng cuộc trò chuyện thì thêm vào messages và đánh dấu đã đọc
     if (selectedConversation && message.conversationId === selectedConversation.conversationId) {
       setMessages(prev => [...prev, message]);
+      markMessagesRead(message.conversationId);  // Tự động đánh dấu đã đọc tin nhắn mới
+    } else {
+      // Tăng số tin nhắn chưa đọc cho cuộc trò chuyện khác
+      setUnreadCounts(prev => ({ ...prev, [message.conversationId]: (prev[message.conversationId] || 0) + 1 }));
     }
     // Cập nhật lại lastMessageAt cho danh sách cuộc trò chuyện
     setConversations(prev => prev.map(c =>
@@ -46,6 +51,8 @@ const ChatPage = () => {
         markMessagesRead(conversation.conversationId);
       })
       .finally(() => setLoadingMessages(false));
+    // Reset số tin nhắn chưa đọc về 0
+    setUnreadCounts(prev => ({ ...prev, [conversation.conversationId]: 0 }));
   }, []);
 
   // Gửi tin nhắn mới
@@ -74,6 +81,7 @@ const ChatPage = () => {
         selectedConversation={selectedConversation}
         onSelectConversation={handleSelectConversation}
         onStartConversation={handleStartConversation}
+        unreadCounts={unreadCounts}
       />
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#ffffff' }}>
         <div style={{ padding: '16px', borderBottom: '1px solid #e0e0e0', background: '#ffffff', display: 'flex', alignItems: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>

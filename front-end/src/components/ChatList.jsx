@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ChatList = ({ conversations, selectedConversation, onSelectConversation, onStartConversation }) => {
+const ChatList = ({ conversations, selectedConversation, onSelectConversation, onStartConversation, unreadCounts }) => {
   // Lấy userId từ localStorage user object
   let currentUserId = 0;
   try {
@@ -18,6 +18,8 @@ const ChatList = ({ conversations, selectedConversation, onSelectConversation, o
       {conversations.map(conv => {
         const otherId = conv.participant1Id === currentUserId ? conv.participant2Id : conv.participant1Id;
         const isSelected = selectedConversation && selectedConversation.conversationId === conv.conversationId;
+        const unreadCount = unreadCounts[conv.conversationId] || 0;
+        const isUnread = unreadCount > 0;
         return (
           <div
             key={conv.conversationId}
@@ -44,15 +46,35 @@ const ChatList = ({ conversations, selectedConversation, onSelectConversation, o
               justifyContent: 'center',
               color: '#fff',
               fontSize: '20px',
-              marginRight: '12px'
+              marginRight: '12px',
+              position: 'relative'
             }}>
               <i className="fas fa-user"></i>
+              {isUnread && (
+                <div style={{
+                  position: 'absolute',
+                  top: '-5px',
+                  right: '-5px',
+                  width: '20px',
+                  height: '20px',
+                  borderRadius: '50%',
+                  background: '#ff0000',
+                  color: '#fff',
+                  fontSize: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold'
+                }}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </div>
+              )}
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: '600', color: '#333', fontSize: '16px' }}>
+              <div style={{ fontWeight: isUnread ? 'bold' : '600', color: '#333', fontSize: '16px' }}>
                 User {otherId}
               </div>
-              <div style={{ fontSize: '14px', color: '#666', marginTop: '2px' }}>
+              <div style={{ fontSize: '14px', color: isUnread ? '#000' : '#666', marginTop: '2px', fontWeight: isUnread ? 'bold' : 'normal' }}>
                 {conv.lastMessageAt ? `Tin nhắn cuối: ${new Date(conv.lastMessageAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}` : 'Chưa có tin nhắn'}
               </div>
             </div>
