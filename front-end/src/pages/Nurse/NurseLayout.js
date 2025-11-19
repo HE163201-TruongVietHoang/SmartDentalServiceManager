@@ -54,7 +54,7 @@ function NurseLayout({ children }) {
         }}
       >
         {/* Logo / Title */}
-        <h4 className="text-center mb-4 fw-bold">Clinic Manager</h4>
+        <h4 className="text-center mb-4 fw-bold">Nurse</h4>
 
         {/* Menu */}
         <ul className="nav nav-pills flex-column mb-auto">

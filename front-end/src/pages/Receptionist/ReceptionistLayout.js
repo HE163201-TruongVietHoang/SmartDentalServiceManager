@@ -23,9 +23,9 @@ function ReceptionistLayout({ children }) {
       path: "/receptionist/patients",
     },
     {
-      //   name: "Quản lý lịch làm việc bác sĩ",
-      //   icon: <FaTags />,
-      //   path: "/clinicmanager/doctorschedule",
+      name: "Tạo lịch khám",
+      icon: <FaTags />,
+      path: "/receptionist/appointment/create",
     },
   ];
 
@@ -54,7 +54,7 @@ function ReceptionistLayout({ children }) {
         }}
       >
         {/* Logo / Title */}
-        <h4 className="text-center mb-4 fw-bold">Clinic Manager</h4>
+        <h4 className="text-center mb-4 fw-bold">Receptionist</h4>
 
         {/* Menu */}
         <ul className="nav nav-pills flex-column mb-auto">
