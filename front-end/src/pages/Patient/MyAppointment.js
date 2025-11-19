@@ -121,7 +121,7 @@ export default function MyAppointmentsPage() {
                               Đánh giá
                             </button>
                           )}
-                          {a.status !== "Scheduled" && a.status !== "Completed" && "-"}
+                          {a.status !== "Scheduled" && a.status !== "Completed" && ""}
                         </div>
                       </td>
                     </tr>

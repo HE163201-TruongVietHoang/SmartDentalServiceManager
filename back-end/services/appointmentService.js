@@ -1,6 +1,6 @@
 const { getPool, sql } = require("../config/db");
 const { checkSlot, markAsBooked, unmarkAsBooked } = require("../access/slotAccess");
-const { create, getByUser, getAll, getById, cancelAppointment, countUserCancellations, updateStatus, findUserByEmailOrPhone, createUser } = require("../access/appointmentAccess");
+const { create, getByUser, getAll, getById, cancelAppointments, countUserCancellations, updateStatus, findUserByEmailOrPhone, createUser } = require("../access/appointmentAccess");
 const { normalizeTime } = require("../utils/timeUtils");
 const appointmentService = {
   async makeAppointment({ patientId, doctorId, slotId, reason, workDate, appointmentType }, io) {
@@ -74,7 +74,7 @@ const appointmentService = {
         throw new Error("Không thể hủy — chỉ được hủy trước ít nhất 12 giờ!");
 
       // --- update appointment trong transaction ---
-      await cancelAppointment(appointmentId, transaction);
+      await cancelAppointments(appointmentId, transaction);
 
       // --- mở lại slot ---
       await unmarkAsBooked(appointment.slotId, transaction);
@@ -143,7 +143,7 @@ const appointmentService = {
           if (!appt.startTime || !appt.workDate) continue;
 
           // Chuẩn hóa giờ startTime
-          const startStr = normalizeTime(appt.startTime); // luôn trả về "HH:mm:ss"
+          const startStr = normalizeTime(appt.startTime); 
           const [h, m] = startStr.split(":").map(Number);
 
           // Tạo datetime chính xác của appointment
