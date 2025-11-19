@@ -22,6 +22,16 @@ function DoctorLayout({ children }) {
       icon: <FaServicestack />,
       path: "/doctor/create/schedule",
     },
+    {
+      name: "Chẩn đoán",
+      icon: <FaServicestack />,
+      path: "/doctor/diagnosis",
+    },
+    {
+      name: "Lịch sử chẩn đoán",
+      icon: <FaServicestack />,
+      path: "/doctor/diagnosis/history",
+    },
   ];
 
   // 🧠 Hàm xử lý đăng xuất

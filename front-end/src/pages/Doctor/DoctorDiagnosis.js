@@ -166,7 +166,6 @@ export default function DoctorDiagnosis() {
   return (
     <div
       style={{
-        background: "#f0f8ff",
         minHeight: "100vh",
         padding: "40px 20px",
       }}
@@ -182,7 +181,7 @@ export default function DoctorDiagnosis() {
         >
           <h2
             style={{
-              color: "#1E90FF",
+              color: "#2ECCB6",
               textAlign: "center",
               marginBottom: "30px",
               fontWeight: "bold",
@@ -196,7 +195,7 @@ export default function DoctorDiagnosis() {
             style={{
               marginBottom: "30px",
               padding: "20px",
-              background: "#f0f8ff",
+              background: "#E8FAF6",
               borderRadius: "10px",
             }}
           >

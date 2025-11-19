@@ -203,7 +203,6 @@ export default function NurseMaterialPage() {
     <>
       <div
         style={{
-          background: "#f0fffa",
           minHeight: "100vh",
           padding: "40px 20px",
         }}

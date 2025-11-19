@@ -81,4 +81,46 @@ module.exports = {
 
     return { success: true, added: services.length };
   },
+
+  async getDiagnosisHistory({ doctorId, date, patient, serviceId }) {
+    const pool = await getPool();
+
+    let query = `
+    SELECT 
+      d.diagnosisId,
+      a.appointmentId,
+      u.fullName AS patientName,
+      sch.workDate,
+      COALESCE(CONVERT(varchar(5), sl.startTime, 108), '--:--') AS startTime,
+      COALESCE(CONVERT(varchar(5), sl.endTime,   108), '--:--') AS endTime,
+      d.symptoms,
+      d.diagnosisResult,
+      d.doctorNote,
+      s.serviceName
+    FROM Diagnoses d
+    JOIN Appointments a ON d.appointmentId = a.appointmentId
+    JOIN Users u ON a.patientId = u.userId
+    JOIN Slots sl ON a.slotId = sl.slotId
+    JOIN Schedules sch ON sl.scheduleId = sch.scheduleId
+    LEFT JOIN DiagnosisServices ds ON ds.diagnosisId = d.diagnosisId
+    LEFT JOIN Services s ON s.serviceId = ds.serviceId
+    WHERE a.doctorId = @doctorId
+  `;
+
+    if (date) query += ` AND CAST(sch.workDate AS DATE) = CAST(@date AS DATE)`;
+    if (patient) query += ` AND u.fullName LIKE '%' + @patient + '%'`;
+    if (serviceId) query += ` AND s.serviceId = @serviceId`;
+
+    query += ` ORDER BY sch.workDate DESC, sl.startTime ASC`;
+
+    const result = await pool
+      .request()
+      .input("doctorId", doctorId)
+      .input("date", date || null)
+      .input("patient", patient || null)
+      .input("serviceId", serviceId || null)
+      .query(query);
+
+    return result.recordset;
+  },
 };
