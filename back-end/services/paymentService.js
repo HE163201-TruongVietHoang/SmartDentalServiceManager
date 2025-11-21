@@ -1,7 +1,7 @@
 
 
 const crypto = require('crypto');
-const querystring = require('querystring');
+const querystring = require('qs');
 const moment = require('moment');
 const { create: createPayment, findOneAndUpdate: updatePayment } = require('../access/paymentAccess');
 
@@ -34,11 +34,13 @@ class PaymentService {
             const secretKey = process.env.VNP_HASH_SECRET;
             let vnpUrl = process.env.VNP_URL;
             const returnUrl = process.env.VNP_RETURN_URL;
-
+//   console.log("tmnCode:", tmnCode);
+//         console.log("secretKey:", secretKey);
+//         console.log("vnpUrl:", vnpUrl);
             const date = new Date();
             const createDate = moment(date).format("YYYYMMDDHHmmss");
-            const orderId = paymentId; // Sử dụng paymentId làm transaction ref
-            const orderInfo = `Appointment payment for ID ${appointmentId}`;
+            const orderId = 1231452; // Sử dụng paymentId làm transaction ref
+            const orderInfo = `Appointment payment`;
             const orderType = 'other';
             const locale = 'vn';
             const currCode = 'VND';
@@ -62,18 +64,22 @@ class PaymentService {
             }
             vnp_Params = this.sortObject(vnp_Params);
 
+            // console.log('vnp_Params after sort:', vnp_Params);
             const signData = querystring.stringify(vnp_Params, { encode: false });
+            // console.log('signData:', signData);
             const hmac = crypto.createHmac("sha512", secretKey);
             const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest("hex");
             vnp_Params['vnp_SecureHash'] = signed;
             vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: false });
+            // console.log('vnpUrl:', vnpUrl);
 
             return { vnpUrl, paymentId };
         } catch (error) {
             console.error('Error creating payment URL:', error);
             throw new Error('Internal Server Error');
         }
-    }    async handleVnpayReturnUrl(req) {
+    }   
+     async handleVnpayReturnUrl(req) {
         try {
             const responseData = req.query;
             const secureHash = responseData.vnp_SecureHash;
@@ -106,7 +112,7 @@ class PaymentService {
     }
 
 
-    sortObject(obj) {
+      sortObject(obj) {
         let sorted = {};
         let str = [];
         for (let key in obj) {
