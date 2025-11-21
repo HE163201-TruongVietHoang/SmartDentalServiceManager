@@ -9,9 +9,9 @@ class InvoiceService {
             // Giả sử lấy promotion và tính discount
             const promotion = await promotionService.getPromotionById(data.promotionId);
             if (promotion && promotion.isActive) {
-                if (promotion.discountType === 'percentage') {
+                if (promotion.discountType === 'percent') {
                     discountAmount = (data.totalAmount * promotion.discountValue) / 100;
-                } else if (promotion.discountType === 'fixed') {
+                } else if (promotion.discountType === 'amount') {
                     discountAmount = promotion.discountValue;
                 }
             }

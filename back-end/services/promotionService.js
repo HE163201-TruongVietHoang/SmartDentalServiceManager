@@ -35,9 +35,9 @@ class PromotionService {
         }
 
         let discount = 0;
-        if (promotion.discountType === 'percentage') {
+        if (promotion.discountType === 'percent') {
             discount = (invoiceTotal * promotion.discountValue) / 100;
-        } else if (promotion.discountType === 'fixed') {
+        } else if (promotion.discountType === 'amount') {
             discount = promotion.discountValue;
         }
 

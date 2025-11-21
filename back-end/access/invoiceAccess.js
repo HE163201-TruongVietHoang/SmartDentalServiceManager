@@ -22,7 +22,23 @@ async function create({ patientId, appointmentId, diagnosisId, prescriptionId, p
 async function getAll() {
   const pool = await getPool();
   const result = await pool.request()
-    .query(`SELECT * FROM Invoices ORDER BY issuedDate DESC`);
+    .query(`
+      SELECT 
+        i.*,
+        u.fullName as patientName,
+        sch.workDate,
+        s.slotId,
+        s.startTime,
+        s.endTime,
+        pr.code as promotionCode
+      FROM Invoices i
+      LEFT JOIN Users u ON i.patientId = u.userId
+      LEFT JOIN Appointments a ON i.appointmentId = a.appointmentId
+      LEFT JOIN Slots s ON a.slotId = s.slotId
+      LEFT JOIN Schedules sch ON s.scheduleId = sch.scheduleId
+      LEFT JOIN Promotions pr ON i.promotionId = pr.promotionId
+      ORDER BY i.issuedDate DESC
+    `);
   return result.recordset;
 }
 
@@ -30,7 +46,23 @@ async function getById(invoiceId) {
   const pool = await getPool();
   const result = await pool.request()
     .input("invoiceId", sql.Int, invoiceId)
-    .query(`SELECT * FROM Invoices WHERE invoiceId = @invoiceId`);
+    .query(`
+      SELECT 
+        i.*,
+        u.fullName as patientName,
+        sch.workDate,
+        s.slotId,
+        s.startTime,
+        s.endTime,
+        pr.code as promotionCode
+      FROM Invoices i
+      LEFT JOIN Users u ON i.patientId = u.userId
+      LEFT JOIN Appointments a ON i.appointmentId = a.appointmentId
+      LEFT JOIN Slots s ON a.slotId = s.slotId
+      LEFT JOIN Schedules sch ON s.scheduleId = sch.scheduleId
+      LEFT JOIN Promotions pr ON i.promotionId = pr.promotionId
+      WHERE i.invoiceId = @invoiceId
+    `);
   return result.recordset[0];
 }
 
@@ -51,7 +83,24 @@ async function getByPatientId(patientId) {
   const pool = await getPool();
   const result = await pool.request()
     .input("patientId", sql.Int, patientId)
-    .query(`SELECT * FROM Invoices WHERE patientId = @patientId ORDER BY issuedDate DESC`);
+    .query(`
+      SELECT 
+        i.*,
+        u.fullName as patientName,
+        sch.workDate,
+        s.slotId,
+        s.startTime,
+        s.endTime,
+        pr.code as promotionCode
+      FROM Invoices i
+      LEFT JOIN Users u ON i.patientId = u.userId
+      LEFT JOIN Appointments a ON i.appointmentId = a.appointmentId
+      LEFT JOIN Slots s ON a.slotId = s.slotId
+      LEFT JOIN Schedules sch ON s.scheduleId = sch.scheduleId
+      LEFT JOIN Promotions pr ON i.promotionId = pr.promotionId
+      WHERE i.patientId = @patientId
+      ORDER BY i.issuedDate DESC
+    `);
   return result.recordset;
 }
 

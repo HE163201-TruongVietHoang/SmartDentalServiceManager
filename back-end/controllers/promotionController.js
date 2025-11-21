@@ -80,9 +80,9 @@ exports.applyPromotion = async (req, res) => {
     
     const promotion = promoResult.recordset[0];
     let discount = 0;
-    if (promotion.discountType === 'percentage') {
+    if (promotion.discountType === 'percent') {
       discount = (total * promotion.discountValue) / 100;
-    } else if (promotion.discountType === 'fixed') {
+    } else if (promotion.discountType === 'amount') {
       discount = promotion.discountValue;
     }
     
@@ -96,3 +96,20 @@ exports.applyPromotion = async (req, res) => {
     res.status(500).send(err.message);
   }
 };
+
+// Xóa promotion
+exports.deletePromotion = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const pool = await getPool();
+    await pool.request()
+      .input('id', sql.Int, id)
+      .query('DELETE FROM Promotions WHERE promotionId = @id');
+    res.send('Promotion deleted successfully');
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
+module.exports = exports;

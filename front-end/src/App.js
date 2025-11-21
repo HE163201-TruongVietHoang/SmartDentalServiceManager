@@ -54,6 +54,8 @@ import CreateAppointmentReceptionist from "./pages/Receptionist/CreateAppointmen
 
 import NurseLayout from "./pages/Nurse/NurseLayout";
 import NurseProfile from "./pages/Nurse/NurseProfile";
+import Promotion from "./pages/ClinicManager/Promotion";
+import Invoice from "./pages/ClinicManager/Invoice";
 
 function App() {
   return (
@@ -147,7 +149,22 @@ function App() {
             </ClinicManagerLayout>
           }
         />
-
+        <Route
+          path="/clinicmanager/promotion"
+          element={
+            <ClinicManagerLayout>
+              <Promotion />
+            </ClinicManagerLayout>
+          }
+        />
+        <Route
+          path="/clinicmanager/invoice"
+          element={
+            <ClinicManagerLayout>
+              <Invoice />
+            </ClinicManagerLayout>
+          }
+        />
         {/* Trang cho Doctor */}
         <Route
           path="/doctor/schedule"
