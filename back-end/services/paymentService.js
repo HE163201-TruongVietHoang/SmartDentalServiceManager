@@ -39,7 +39,7 @@ class PaymentService {
 //         console.log("vnpUrl:", vnpUrl);
             const date = new Date();
             const createDate = moment(date).format("YYYYMMDDHHmmss");
-            const orderId = 1231452; // Sử dụng paymentId làm transaction ref
+            const orderId = paymentId; // Sử dụng paymentId làm transaction ref
             const orderInfo = `Appointment payment`;
             const orderType = 'other';
             const locale = 'vn';
@@ -81,7 +81,9 @@ class PaymentService {
     }   
      async handleVnpayReturnUrl(req) {
         try {
-            const responseData = req.query;
+            // const responseData = req.query;
+            const responseData = JSON.parse(JSON.stringify(req.query));
+            console.log('responseData:', responseData, typeof responseData);
             const secureHash = responseData.vnp_SecureHash;
             delete responseData.vnp_SecureHash;
             delete responseData.vnp_SecureHashType;
@@ -99,7 +101,7 @@ class PaymentService {
             const paymentId = responseData.vnp_TxnRef;
 
             await updatePayment(paymentId, {
-                status: responseData.vnp_ResponseCode === '00' ? 'Completed' : 'Failed',
+                status: responseData.vnp_ResponseCode === '00' ? 'Success' : 'Failed',
                 paymentDate: new Date(),
                 transactionCode: responseData.vnp_TransactionNo
             });
