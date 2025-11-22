@@ -50,6 +50,7 @@ import ReceptionistLayout from "./pages/Receptionist/ReceptionistLayout";
 import ReceptionistProfile from "./pages/Receptionist/ReceptionistProfile";
 import PatientListPage from "./pages/Receptionist/PatientListPage";
 import PatientDetailPage from "./pages/Receptionist/PatientDetailPage";
+import CreateAppointmentReceptionist from "./pages/Receptionist/CreateAppointmentReceptionist";
 
 import NurseLayout from "./pages/Nurse/NurseLayout";
 import NurseProfile from "./pages/Nurse/NurseProfile";
@@ -238,6 +239,14 @@ function App() {
           element={
             <ReceptionistLayout>
               <PatientDetailPage />
+            </ReceptionistLayout>
+          }
+        />
+        <Route
+          path="/receptionist/appointment/create"
+          element={
+            <ReceptionistLayout>
+              <CreateAppointmentReceptionist />
             </ReceptionistLayout>
           }
         />
