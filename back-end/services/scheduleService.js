@@ -226,6 +226,7 @@ async function getSchedulesByDoctor(doctorId) {
     room: s.roomName,
     status: s.status,
     note: s.requestNote || "",
+    requestId: s.requestId
   }));
 }
 async function getDoctorScheduleDetailService(scheduleId, doctorId) {
