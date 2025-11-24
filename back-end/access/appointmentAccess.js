@@ -227,6 +227,17 @@ async function sendAccountEmail({ email, fullName, password }) {
   console.log(" Email tài khoản đã gửi tới:", email);
 }
 
+async function addServiceToAppointment(appointmentId, serviceId) {
+  const pool = await getPool();
+  await pool.request()
+    .input("appointmentId", sql.Int, appointmentId)
+    .input("serviceId", sql.Int, serviceId)
+    .query(`
+      INSERT INTO AppointmentServices (appointmentId, serviceId, createdAt)
+      VALUES (@appointmentId, @serviceId, GETDATE())
+    `);
+}
+
 module.exports = {
   create,
   getByUser,
@@ -237,4 +248,5 @@ module.exports = {
   updateStatus,
   findUserByEmailOrPhone,
   createUser,
+  addServiceToAppointment,
 };

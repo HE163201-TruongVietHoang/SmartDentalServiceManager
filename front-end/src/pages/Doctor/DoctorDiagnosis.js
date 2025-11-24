@@ -140,6 +140,19 @@ export default function DoctorDiagnosis() {
 
     try {
       await fetchAPI("/create", "POST", payload);
+
+      // Sau khi tạo diagnosis, thêm services vào appointment qua API
+      for (const serviceId of selectedServices) {
+        await fetch(`http://localhost:5000/api/appointments/${selectedAppointment.appointmentId}/services`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ serviceId }),
+        });
+      }
+
       alert("🎉 Hoàn tất chẩn đoán & kê đơn!");
       window.location.reload();
     } catch (err) {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Table, Modal, Form, Alert, Badge } from 'react-bootstrap';
-import { getAllInvoices, updateInvoice, getInvoicesByPatient, createPaymentUrl } from '../../api/api';
+import { getAllInvoices, updateInvoice, getInvoicesByPatient, createPaymentUrl, applyPromotion } from '../../api/api';
 
 const Invoice = () => {
   const [invoices, setInvoices] = useState([]);
@@ -8,10 +8,13 @@ const Invoice = () => {
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [formData, setFormData] = useState({
     status: 'Pending',
-    discountAmount: 0
+    discountAmount: 0,
+    promotionCode: '',
+    promotionId: null
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [promotionError, setPromotionError] = useState('');
 
   useEffect(() => {
     loadInvoices();
@@ -31,23 +34,52 @@ const Invoice = () => {
       setEditingInvoice(invoice);
       setFormData({
         status: invoice.status,
-        discountAmount: invoice.discountAmount || 0
+        discountAmount: invoice.discountAmount || 0,
+        promotionCode: invoice.promotionCode || '',
+        promotionId: invoice.promotionId || null
       });
     } else {
       setEditingInvoice(null);
       setFormData({
         status: 'Pending',
-        discountAmount: 0
+        discountAmount: 0,
+        promotionCode: '',
+        promotionId: null
       });
     }
     setShowModal(true);
     setError('');
     setSuccess('');
+    setPromotionError('');
   };
 
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingInvoice(null);
+  };
+
+  const handleApplyPromotion = async () => {
+    if (!formData.promotionCode.trim()) {
+      setPromotionError('Vui lòng nhập mã giảm giá');
+      return;
+    }
+    try {
+      const response = await applyPromotion({
+        total: editingInvoice.totalAmount,
+        code: formData.promotionCode
+      });
+      setFormData({
+        ...formData,
+        discountAmount: response.discount,
+        promotionId: response.promotion.promotionId
+      });
+      setSuccess(`Áp dụng mã giảm giá thành công! Giảm ${formatCurrency(response.discount)}`);
+      setPromotionError('');
+      setError('');
+    } catch (err) {
+      setPromotionError('Mã giảm giá không hợp lệ hoặc đã hết hạn');
+      setSuccess('');
+    }
   };
 
   const handleInputChange = (e) => {
@@ -242,17 +274,23 @@ const Invoice = () => {
         </Modal.Body>
         <Form onSubmit={handleSubmit}>
           <Modal.Body>
+            {success && <Alert variant="success">{success}</Alert>}
             <Form.Group className="mb-3">
-              <Form.Label>Trạng thái</Form.Label>
-              <Form.Select
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-              >
-                <option value="Pending">Chờ thanh toán</option>
-                <option value="Paid">Đã thanh toán</option>
-                <option value="Cancelled">Đã hủy</option>
-              </Form.Select>
+              <Form.Label>Mã giảm giá</Form.Label>
+              <div className="d-flex">
+                <Form.Control
+                  type="text"
+                  name="promotionCode"
+                  value={formData.promotionCode}
+                  onChange={handleInputChange}
+                  placeholder="Nhập mã giảm giá"
+                  className="me-2"
+                />
+                <Button variant="outline-info" onClick={handleApplyPromotion}>
+                  Áp dụng
+                </Button>
+              </div>
+              {promotionError && <Form.Text className="text-danger">{promotionError}</Form.Text>}
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -264,10 +302,24 @@ const Invoice = () => {
                 onChange={handleInputChange}
                 min="0"
                 step="0.01"
+                readOnly
               />
               <Form.Text className="text-muted">
-                Số tiền giảm giá (VND)
+                Số tiền giảm giá (VND) - được tính tự động khi áp dụng mã
               </Form.Text>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Trạng thái</Form.Label>
+              <Form.Select
+                name="status"
+                value={formData.status}
+                onChange={handleInputChange}
+              >
+                <option value="Pending">Chờ thanh toán</option>
+                <option value="Paid">Đã thanh toán</option>
+                <option value="Cancelled">Đã hủy</option>
+              </Form.Select>
             </Form.Group>
           </Modal.Body>
           <Modal.Footer>
