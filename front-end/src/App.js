@@ -35,6 +35,7 @@ import AppointmentReview from "./pages/Patient/AppointmentReview";
 
 import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
 import Service from "./pages/ClinicManager/Services";
+import ServiceDetail from "./pages/Service/ServiceDeatil";
 import ClinicManagerProfile from "./pages/ClinicManager/ClinicManagerProfile";
 import ClinicManagerLayout from "./pages/ClinicManager/ClinicManagerLayout";
 
@@ -62,6 +63,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/service" element={<ServicesPage />} />
+        <Route path="/service/:id" element={<ServiceDetail />} />
 
         <Route path="/doctor/home" element={<HomeDoctor />} />
         {/* <Route path="/doctor/profile" element={<DoctorProfile />} /> */}

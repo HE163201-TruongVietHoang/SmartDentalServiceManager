@@ -1,7 +1,10 @@
 const { sql, getPool } = require("../config/db");
 const nodemailer = require("nodemailer");
 // Tạo appointment, dùng transaction
-async function create({ patientId, doctorId, slotId, reason, workDate, appointmentType }, transaction) {
+async function create(
+  { patientId, doctorId, slotId, reason, workDate, appointmentType },
+  transaction
+) {
   const request = transaction.request();
   const result = await request
     .input("patientId", sql.Int, patientId)
@@ -10,8 +13,7 @@ async function create({ patientId, doctorId, slotId, reason, workDate, appointme
     .input("reason", sql.NVarChar, reason)
     .input("workDate", sql.Date, workDate)
     .input("status", sql.NVarChar, "Scheduled")
-    .input("appointmentType", sql.NVarChar, appointmentType)
-    .query(`
+    .input("appointmentType", sql.NVarChar, appointmentType).query(`
       INSERT INTO Appointments (patientId, doctorId, slotId, reason, status,appointmentType, createdAt, updatedAt)
       VALUES (@patientId, @doctorId, @slotId, @reason, 'Scheduled',@appointmentType, GETDATE(), GETDATE());
       SELECT SCOPE_IDENTITY() AS appointmentId;
@@ -20,9 +22,7 @@ async function create({ patientId, doctorId, slotId, reason, workDate, appointme
 }
 async function getByUser(userId) {
   const pool = await getPool();
-  const result = await pool.request()
-    .input("userId", sql.Int, userId)
-    .query(`
+  const result = await pool.request().input("userId", sql.Int, userId).query(`
       SELECT a.appointmentId, a.reason, a.status, a.appointmentType,
              s.startTime, s.endTime, sch.workDate,
              d.fullName AS doctorName, s.slotId
@@ -37,8 +37,7 @@ async function getByUser(userId) {
 }
 async function getAll() {
   const pool = await getPool();
-  const result = await pool.request()
-    .query(`
+  const result = await pool.request().query(`
       SELECT a.*, s.startTime, s.endTime, d.fullName AS doctorName, p.fullName AS patientName, sch.workDate
       FROM Appointments a
       JOIN Slots s ON a.slotId = s.slotId
@@ -52,9 +51,9 @@ async function getAll() {
 
 async function getById(appointmentId) {
   const pool = await getPool();
-  const result = await pool.request()
-    .input("appointmentId", sql.Int, appointmentId)
-    .query(`
+  const result = await pool
+    .request()
+    .input("appointmentId", sql.Int, appointmentId).query(`
       SELECT 
         a.*,
         s.slotId, s.startTime, s.endTime,
@@ -80,14 +79,14 @@ async function getById(appointmentId) {
       JOIN Users d ON a.doctorId = d.userId
       WHERE a.appointmentId = @appointmentId
     `);
-  
+
   const appointment = result.recordset[0];
   if (appointment && appointment.services) {
     appointment.services = JSON.parse(appointment.services);
   } else {
     appointment.services = [];
   }
-  
+
   return appointment;
 }
 
@@ -95,13 +94,14 @@ async function cancelAppointment(appointmentId, transaction) {
   const request = transaction.request();
   await request
     .input("appointmentId", sql.Int, appointmentId)
-    .query(`UPDATE Appointments SET status = 'Cancelled' WHERE appointmentId = @appointmentId`);
+    .query(
+      `UPDATE Appointments SET status = 'Cancelled' WHERE appointmentId = @appointmentId`
+    );
 }
 
 async function countUserCancellations(patientId) {
   const pool = await getPool();
-  const result = await pool.request()
-    .input("patientId", sql.Int, patientId)
+  const result = await pool.request().input("patientId", sql.Int, patientId)
     .query(`
       SELECT COUNT(*) AS cancelCount
       FROM Appointments
@@ -113,11 +113,12 @@ async function countUserCancellations(patientId) {
 }
 // Cập nhật trạng thái appointment
 async function updateStatus(appointmentId, status, transaction = null) {
-  const request = transaction ? transaction.request() : (await getPool()).request();
+  const request = transaction
+    ? transaction.request()
+    : (await getPool()).request();
   await request
     .input("appointmentId", sql.Int, appointmentId)
-    .input("status", sql.NVarChar, status)
-    .query(`
+    .input("status", sql.NVarChar, status).query(`
       UPDATE Appointments
       SET status = @status,
           updatedAt = GETDATE()
@@ -129,7 +130,8 @@ const { v4: uuidv4 } = require("uuid");
 
 async function findUserByEmailOrPhone(email, phone) {
   const pool = await getPool();
-  const result = await pool.request()
+  const result = await pool
+    .request()
     .input("email", sql.NVarChar, email || "")
     .input("phone", sql.NVarChar, phone || "")
     .query(`SELECT * FROM Users WHERE email = @email OR phone = @phone`);
@@ -150,7 +152,8 @@ async function createUser({ email, phone, fullName, gender, dob, address }) {
   }
 
   const roleId = roleResult.recordset[0].roleId;
-  const result = await pool.request()
+  const result = await pool
+    .request()
     .input("email", sql.NVarChar, email || null)
     .input("phone", sql.NVarChar, phone || null)
     .input("fullName", sql.NVarChar, fullName || null)
@@ -160,8 +163,7 @@ async function createUser({ email, phone, fullName, gender, dob, address }) {
     .input("address", sql.NVarChar, address || null)
     .input("roleId", sql.Int, roleId || null)
     .input("isActive", sql.Bit, 1)
-    .input("isVerify", sql.Bit, 1)
-    .query(`
+    .input("isVerify", sql.Bit, 1).query(`
       INSERT INTO Users (email, phone, fullName, password, gender, dob, address,roleId, isActive, isVerify )
       OUTPUT INSERTED.userId
       VALUES (@email, @phone, @fullName, @password, @gender, @dob, @address, @roleId, @isActive, @isVerify)
@@ -174,7 +176,7 @@ async function createUser({ email, phone, fullName, gender, dob, address }) {
 
   return { userId, isNew: true };
 }
-async function sendAccountEmail({ email, fullName, password  }) {
+async function sendAccountEmail({ email, fullName, password }) {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -192,7 +194,7 @@ async function sendAccountEmail({ email, fullName, password  }) {
       <p>Tài khoản của bạn đã được tạo trên hệ thống Smart Dental Clinic.</p>
       <ul>
         <li>Email: ${email}</li>
-        <li>Password: <b>${password }</b></li>
+        <li>Password: <b>${password}</b></li>
       </ul>
       <p>Vui lòng đăng nhập và đổi mật khẩu sau khi đăng nhập lần đầu.</p>
       <br>
@@ -203,4 +205,14 @@ async function sendAccountEmail({ email, fullName, password  }) {
   console.log(" Email tài khoản đã gửi tới:", email);
 }
 
-module.exports = { create, getByUser, getAll, getById, cancelAppointment, countUserCancellations, updateStatus, findUserByEmailOrPhone, createUser };
+module.exports = {
+  create,
+  getByUser,
+  getAll,
+  getById,
+  cancelAppointment,
+  countUserCancellations,
+  updateStatus,
+  findUserByEmailOrPhone,
+  createUser,
+};
