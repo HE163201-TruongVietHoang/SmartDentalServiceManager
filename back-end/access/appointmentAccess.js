@@ -229,12 +229,26 @@ async function sendAccountEmail({ email, fullName, password }) {
 
 async function addServiceToAppointment(appointmentId, serviceId) {
   const pool = await getPool();
+  // Lấy price từ Services
+  const serviceResult = await pool.request()
+    .input("serviceId", sql.Int, serviceId)
+    .query(`SELECT price FROM Services WHERE serviceId = @serviceId`);
+  
+  if (serviceResult.recordset.length === 0) {
+    throw new Error("Service not found");
+  }
+  
+  const actualPrice = serviceResult.recordset[0].price;
+  
   await pool.request()
     .input("appointmentId", sql.Int, appointmentId)
     .input("serviceId", sql.Int, serviceId)
+    .input("quantity", sql.Int, 1)
+    .input("actualPrice", sql.Decimal(10,2), actualPrice)
+    .input("status", sql.NVarChar, "Active")
     .query(`
-      INSERT INTO AppointmentServices (appointmentId, serviceId, createdAt)
-      VALUES (@appointmentId, @serviceId, GETDATE())
+      INSERT INTO AppointmentServices (appointmentId, serviceId, quantity, actualPrice, status, createdAt, updatedAt)
+      VALUES (@appointmentId, @serviceId, @quantity, @actualPrice, @status, GETDATE(), GETDATE())
     `);
 }
 

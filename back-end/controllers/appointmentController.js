@@ -104,7 +104,8 @@ const appointmentController = {
 
   async addServiceToAppointment(req, res) {
     try {
-      const { appointmentId, serviceId } = req.body;
+      const appointmentId = parseInt(req.params.appointmentId);
+      const { serviceId } = req.body;
       const result = await appointmentService.addServiceToAppointment(
         appointmentId,
         serviceId
