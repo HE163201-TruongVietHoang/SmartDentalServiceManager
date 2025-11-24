@@ -4,22 +4,23 @@ import React, { useEffect, useState } from "react";
 export default function DoctorDiagnosis() {
   const [appointments, setAppointments] = useState([]);
   const [allServices, setAllServices] = useState([]);
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
-  const [diagnosis, setDiagnosis] = useState(null);
-  const [selectedServices, setSelectedServices] = useState([]);
+  const [medicines, setMedicines] = useState([]);
 
-  // Form inputs
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+
+  const [selectedServices, setSelectedServices] = useState([]);
+  const [selectedMedicines, setSelectedMedicines] = useState([]);
+
   const [symptoms, setSymptoms] = useState("");
   const [diagnosisResult, setDiagnosisResult] = useState("");
   const [doctorNote, setDoctorNote] = useState("");
-  const [activeTab, setActiveTab] = useState("diagnosis");
 
   const token = localStorage.getItem("token");
   const userId = JSON.parse(localStorage.getItem("user") || "{}").userId;
 
-  // ===============================
-  // FETCH API
-  // ===============================
+  // =============================
+  // API WRAPPER
+  // =============================
   const fetchAPI = async (endpoint, method = "GET", body = null) => {
     const res = await fetch(`http://localhost:5000/api/diagnoses${endpoint}`, {
       method,
@@ -37,13 +38,14 @@ export default function DoctorDiagnosis() {
     return await res.json();
   };
 
-  // ===============================
+  // =============================
   // LOAD DATA
-  // ===============================
+  // =============================
   useEffect(() => {
     if (token && userId) {
       loadAppointments();
       loadAllServices();
+      loadAllMedicines();
     }
   }, [token, userId]);
 
@@ -61,89 +63,95 @@ export default function DoctorDiagnosis() {
       const res = await fetch("http://localhost:5000/api/services", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (!res.ok) throw new Error("Không tải được dịch vụ");
       const data = await res.json();
       setAllServices(data);
     } catch (err) {
-      console.error("LỖI LOAD DỊCH VỤ:", err);
       alert("Không tải được danh sách dịch vụ!");
     }
   };
 
-  // ===============================
-  // CHỌN CA KHÁM
-  // ===============================
+  const loadAllMedicines = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/api/medicines", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setMedicines(data);
+    } catch (err) {
+      alert("Không tải được danh sách thuốc!");
+    }
+  };
+
+  // =============================
+  // HANDLE APPOINTMENT
+  // =============================
   const handleAppointmentChange = (appointmentId) => {
     const appointment = appointments.find(
       (a) => a.appointmentId === parseInt(appointmentId)
     );
-    setSelectedAppointment(appointment);
-    setDiagnosis(null);
+    setSelectedAppointment(appointment || null);
     setSelectedServices([]);
+    setSelectedMedicines([]);
     setSymptoms("");
     setDiagnosisResult("");
     setDoctorNote("");
-    setActiveTab("diagnosis");
   };
 
-  // ===============================
-  // TẠO CHẨN ĐOÁN MỚI
-  // ===============================
+  // =============================
+  // MEDICINES
+  // =============================
+  const addMedicine = () => {
+    setSelectedMedicines((prev) => [
+      ...prev,
+      { medicineId: "", quantity: 1, dosage: "", usageInstruction: "" },
+    ]);
+  };
+
+  const updateMedicine = (index, field, value) => {
+    const updated = [...selectedMedicines];
+    updated[index][field] = value;
+    setSelectedMedicines(updated);
+  };
+
+  const removeMedicine = (index) => {
+    setSelectedMedicines((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // =============================
+  // SUBMIT DIAGNOSIS
+  // =============================
   const handleCreateDiagnosis = async () => {
-    if (!selectedAppointment || !diagnosisResult.trim()) {
-      return alert("Chọn ca và nhập kết quả chẩn đoán!");
-    }
+    if (!selectedAppointment) return alert("Vui lòng chọn ca khám.");
 
-    try {
-      const data = await fetchAPI("/create", "POST", {
-        appointmentId: selectedAppointment.appointmentId,
-        symptoms: symptoms || null,
-        diagnosisResult,
-        doctorNote: doctorNote || null,
-      });
+    if (!diagnosisResult.trim())
+      return alert("Vui lòng nhập kết luận chẩn đoán.");
 
-      setDiagnosis(data);
-      setActiveTab("services");
-      ting();
-      alert("✅ Tạo chẩn đoán thành công!");
-    } catch (err) {
-      alert("Lỗi: " + err.message);
-    }
-  };
-
-  // ===============================
-  // THÊM DỊCH VỤ CHO CHẨN ĐOÁN
-  // ===============================
-  const handleAddServices = async () => {
-    if (!diagnosis || selectedServices.length === 0) {
-      return alert("Chọn ít nhất một dịch vụ!");
-    }
-
-    try {
-      // map mảng ID sang dạng có note (nếu cần)
-      const servicesPayload = selectedServices.map((id) => ({
+    const payload = {
+      appointmentId: selectedAppointment.appointmentId,
+      symptoms,
+      diagnosisResult,
+      doctorNote,
+      services: selectedServices.map((id) => ({
         serviceId: id,
         note: "Thêm bởi bác sĩ",
-      }));
+      })),
+      medicines: selectedMedicines,
+    };
 
-      await fetchAPI(`/${diagnosis.diagnosisId}/services`, "POST", {
-        services: servicesPayload,
-      });
-
-      ting();
-      alert(`Đã thêm ${selectedServices.length} dịch vụ!`);
-      setSelectedServices([]);
+    try {
+      await fetchAPI("/create", "POST", payload);
+      alert("🎉 Hoàn tất chẩn đoán & kê đơn!");
+      window.location.reload();
     } catch (err) {
       alert("Lỗi: " + err.message);
     }
   };
 
-  // ===============================
-  // GIAO DIỆN
-  // ===============================
+  // =============================
+  // HELPERS
+  // =============================
   const formatTime = (t) => {
     if (!t) return "";
-    // Nếu server trả về "PT09H30M00S" hoặc tương tự, cắt thành hh:mm
     const parts = t.split(":");
     return parts.length >= 2 ? `${parts[0]}:${parts[1]}` : t;
   };
@@ -156,216 +164,208 @@ export default function DoctorDiagnosis() {
     );
   };
 
-  const ting = () =>
-    new Audio(
-      "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA="
-    )
-      .play()
-      .catch(() => {});
-
+  // =============================
+  // UI
+  // =============================
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        padding: "40px 20px",
-      }}
-    >
-      <div style={{ maxWidth: "1200px", margin: "auto" }}>
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: "20px",
-            padding: "30px",
-            boxShadow: "0 4px 20px rgba(0,0,0,.1)",
-          }}
-        >
-          <h2
-            style={{
-              color: "#2ECCB6",
-              textAlign: "center",
-              marginBottom: "30px",
-              fontWeight: "bold",
-            }}
-          >
-            CHẨN ĐOÁN & DỊCH VỤ – BÁC SĨ
-          </h2>
+    <div style={pageWrapper}>
+      <div style={pageInner}>
+        <div style={headerBox}>
+          <h1 style={headerTitle}>Chẩn đoán & Kê đơn</h1>
+        </div>
 
+        <div style={cardShell}>
           {/* Chọn ca khám */}
-          <div
-            style={{
-              marginBottom: "30px",
-              padding: "20px",
-              background: "#E8FAF6",
-              borderRadius: "10px",
-            }}
-          >
-            <label
-              style={{
-                fontWeight: 600,
-                display: "block",
-                marginBottom: "10px",
-              }}
-            >
-              Chọn ca khám hôm nay:
-            </label>
-            <select
-              onChange={(e) => handleAppointmentChange(e.target.value)}
-              style={selectStyle}
-            >
-              <option value="">-- Chọn ca khám --</option>
-              {appointments.map((a) => (
-                <option key={a.appointmentId} value={a.appointmentId}>
-                  #{a.appointmentId} | {a.patientName} |{" "}
-                  {formatTime(a.startTime)} - {formatTime(a.endTime)}
-                </option>
-              ))}
-            </select>
+          <div style={appointmentRow}>
+            <div style={{ flex: 1 }}>
+              <label style={labelStrong}>Chọn ca khám</label>
+              <select
+                style={selectMain}
+                onChange={(e) => handleAppointmentChange(e.target.value)}
+                value={selectedAppointment?.appointmentId || ""}
+              >
+                <option value="">-- Chọn ca khám --</option>
+
+                {appointments.map((a) => (
+                  <option key={a.appointmentId} value={a.appointmentId}>
+                    #{a.appointmentId} | {a.patientName} |{" "}
+                    {formatTime(a.startTime)} - {formatTime(a.endTime)}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          {/* Tabs */}
-          {selectedAppointment && (
-            <div style={{ textAlign: "center", marginBottom: "20px" }}>
-              {[
-                { key: "diagnosis", label: "CHẨN ĐOÁN", color: "#1E90FF" },
-                {
-                  key: "services",
-                  label: "THÊM DỊCH VỤ",
-                  color: "#32CD32",
-                  disabled: !diagnosis,
-                },
-              ].map((t) => (
-                <button
-                  key={t.key}
-                  onClick={() => !t.disabled && setActiveTab(t.key)}
-                  disabled={t.disabled}
-                  style={{
-                    ...btnStyle(t.color),
-                    margin: "0 8px",
-                    opacity: t.disabled ? 0.4 : activeTab === t.key ? 1 : 0.7,
-                    transform: activeTab === t.key ? "scale(1.05)" : "scale(1)",
-                    transition: "all .2s",
-                    cursor: t.disabled ? "not-allowed" : "pointer",
-                  }}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          )}
+          {/* Nếu đã chọn ca khám */}
+          {selectedAppointment ? (
+            <div style={gridTwoCols}>
+              {/* Cột trái */}
+              <div style={leftCol}>
+                <div style={infoCard}>
+                  <span style={infoBadge}>Thông tin bệnh nhân</span>
+                  <p style={infoText}>
+                    <b>Bệnh nhân:</b> {selectedAppointment.patientName}
+                  </p>
+                  <p style={infoText}>
+                    <b>Thời gian:</b>{" "}
+                    {formatTime(selectedAppointment.startTime)} -{" "}
+                    {formatTime(selectedAppointment.endTime)}
+                  </p>
+                </div>
 
-          {/* Form Chẩn đoán */}
-          {activeTab === "diagnosis" && selectedAppointment && (
-            <div
-              style={{
-                padding: "20px",
-                background: "#e6f7ff",
-                borderRadius: "10px",
-              }}
-            >
-              <p>
-                <b>Bệnh nhân:</b> {selectedAppointment.patientName}
-              </p>
-              <p>
-                <b>Thời gian:</b> {formatTime(selectedAppointment.startTime)} -{" "}
-                {formatTime(selectedAppointment.endTime)}
-              </p>
+                {/* Chẩn đoán */}
+                <div style={blockMint}>
+                  <h3 style={sectionTitle}>Chẩn đoán</h3>
 
-              <textarea
-                placeholder="Triệu chứng (symptoms)..."
-                value={symptoms}
-                onChange={(e) => setSymptoms(e.target.value)}
-                style={{ ...inputStyle, height: "80px", resize: "none" }}
-              />
+                  <textarea
+                    placeholder="Triệu chứng..."
+                    value={symptoms}
+                    onChange={(e) => setSymptoms(e.target.value)}
+                    style={{ ...inputArea, minHeight: 80 }}
+                  />
 
-              <textarea
-                placeholder="Kết quả chẩn đoán (diagnosisResult)..."
-                value={diagnosisResult}
-                onChange={(e) => setDiagnosisResult(e.target.value)}
-                style={{ ...inputStyle, height: "100px", resize: "none" }}
-              />
+                  <textarea
+                    placeholder="Kết luận chẩn đoán..."
+                    value={diagnosisResult}
+                    onChange={(e) => setDiagnosisResult(e.target.value)}
+                    style={{ ...inputArea, minHeight: 90 }}
+                  />
 
-              <input
-                type="text"
-                placeholder="Ghi chú của bác sĩ (tùy chọn)..."
-                value={doctorNote}
-                onChange={(e) => setDoctorNote(e.target.value)}
-                style={inputStyle}
-              />
-
-              <div style={{ textAlign: "center", marginTop: "20px" }}>
-                <button
-                  onClick={handleCreateDiagnosis}
-                  style={btnStyle("#1E90FF")}
-                >
-                  TẠO CHẨN ĐOÁN
-                </button>
+                  <input
+                    type="text"
+                    placeholder="Ghi chú bác sĩ..."
+                    value={doctorNote}
+                    onChange={(e) => setDoctorNote(e.target.value)}
+                    style={inputText}
+                  />
+                </div>
               </div>
-            </div>
-          )}
 
-          {/* Danh sách dịch vụ */}
-          {activeTab === "services" && diagnosis && (
-            <div
-              style={{
-                padding: "20px",
-                background: "#f0fff0",
-                borderRadius: "10px",
-              }}
-            >
-              <h4 style={{ color: "#32CD32", marginBottom: "10px" }}>
-                Chọn dịch vụ điều trị
-              </h4>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill, minmax(260px,1fr))",
-                  gap: "12px",
-                }}
-              >
-                {allServices.map((s) => (
-                  <div
-                    key={s.serviceId}
-                    onClick={() => toggleService(s.serviceId)}
-                    style={{
-                      padding: "14px",
-                      background: selectedServices.includes(s.serviceId)
-                        ? "#e6f7e6"
-                        : "#fff",
-                      borderRadius: "8px",
-                      border: `2px solid ${
-                        selectedServices.includes(s.serviceId)
-                          ? "#32CD32"
-                          : "#ddd"
-                      }`,
-                      cursor: "pointer",
-                    }}
-                  >
-                    <strong>{s.serviceName}</strong>
-                    <p style={{ margin: "4px 0", color: "#666" }}>
-                      {s.price?.toLocaleString("vi-VN")} VNĐ
-                    </p>
+              {/* Cột phải */}
+              <div style={rightCol}>
+                {/* Dịch vụ */}
+                <div style={blockMint}>
+                  <h3 style={sectionTitle}>Dịch vụ thực hiện</h3>
+
+                  <div style={serviceGrid}>
+                    {allServices.map((s) => (
+                      <div
+                        key={s.serviceId}
+                        onClick={() => toggleService(s.serviceId)}
+                        style={serviceBox(
+                          selectedServices.includes(s.serviceId)
+                        )}
+                      >
+                        <b>{s.serviceName}</b>
+                        <span style={servicePrice}>
+                          {s.price?.toLocaleString("vi-VN")} đ
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                </div>
+
+                {/* Đơn thuốc */}
+                <div style={blockMint}>
+                  <h3 style={sectionTitle}>Đơn thuốc</h3>
+
+                  {selectedMedicines.map((med, index) => (
+                    <div
+                      key={index}
+                      style={{ ...medicineRow, position: "relative" }}
+                    >
+                      {/* Nút xóa thuốc */}
+                      <button
+                        type="button"
+                        onClick={() => removeMedicine(index)}
+                        style={{
+                          position: "absolute",
+                          right: "-10px",
+                          top: "-10px",
+                          background: "#ff4d4f",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "50%",
+                          width: 24,
+                          height: 24,
+                          cursor: "pointer",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        ×
+                      </button>
+
+                      {/* Các input thuốc giữ nguyên */}
+                      <select
+                        style={selectSmall}
+                        value={med.medicineId}
+                        onChange={(e) =>
+                          updateMedicine(index, "medicineId", e.target.value)
+                        }
+                      >
+                        <option value="">Thuốc</option>
+                        {medicines.map((m) => (
+                          <option key={m.medicineId} value={m.medicineId}>
+                            {m.medicineName}
+                          </option>
+                        ))}
+                      </select>
+
+                      <input
+                        type="number"
+                        min="1"
+                        style={inputSmall}
+                        placeholder="SL"
+                        value={med.quantity}
+                        onChange={(e) =>
+                          updateMedicine(index, "quantity", e.target.value)
+                        }
+                      />
+
+                      <input
+                        type="text"
+                        style={inputSmall}
+                        placeholder="Liều dùng"
+                        value={med.dosage}
+                        onChange={(e) =>
+                          updateMedicine(index, "dosage", e.target.value)
+                        }
+                      />
+
+                      <input
+                        type="text"
+                        style={inputSmall}
+                        placeholder="Hướng dẫn"
+                        value={med.usageInstruction}
+                        onChange={(e) =>
+                          updateMedicine(
+                            index,
+                            "usageInstruction",
+                            e.target.value
+                          )
+                        }
+                      />
+                    </div>
+                  ))}
+
+                  <button type="button" onClick={addMedicine} style={btnAdd}>
+                    + Thêm thuốc
+                  </button>
+                </div>
               </div>
 
-              <div style={{ textAlign: "center", marginTop: "20px" }}>
+              <div style={footerRow}>
                 <button
-                  onClick={handleAddServices}
-                  style={btnStyle("#32CD32")}
-                  disabled={selectedServices.length === 0}
+                  type="button"
+                  onClick={handleCreateDiagnosis}
+                  style={btnPrimary}
                 >
-                  THÊM DỊCH VỤ ({selectedServices.length})
+                  HOÀN TẤT CHẨN ĐOÁN
                 </button>
               </div>
             </div>
-          )}
-
-          {!selectedAppointment && (
-            <p
-              style={{ textAlign: "center", color: "#888", marginTop: "40px" }}
-            >
-              Vui lòng chọn một ca khám để bắt đầu chẩn đoán.
-            </p>
+          ) : (
+            <p style={emptyHint}>Vui lòng chọn ca khám để bắt đầu chẩn đoán.</p>
           )}
         </div>
       </div>
@@ -373,35 +373,205 @@ export default function DoctorDiagnosis() {
   );
 }
 
-// ===============================
-// STYLE
-// ===============================
-const selectStyle = {
-  width: "100%",
-  padding: "12px",
-  borderRadius: "8px",
-  border: "2px solid #1E90FF",
-  fontSize: "16px",
-  background: "#fff",
+/* =============================
+   STYLE — tông xanh mint nhẹ
+   ============================= */
+
+const pageWrapper = {
+  minHeight: "100vh",
+  padding: "40px 20px",
+  background: "#f5fffd",
 };
 
-const inputStyle = {
-  width: "100%",
-  padding: "12px",
-  borderRadius: "8px",
-  border: "2px solid #1E90FF",
-  fontSize: "16px",
-  marginBottom: "15px",
+const pageInner = {
+  maxWidth: "1200px",
+  margin: "0 auto",
 };
 
-const btnStyle = (bg) => ({
-  padding: "14px 40px",
-  background: bg,
+const headerBox = {
+  textAlign: "center",
+  marginBottom: 20,
+};
+
+const headerTitle = {
+  fontSize: 28,
+  fontWeight: 700,
+  color: "#16a39c",
+};
+
+const cardShell = {
+  background: "#ffffff",
+  borderRadius: 18,
+  padding: 25,
+  boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+};
+
+const appointmentRow = {
+  marginBottom: 20,
+  padding: 18,
+  background: "#E8FAF6",
+  borderRadius: 12,
+  border: "1px solid #CDEDE8",
+};
+
+const labelStrong = {
+  fontWeight: 600,
+  marginBottom: 8,
+  color: "#0ba892",
+};
+
+const selectMain = {
+  width: "100%",
+  padding: "12px",
+  borderRadius: "10px",
+  border: "2px solid #2ec9b4",
+  background: "#ffffff",
+  fontSize: "15px",
+};
+
+const gridTwoCols = {
+  display: "grid",
+  gridTemplateColumns: "1fr 1fr",
+  gap: 20,
+};
+
+const leftCol = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 18,
+};
+
+const rightCol = {
+  display: "flex",
+  flexDirection: "column",
+  gap: 18,
+};
+
+const infoCard = {
+  background: "#ffffff",
+  borderRadius: 12,
+  padding: 15,
+  border: "1px solid #dff5f0",
+};
+
+const infoBadge = {
+  background: "#2ec9b4",
+  color: "#fff",
+  padding: "4px 12px",
+  borderRadius: "20px",
+  fontSize: 12,
+  display: "inline-block",
+  marginBottom: 8,
+};
+
+const infoText = {
+  margin: "4px 0",
+  color: "#145f58",
+};
+
+const blockMint = {
+  background: "#E8FAF6",
+  borderRadius: 12,
+  padding: 16,
+  border: "1px solid #CDEDE8",
+};
+
+const sectionTitle = {
+  fontSize: 16,
+  fontWeight: 600,
+  marginBottom: 10,
+  color: "#118c82",
+};
+
+const inputText = {
+  width: "100%",
+  padding: "12px",
+  borderRadius: "10px",
+  border: "2px solid #2ec9b4",
+  background: "#ffffff",
+  marginBottom: 10,
+};
+
+const inputArea = {
+  ...inputText,
+  resize: "vertical",
+};
+
+const serviceGrid = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+  gap: 12,
+};
+
+const serviceBox = (active) => ({
+  padding: 14,
+  borderRadius: 10,
+  background: active ? "#C6F5EC" : "#fff",
+  border: `2px solid ${active ? "#2ec9b4" : "#d9d9d9"}`,
+  cursor: "pointer",
+  transition: "0.2s",
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "space-between",
+  minHeight: "70px",
+});
+
+const servicePrice = {
+  fontSize: 13,
+  color: "#555",
+};
+
+const medicineRow = {
+  display: "grid",
+  gridTemplateColumns: "1.5fr 0.5fr 1fr 1fr",
+  gap: 8,
+  marginBottom: 10,
+};
+
+const selectSmall = {
+  ...selectMain,
+  padding: "8px",
+  fontSize: 14,
+};
+
+const inputSmall = {
+  ...inputText,
+  padding: "8px",
+  marginBottom: 0,
+};
+
+const btnAdd = {
+  width: "100%",
+  padding: 12,
+  background: "#2ec9b4",
+  color: "#fff",
+  border: "none",
+  borderRadius: "10px",
+  cursor: "pointer",
+  marginTop: 6,
+};
+
+const footerRow = {
+  gridColumn: "1 / -1",
+  marginTop: 15,
+};
+
+const btnPrimary = {
+  width: "100%",
+  padding: "14px",
+  background: "#12c2a0",
   color: "#fff",
   border: "none",
   borderRadius: "12px",
-  fontSize: "16px",
-  fontWeight: "bold",
+  fontSize: 16,
+  fontWeight: 600,
   cursor: "pointer",
-  boxShadow: "0 4px 10px rgba(0,0,0,.2)",
-});
+  boxShadow: "0 4px 12px rgba(18,194,160,0.35)",
+};
+
+const emptyHint = {
+  marginTop: 20,
+  textAlign: "center",
+  color: "#7aa8a3",
+  fontStyle: "italic",
+};
