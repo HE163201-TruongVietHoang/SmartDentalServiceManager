@@ -54,6 +54,10 @@ import CreateAppointmentReceptionist from "./pages/Receptionist/CreateAppointmen
 
 import NurseLayout from "./pages/Nurse/NurseLayout";
 import NurseProfile from "./pages/Nurse/NurseProfile";
+import DoctorPrescription from "./components/doctor/DoctorPrescription";
+import ReceptionistInvoiceListPage from "./pages/Receptionist/InvoiceListPage";
+import ReceptionistInvoiceDetailPage from "./pages/Receptionist/InvoiceDetailPage";
+import DoctorMedicinePage from "./pages/Doctor/DoctorMedicinePage";
 
 function App() {
   return (
@@ -190,6 +194,23 @@ function App() {
           }
         />
 
+        <Route
+          path="/doctor/prescription"
+          element={
+            <DoctorLayout>
+              <DoctorPrescription />
+            </DoctorLayout>
+          }
+        />
+        <Route
+          path="/doctor/medicines"
+          element={
+            <DoctorLayout>
+              <DoctorMedicinePage />
+            </DoctorLayout>
+          }
+        />
+
         {/* Trang cho Nurse */}
         <Route
           path="/nurse/profile"
@@ -247,6 +268,24 @@ function App() {
           element={
             <ReceptionistLayout>
               <CreateAppointmentReceptionist />
+            </ReceptionistLayout>
+          }
+        />
+
+        <Route
+          path="/receptionist/invoices"
+          element={
+            <ReceptionistLayout>
+              <ReceptionistInvoiceListPage />
+            </ReceptionistLayout>
+          }
+        />
+
+        <Route
+          path="/receptionist/invoices/:invoiceId"
+          element={
+            <ReceptionistLayout>
+              <ReceptionistInvoiceDetailPage />
             </ReceptionistLayout>
           }
         />
