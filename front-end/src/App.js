@@ -56,6 +56,7 @@ import NurseLayout from "./pages/Nurse/NurseLayout";
 import NurseProfile from "./pages/Nurse/NurseProfile";
 import Promotion from "./pages/ClinicManager/Promotion";
 import Invoice from "./pages/ClinicManager/Invoice";
+import VnpayReturn from "./pages/VnpayReturn";
 
 function App() {
   return (
@@ -267,6 +268,7 @@ function App() {
             </ReceptionistLayout>
           }
         />
+        <Route path="/vnpay_return_url" element={<VnpayReturn />} />
       </Routes>
     </Router>
   );

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Table, Modal, Form, Alert, Badge } from 'react-bootstrap';
-import { getAllInvoices, updateInvoice, getInvoicesByPatient } from '../../api/api';
+import { getAllInvoices, updateInvoice, getInvoicesByPatient, createPaymentUrl } from '../../api/api';
 
 const Invoice = () => {
   const [invoices, setInvoices] = useState([]);
@@ -130,8 +130,27 @@ const Invoice = () => {
       }
     }
     
-    // console.log('formatTime result (fallback):', '');
+    // console.log('formatTime result (fallback):', ''));
     return '';
+  };
+
+  const handlePayment = async (invoice) => {
+    try {
+      const payload = {
+        appointmentId: invoice.appointmentId,
+        amount: (invoice.totalAmount || 0) - (invoice.discountAmount || 0), // Sử dụng finalAmount
+        invoiceId: invoice.invoiceId,
+        bankCode: ""
+      };
+      const response = await createPaymentUrl(payload);
+      if (response.success) {
+        window.location.href = response.data.vnpUrl;
+      } else {
+        setError('Không thể tạo URL thanh toán');
+      }
+    } catch (err) {
+      setError('Lỗi khi thanh toán');
+    }
   };
 
   return (
@@ -184,8 +203,16 @@ const Invoice = () => {
                       variant="outline-primary"
                       size="sm"
                       onClick={() => handleShowModal(invoice)}
+                      className="me-2"
                     >
                       Cập nhật
+                    </Button>
+                    <Button
+                      variant="outline-success"
+                      size="sm"
+                      onClick={() => handlePayment(invoice)}
+                    >
+                      Thanh toán
                     </Button>
                   </td>
                 </tr>

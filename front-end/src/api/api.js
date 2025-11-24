@@ -77,3 +77,9 @@ export const getInvoicesByPatient = async (patientId) => {
   const res = await axios.get(`${API_URL}/invoices/patient/${patientId}`);
   return res.data;
 };
+
+// Payment APIs
+export const createPaymentUrl = async (paymentData) => {
+  const res = await axios.post(`${API_URL}/payments/create-url`, paymentData);
+  return res.data;
+};
