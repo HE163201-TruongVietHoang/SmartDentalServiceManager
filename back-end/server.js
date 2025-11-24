@@ -21,6 +21,7 @@ const { getPool } = require("./config/db");
 const promotionRoutes = require('./routes/promotionRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+//const prescriptionRoutes = require("./routes/prescriptionRoutes");
 
 const app = express();
 const http = require("http");
@@ -46,6 +47,9 @@ app.use("/api/slots", slotRoutes);
 app.use("/api/patients", patientRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/diagnoses", doctorDiagnosisRoutes);
+//app.use("/api/prescriptions", prescriptionRoutes);
+app.use("/api/medicines", require("./routes/medicineRoutes"));
+app.use("/api/invoices", invoiceRoutes);
 
 cron.schedule("*/30 * * * *", async () => {
   console.log("Running auto-cancel job...");

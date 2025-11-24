@@ -1,4 +1,3 @@
-// src/components/doctor/DoctorDiagnosisHistory.js
 import React, { useEffect, useState } from "react";
 
 export default function DoctorDiagnosisHistory() {
@@ -12,7 +11,6 @@ export default function DoctorDiagnosisHistory() {
 
   const token = localStorage.getItem("token");
 
-  // ---------- CHỈ HIỂN THỊ GIỜ (HH:mm) ----------
   const formatTimeOnly = (time) => {
     if (!time || time === "null" || time === "undefined") return "--:--";
     const [h, m] = time.split(":").map(Number);
@@ -20,23 +18,19 @@ export default function DoctorDiagnosisHistory() {
     return `${h.toString().padStart(2, "0")}:${m.toString().padStart(2, "0")}`;
   };
 
-  // ---------- HIỂN THỊ NGÀY + GIỜ (dùng cho popup nếu cần) ----------
-  const formatDateTime = (date, time) => {
-    if (!date || !time) return "N/A";
-    const [h, m] = time.split(":").map(Number);
-    if (isNaN(h) || isNaN(m)) return "N/A";
-    const d = new Date(date);
-    d.setHours(h, m, 0, 0);
-    return d.toLocaleString("vi-VN", {
-      hour: "2-digit",
-      minute: "2-digit",
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
+  const loadMedicines = async (diagnosisId) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/diagnoses/${diagnosisId}/medicines`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (!res.ok) return [];
+      return await res.json();
+    } catch {
+      return [];
+    }
   };
 
-  // ---------- LOAD SERVICES ----------
   useEffect(() => {
     fetch(`http://localhost:5000/api/services`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -46,7 +40,6 @@ export default function DoctorDiagnosisHistory() {
       .catch(console.error);
   }, [token]);
 
-  // ---------- LOAD HISTORY ----------
   const loadHistory = async () => {
     const p = new URLSearchParams();
     dateFilter && p.append("date", dateFilter);
@@ -69,7 +62,6 @@ export default function DoctorDiagnosisHistory() {
     loadHistory();
   }, [dateFilter, patientFilter, serviceFilter, token]);
 
-  // ---------- UI ----------
   return (
     <div style={{ minHeight: "100vh", padding: "30px" }}>
       <div style={containerStyle}>
@@ -84,7 +76,6 @@ export default function DoctorDiagnosisHistory() {
           LỊCH SỬ CHẨN ĐOÁN
         </h2>
 
-        {/* FILTERS */}
         <div style={filterGrid}>
           <input
             type="date"
@@ -113,7 +104,6 @@ export default function DoctorDiagnosisHistory() {
           </select>
         </div>
 
-        {/* TABLE */}
         <div style={{ overflowX: "auto" }}>
           <table style={tableStyle}>
             <thead>
@@ -151,7 +141,10 @@ export default function DoctorDiagnosisHistory() {
                     <td>{h.serviceName || "Không có"}</td>
                     <td>
                       <button
-                        onClick={() => setSelectedItem(h)}
+                        onClick={async () => {
+                          const meds = await loadMedicines(h.diagnosisId);
+                          setSelectedItem({ ...h, medicines: meds });
+                        }}
                         style={btnStyleSmall}
                       >
                         Xem
@@ -164,13 +157,13 @@ export default function DoctorDiagnosisHistory() {
           </table>
         </div>
 
-        {/* POPUP - Vẫn giữ ngày + giờ để chi tiết */}
         {selectedItem && (
           <div style={popupOverlay} onClick={() => setSelectedItem(null)}>
             <div style={popupBox} onClick={(e) => e.stopPropagation()}>
               <h3 style={{ color: "#1E90FF", marginTop: 0 }}>
                 Chi tiết chẩn đoán #{selectedItem.diagnosisId}
               </h3>
+
               <p>
                 <strong>Bệnh nhân:</strong> {selectedItem.patientName}
               </p>
@@ -183,6 +176,7 @@ export default function DoctorDiagnosisHistory() {
                 {formatTimeOnly(selectedItem.startTime)} –{" "}
                 {formatTimeOnly(selectedItem.endTime)}
               </p>
+
               <p>
                 <strong>Triệu chứng:</strong>{" "}
                 {selectedItem.symptoms || "Không có"}
@@ -195,10 +189,29 @@ export default function DoctorDiagnosisHistory() {
                 <strong>Ghi chú:</strong>{" "}
                 {selectedItem.doctorNote || "Không có"}
               </p>
+
               <p>
                 <strong>Dịch vụ:</strong>{" "}
                 {selectedItem.serviceName || "Không có"}
               </p>
+
+              <p>
+                <strong>Đơn thuốc:</strong>
+              </p>
+
+              {selectedItem.medicines?.length > 0 ? (
+                <ul>
+                  {selectedItem.medicines.map((m, i) => (
+                    <li key={i}>
+                      {m.medicineName} – SL: {m.quantity} – Liều:{" "}
+                      {m.dosage || "N/A"} – {m.usageInstruction}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>Không có thuốc</p>
+              )}
+
               <button
                 onClick={() => setSelectedItem(null)}
                 style={{ ...btnStyleSmall, marginTop: "20px", width: "100%" }}
@@ -213,7 +226,7 @@ export default function DoctorDiagnosisHistory() {
   );
 }
 
-/* ---------- STYLES ---------- */
+/* ----------------- STYLES ----------------- */
 const containerStyle = {
   maxWidth: "1200px",
   margin: "auto",
@@ -221,13 +234,6 @@ const containerStyle = {
   padding: "30px",
   borderRadius: "20px",
   boxShadow: "0 4px 20px rgba(0,0,0,.1)",
-};
-
-const titleStyle = {
-  textAlign: "center",
-  fontWeight: "bold",
-  color: "#1E90FF",
-  marginBottom: "30px",
 };
 
 const filterGrid = {

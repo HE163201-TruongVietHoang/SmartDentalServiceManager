@@ -228,7 +228,8 @@ async function getDoctorSchedules(doctorId) {
         r.roomId,
         r.roomName,
         sr.note,
-        sr.createdAt AS requestCreatedAt
+        sr.createdAt AS requestCreatedAt,
+        sr.requestId
       FROM Schedules s
       LEFT JOIN Rooms r ON s.roomId = r.roomId
       LEFT JOIN ScheduleRequests sr ON s.requestId = sr.requestId

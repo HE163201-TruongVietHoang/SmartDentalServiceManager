@@ -14,7 +14,7 @@ import DiagnosisPlan from "./components/doctor/DiagnosisPlan";
 import TreatmentProgress from "./components/doctor/TreatmentProgress";
 import ScheduleRequest from "./components/doctor/ScheduleRequest";
 
-import ProfilePage from "./pages/profile/ProfileView";
+import ProfilePage from "./pages/Profile/ProfileView";
 import ServicesPage from "./pages/Service/Service";
 
 import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
@@ -57,6 +57,10 @@ import NurseProfile from "./pages/Nurse/NurseProfile";
 import Promotion from "./pages/ClinicManager/Promotion";
 import Invoice from "./pages/ClinicManager/Invoice";
 import VnpayReturn from "./pages/VnpayReturn";
+import DoctorPrescription from "./components/doctor/DoctorPrescription";
+import ReceptionistInvoiceListPage from "./pages/Receptionist/InvoiceListPage";
+import ReceptionistInvoiceDetailPage from "./pages/Receptionist/InvoiceDetailPage";
+import DoctorMedicinePage from "./pages/Doctor/DoctorMedicinePage";
 
 function App() {
   return (
@@ -208,6 +212,23 @@ function App() {
           }
         />
 
+        <Route
+          path="/doctor/prescription"
+          element={
+            <DoctorLayout>
+              <DoctorPrescription />
+            </DoctorLayout>
+          }
+        />
+        <Route
+          path="/doctor/medicines"
+          element={
+            <DoctorLayout>
+              <DoctorMedicinePage />
+            </DoctorLayout>
+          }
+        />
+
         {/* Trang cho Nurse */}
         <Route
           path="/nurse/profile"
@@ -269,6 +290,24 @@ function App() {
           }
         />
         <Route path="/vnpay_return_url" element={<VnpayReturn />} />
+
+        <Route
+          path="/receptionist/invoices"
+          element={
+            <ReceptionistLayout>
+              <ReceptionistInvoiceListPage />
+            </ReceptionistLayout>
+          }
+        />
+
+        <Route
+          path="/receptionist/invoices/:invoiceId"
+          element={
+            <ReceptionistLayout>
+              <ReceptionistInvoiceDetailPage />
+            </ReceptionistLayout>
+          }
+        />
       </Routes>
     </Router>
   );
