@@ -50,7 +50,7 @@ const VnpayReturn = () => {
   }, [searchParams]);
 
   const handleBackToInvoices = () => {
-    navigate('/clinic-manager/invoice'); // Điều chỉnh route theo app
+    navigate('/clinicmanager/invoice'); // Điều chỉnh route theo app
   };
 
   if (loading) {
