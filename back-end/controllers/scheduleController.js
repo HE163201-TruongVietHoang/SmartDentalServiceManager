@@ -7,7 +7,7 @@ const {
   adminRejectRequest,
   getSchedulesByDoctor,
   getDoctorScheduleDetailService,
-  cancelScheduleRequestService
+  cancelScheduleRequestService,
 } = require("../services/scheduleService");
 
 async function createScheduleRequestController(req, res) {
@@ -33,7 +33,6 @@ async function createScheduleRequestController(req, res) {
       });
     }
 
-
     if (result.unavailable?.length > 0) {
       return res.status(207).json({
         message: "Một số khung giờ không còn phòng trống, vui lòng chọn lại.",
@@ -50,21 +49,28 @@ async function createScheduleRequestController(req, res) {
     });
   } catch (err) {
     console.error(" Lỗi tạo lịch:", err);
-    res.status(500).json({ message: "Lỗi server khi tạo lịch làm việc.", error: err.message });
+    res
+      .status(500)
+      .json({
+        message: "Lỗi server khi tạo lịch làm việc.",
+        error: err.message,
+      });
   }
 }
-
 
 async function getDoctorSchedulesController(req, res) {
   try {
     const doctorId = req.user?.userId;
-    if (!doctorId) return res.status(401).json({ message: "Vui lòng đăng nhập." });
+    if (!doctorId)
+      return res.status(401).json({ message: "Vui lòng đăng nhập." });
 
     const schedules = await getDoctorSchedules(doctorId);
     res.status(200).json({ success: true, schedules });
   } catch (err) {
     console.error(" Error getDoctorSchedules:", err);
-    res.status(500).json({ message: "Lỗi khi lấy lịch làm việc.", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Lỗi khi lấy lịch làm việc.", error: err.message });
   }
 }
 
@@ -79,7 +85,12 @@ async function checkAvailabilityController(req, res) {
     res.status(200).json({ message: "Kết quả kiểm tra phòng trống", result });
   } catch (err) {
     console.error(" Lỗi kiểm tra availability:", err);
-    res.status(500).json({ message: "Lỗi server khi kiểm tra phòng trống.", error: err.message });
+    res
+      .status(500)
+      .json({
+        message: "Lỗi server khi kiểm tra phòng trống.",
+        error: err.message,
+      });
   }
 }
 
@@ -101,18 +112,24 @@ async function listScheduleRequestsController(req, res) {
       message: "Lỗi máy chủ khi lấy danh sách yêu cầu.",
     });
   }
-};
+}
 
 async function getScheduleRequestDetailsController(req, res) {
   try {
     const requestId = parseInt(req.params.id, 10);
-    if (!requestId) return res.status(400).json({ message: "requestId không hợp lệ" });
+    if (!requestId)
+      return res.status(400).json({ message: "requestId không hợp lệ" });
 
     const details = await getScheduleRequestDetails(requestId);
     res.status(200).json({ success: true, details });
   } catch (err) {
     console.error(" Lỗi lấy chi tiết request:", err);
-    res.status(500).json({ message: "Lỗi server khi lấy chi tiết request.", error: err.message });
+    res
+      .status(500)
+      .json({
+        message: "Lỗi server khi lấy chi tiết request.",
+        error: err.message,
+      });
   }
 }
 
@@ -121,13 +138,16 @@ async function approveScheduleRequestController(req, res) {
     const requestId = parseInt(req.params.id, 10);
     const adminId = req.user?.userId;
 
-    if (!requestId) return res.status(400).json({ message: "requestId không hợp lệ" });
+    if (!requestId)
+      return res.status(400).json({ message: "requestId không hợp lệ" });
 
     const result = await adminApproveRequest(requestId, adminId);
     res.status(200).json(result);
   } catch (err) {
     console.error(" Lỗi khi duyệt request:", err);
-    res.status(500).json({ message: "Lỗi server khi duyệt request.", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Lỗi server khi duyệt request.", error: err.message });
   }
 }
 
@@ -137,13 +157,16 @@ async function rejectScheduleRequestController(req, res) {
     const adminId = req.user?.userId;
     const { reason } = req.body;
 
-    if (!requestId) return res.status(400).json({ message: "requestId không hợp lệ" });
+    if (!requestId)
+      return res.status(400).json({ message: "requestId không hợp lệ" });
 
     await adminRejectRequest(requestId, adminId, reason);
     res.status(200).json({ success: true, message: "Đã từ chối request." });
   } catch (err) {
     console.error(" Lỗi khi từ chối request:", err);
-    res.status(500).json({ message: "Lỗi server khi từ chối request.", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Lỗi server khi từ chối request.", error: err.message });
   }
 }
 
@@ -182,13 +205,17 @@ const cancelScheduleRequest = async (req, res) => {
 
   try {
     await cancelScheduleRequestService(id, doctorId);
-    return res.status(200).json({ message: "Đã hủy và xóa yêu cầu thành công" });
+    return res
+      .status(200)
+      .json({ message: "Đã hủy và xóa yêu cầu thành công" });
   } catch (error) {
     if (error.message === "NOT_FOUND") {
       return res.status(404).json({ message: "Không tìm thấy yêu cầu" });
     }
     if (error.message === "FORBIDDEN") {
-      return res.status(403).json({ message: "Không có quyền hủy yêu cầu này" });
+      return res
+        .status(403)
+        .json({ message: "Không có quyền hủy yêu cầu này" });
     }
 
     console.error("Cancel Schedule Request Error:", error);
@@ -205,5 +232,5 @@ module.exports = {
   rejectScheduleRequestController,
   getDoctorSchedulesController,
   getDoctorScheduleDetail,
-  cancelScheduleRequest
+  cancelScheduleRequest,
 };
