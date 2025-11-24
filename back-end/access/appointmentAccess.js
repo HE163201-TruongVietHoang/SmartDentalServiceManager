@@ -56,11 +56,33 @@ async function getById(appointmentId) {
     .input("appointmentId", sql.Int, appointmentId)
     .query(`
       SELECT 
-        a.*,
-        s.slotId, s.startTime, s.endTime,
-        sch.scheduleId, sch.workDate, sch.roomId,
-        u.fullName AS patientName, u.email AS patientEmail, u.phone AS patientPhone,
-        d.userId AS doctorId, d.fullName AS doctorName, d.email AS doctorEmail, d.phone AS doctorPhone,
+        a.appointmentId,
+    a.patientId,
+    a.doctorId,
+    a.slotId,
+    a.reason,
+    a.appointmentType,
+    a.status,
+    a.createdAt,
+    a.updatedAt,
+    
+    -- slot info
+    s.slotId AS slotIdFromSlot,
+    s.startTime,
+    s.endTime,
+
+    sch.scheduleId,
+    sch.workDate,
+    sch.roomId,
+
+    u.fullName AS patientName,
+    u.email AS patientEmail,
+    u.phone AS patientPhone,
+
+    d.userId AS doctorUserId,
+    d.fullName AS doctorName,
+    d.email AS doctorEmail,
+    d.phone AS doctorPhone,
         (
           SELECT 
             srv.serviceId,
@@ -80,18 +102,18 @@ async function getById(appointmentId) {
       JOIN Users d ON a.doctorId = d.userId
       WHERE a.appointmentId = @appointmentId
     `);
-  
+
   const appointment = result.recordset[0];
   if (appointment && appointment.services) {
     appointment.services = JSON.parse(appointment.services);
   } else {
     appointment.services = [];
   }
-  
+
   return appointment;
 }
 
-async function cancelAppointment(appointmentId, transaction) {
+async function cancelAppointments(appointmentId, transaction) {
   const request = transaction.request();
   await request
     .input("appointmentId", sql.Int, appointmentId)
@@ -174,7 +196,7 @@ async function createUser({ email, phone, fullName, gender, dob, address }) {
 
   return { userId, isNew: true };
 }
-async function sendAccountEmail({ email, fullName, password  }) {
+async function sendAccountEmail({ email, fullName, password }) {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -192,7 +214,7 @@ async function sendAccountEmail({ email, fullName, password  }) {
       <p>Tài khoản của bạn đã được tạo trên hệ thống Smart Dental Clinic.</p>
       <ul>
         <li>Email: ${email}</li>
-        <li>Password: <b>${password }</b></li>
+        <li>Password: <b>${password}</b></li>
       </ul>
       <p>Vui lòng đăng nhập và đổi mật khẩu sau khi đăng nhập lần đầu.</p>
       <br>
@@ -203,4 +225,4 @@ async function sendAccountEmail({ email, fullName, password  }) {
   console.log(" Email tài khoản đã gửi tới:", email);
 }
 
-module.exports = { create, getByUser, getAll, getById, cancelAppointment, countUserCancellations, updateStatus, findUserByEmailOrPhone, createUser };
+module.exports = { create, getByUser, getAll, getById, cancelAppointments, countUserCancellations, updateStatus, findUserByEmailOrPhone, createUser };
