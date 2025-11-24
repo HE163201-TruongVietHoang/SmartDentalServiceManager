@@ -1,0 +1,286 @@
+// src/pages/Doctor/DoctorMedicinePage.js
+import React, { useEffect, useState } from "react";
+
+export default function DoctorMedicinePage() {
+  const [medicines, setMedicines] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const [newName, setNewName] = useState("");
+  const [newUnit, setNewUnit] = useState("");
+  const [newDescription, setNewDescription] = useState("");
+
+  const [search, setSearch] = useState("");
+  const [error, setError] = useState("");
+
+  const token = localStorage.getItem("token");
+
+  // LOAD ALL
+  const loadMedicines = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("http://localhost:5000/api/medicines", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await res.json();
+
+      const normalized = Array.isArray(data)
+        ? data.map((m) => ({
+            ...m,
+            unit: m.unit || "",
+            description: m.description || "",
+          }))
+        : [];
+
+      setMedicines(normalized);
+    } catch (err) {
+      console.error(err);
+      setMedicines([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (token) loadMedicines();
+  }, [token]);
+
+  // ADD MEDICINE
+  const handleAddMedicine = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!newName.trim()) return setError("Tên thuốc không được để trống");
+    if (!newUnit.trim()) return setError("Đơn vị không được để trống");
+
+    try {
+      const res = await fetch("http://localhost:5000/api/medicines/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          medicineName: newName.trim(),
+          unit: newUnit.trim(),
+          description: newDescription.trim() || null,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || "Không thêm được thuốc");
+
+      // data là object thuốc mới từ backend
+      const newMed = {
+        ...data,
+        unit: data.unit || "",
+        description: data.description || "",
+      };
+
+      setMedicines((prev) => [newMed, ...prev]);
+      setNewName("");
+      setNewUnit("");
+      setNewDescription("");
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  // DELETE
+  const handleDeleteMedicine = async (id) => {
+    if (!window.confirm("Bạn có chắc muốn xóa thuốc này?")) return;
+
+    try {
+      const res = await fetch(`http://localhost:5000/api/medicines/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      setMedicines((prev) => prev.filter((m) => m.medicineId !== id));
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  // FILTER
+  const filtered = medicines.filter((m) =>
+    (m.medicineName || "").toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div style={{ padding: "30px", minHeight: "100vh" }}>
+      <div style={containerStyle}>
+        <h2 style={titleStyle}>QUẢN LÝ THUỐC – BÁC SĨ</h2>
+
+        {/* ADD FORM */}
+        <div style={cardStyle}>
+          <h3 style={{ marginTop: 0, color: "#1E90FF" }}>Thêm thuốc mới</h3>
+
+          <form
+            onSubmit={handleAddMedicine}
+            style={{ display: "flex", flexDirection: "column", gap: "10px" }}
+          >
+            <input
+              type="text"
+              placeholder="Tên thuốc..."
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              style={inputStyle}
+            />
+
+            <input
+              type="text"
+              placeholder="Đơn vị (viên, ống, tuýp...)"
+              value={newUnit}
+              onChange={(e) => setNewUnit(e.target.value)}
+              style={inputStyle}
+            />
+
+            <input
+              type="text"
+              placeholder="Mô tả (không bắt buộc)"
+              value={newDescription}
+              onChange={(e) => setNewDescription(e.target.value)}
+              style={inputStyle}
+            />
+
+            <button type="submit" style={btnPrimary}>
+              + Thêm thuốc
+            </button>
+          </form>
+
+          {error && <p style={{ color: "red", marginTop: "8px" }}>{error}</p>}
+        </div>
+
+        {/* LIST */}
+        <div style={{ ...cardStyle, marginTop: "25px" }}>
+          <h3 style={{ marginTop: 0, color: "#1E90FF" }}>Danh sách thuốc</h3>
+
+          <input
+            type="text"
+            placeholder="Tìm kiếm..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ ...inputStyle, marginBottom: 10 }}
+          />
+
+          {loading ? (
+            <p>Đang tải...</p>
+          ) : (
+            <table style={tableStyle}>
+              <thead>
+                <tr>
+                  <th style={th}>ID</th>
+                  <th style={th}>Tên thuốc</th>
+                  <th style={th}>Đơn vị</th>
+                  <th style={th}>Mô tả</th>
+                  <th style={th}></th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {filtered.map((m) => (
+                  <tr key={m.medicineId}>
+                    <td style={td}>#{m.medicineId}</td>
+                    <td style={td}>{m.medicineName}</td>
+                    <td style={td}>{m.unit || "—"}</td>
+                    <td style={td}>{m.description || "—"}</td>
+                    <td style={td}>
+                      <button
+                        onClick={() => handleDeleteMedicine(m.medicineId)}
+                        style={btnDanger}
+                      >
+                        Xoá
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+
+                {filtered.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      style={{ textAlign: "center", padding: 20 }}
+                    >
+                      Không có thuốc.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// STYLE
+const containerStyle = {
+  maxWidth: "1000px",
+  margin: "auto",
+  background: "#fff",
+  padding: "25px",
+  borderRadius: "20px",
+  boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+};
+
+const titleStyle = {
+  textAlign: "center",
+  color: "#2ECCB6",
+  fontWeight: "bold",
+  marginBottom: "20px",
+};
+
+const cardStyle = {
+  background: "#F0FAFF",
+  padding: "20px",
+  borderRadius: "12px",
+  boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+};
+
+const inputStyle = {
+  padding: "10px",
+  borderRadius: "8px",
+  border: "2px solid #1E90FF",
+  fontSize: "15px",
+};
+
+const tableStyle = {
+  width: "100%",
+  borderCollapse: "collapse",
+};
+
+const th = {
+  padding: "10px",
+  background: "#DFF2FF",
+  textAlign: "left",
+};
+
+const td = {
+  padding: "10px",
+  borderBottom: "1px solid #eee",
+};
+
+const btnPrimary = {
+  padding: "10px 16px",
+  background: "#1E90FF",
+  color: "#fff",
+  borderRadius: "8px",
+  border: "none",
+  cursor: "pointer",
+  fontWeight: "bold",
+};
+
+const btnDanger = {
+  padding: "6px 12px",
+  background: "#ff4d4f",
+  color: "#fff",
+  borderRadius: "8px",
+  border: "none",
+  cursor: "pointer",
+};

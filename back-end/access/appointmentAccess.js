@@ -55,11 +55,33 @@ async function getById(appointmentId) {
     .request()
     .input("appointmentId", sql.Int, appointmentId).query(`
       SELECT 
-        a.*,
-        s.slotId, s.startTime, s.endTime,
-        sch.scheduleId, sch.workDate, sch.roomId,
-        u.fullName AS patientName, u.email AS patientEmail, u.phone AS patientPhone,
-        d.userId AS doctorId, d.fullName AS doctorName, d.email AS doctorEmail, d.phone AS doctorPhone,
+        a.appointmentId,
+    a.patientId,
+    a.doctorId,
+    a.slotId,
+    a.reason,
+    a.appointmentType,
+    a.status,
+    a.createdAt,
+    a.updatedAt,
+    
+    -- slot info
+    s.slotId AS slotIdFromSlot,
+    s.startTime,
+    s.endTime,
+
+    sch.scheduleId,
+    sch.workDate,
+    sch.roomId,
+
+    u.fullName AS patientName,
+    u.email AS patientEmail,
+    u.phone AS patientPhone,
+
+    d.userId AS doctorUserId,
+    d.fullName AS doctorName,
+    d.email AS doctorEmail,
+    d.phone AS doctorPhone,
         (
           SELECT 
             srv.serviceId,
@@ -90,7 +112,7 @@ async function getById(appointmentId) {
   return appointment;
 }
 
-async function cancelAppointment(appointmentId, transaction) {
+async function cancelAppointments(appointmentId, transaction) {
   const request = transaction.request();
   await request
     .input("appointmentId", sql.Int, appointmentId)
@@ -210,7 +232,7 @@ module.exports = {
   getByUser,
   getAll,
   getById,
-  cancelAppointment,
+  cancelAppointments,
   countUserCancellations,
   updateStatus,
   findUserByEmailOrPhone,
