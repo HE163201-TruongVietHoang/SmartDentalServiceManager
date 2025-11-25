@@ -18,6 +18,12 @@ const Invoice = () => {
 
   useEffect(() => {
     loadInvoices();
+
+    // Load lại invoices khi user quay lại tab (sau thanh toán)
+    const handleFocus = () => loadInvoices();
+    window.addEventListener('focus', handleFocus);
+
+    return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
   const loadInvoices = async () => {
@@ -165,8 +171,7 @@ const Invoice = () => {
     // console.log('formatTime result (fallback):', ''));
     return '';
   };
-
-  const handlePayment = async (invoice) => {
+ const handlePayment = async (invoice) => {
     try {
       const payload = {
         appointmentId: invoice.appointmentId,
@@ -183,6 +188,56 @@ const Invoice = () => {
     } catch (err) {
       setError('Lỗi khi thanh toán');
     }
+  };
+  const handleExport = (invoice) => {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Hóa đơn ${invoice.invoiceId}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; }
+            h1 { text-align: center; }
+            .info { margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #f2f2f2; }
+          </style>
+        </head>
+        <body>
+          <h1>Hóa đơn #${invoice.invoiceId}</h1>
+          <div class="info">
+            <p><strong>Bệnh nhân:</strong> ${invoice.patientName || `ID: ${invoice.patientId}`}</p>
+            <p><strong>Lịch hẹn:</strong> ${invoice.workDate ? 
+              `${new Date(invoice.workDate).toLocaleDateString('vi-VN')}: ${formatTime(invoice.startTime)} - ${formatTime(invoice.endTime)}` : 
+              `ID: ${invoice.appointmentId}`}</p>
+            <p><strong>Khuyến mãi:</strong> ${invoice.promotionCode || 'Không có'}</p>
+            <p><strong>Ngày tạo:</strong> ${new Date(invoice.issuedDate).toLocaleString('vi-VN')}</p>
+          </div>
+          <table>
+            <tr>
+              <th>Mô tả</th>
+              <th>Số tiền</th>
+            </tr>
+            <tr>
+              <td>Tổng tiền</td>
+              <td>${formatCurrency(invoice.totalAmount)}</td>
+            </tr>
+            <tr>
+              <td>Giảm giá</td>
+              <td>${formatCurrency(invoice.discountAmount || 0)}</td>
+            </tr>
+            <tr>
+              <td><strong>Thành tiền</strong></td>
+              <td><strong>${formatCurrency((invoice.totalAmount || 0) - (invoice.discountAmount || 0))}</strong></td>
+            </tr>
+          </table>
+          <p><strong>Trạng thái:</strong> ${invoice.status === 'Paid' ? 'Đã thanh toán' : invoice.status}</p>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
   };
 
   return (
@@ -231,21 +286,34 @@ const Invoice = () => {
                   <td>{getStatusBadge(invoice.status)}</td>
                   <td>{new Date(invoice.issuedDate).toLocaleString('vi-VN')}</td>
                   <td>
-                    <Button
-                      variant="outline-primary"
-                      size="sm"
-                      onClick={() => handleShowModal(invoice)}
-                      className="me-2"
-                    >
-                      Cập nhật
-                    </Button>
-                    <Button
-                      variant="outline-success"
-                      size="sm"
-                      onClick={() => handlePayment(invoice)}
-                    >
-                      Thanh toán
-                    </Button>
+                    {invoice.status === 'Paid' ? (
+                      <Button
+                        variant="outline-info"
+                        size="sm"
+                        onClick={() => handleExport(invoice)}
+                        className="me-2"
+                      >
+                        Xuất hóa đơn
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline-primary"
+                        size="sm"
+                        onClick={() => handleShowModal(invoice)}
+                        className="me-2"
+                      >
+                        Cập nhật
+                      </Button>
+                    )}
+                    {invoice.status !== 'Paid' && (
+                      <Button
+                        variant="outline-success"
+                        size="sm"
+                        onClick={() => handlePayment(invoice)}
+                      >
+                        Thanh toán
+                      </Button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -275,6 +343,9 @@ const Invoice = () => {
         <Form onSubmit={handleSubmit}>
           <Modal.Body>
             {success && <Alert variant="success">{success}</Alert>}
+            {editingInvoice?.status === 'Paid' && (
+              <Alert variant="info">Hóa đơn đã được thanh toán. Không thể chỉnh sửa.</Alert>
+            )}
             <Form.Group className="mb-3">
               <Form.Label>Mã giảm giá</Form.Label>
               <div className="d-flex">
@@ -285,8 +356,9 @@ const Invoice = () => {
                   onChange={handleInputChange}
                   placeholder="Nhập mã giảm giá"
                   className="me-2"
+                  disabled={editingInvoice?.status === 'Paid'}
                 />
-                <Button variant="outline-info" onClick={handleApplyPromotion}>
+                <Button variant="outline-info" onClick={handleApplyPromotion} disabled={editingInvoice?.status === 'Paid'}>
                   Áp dụng
                 </Button>
               </div>
@@ -303,6 +375,7 @@ const Invoice = () => {
                 min="0"
                 step="0.01"
                 readOnly
+                disabled={editingInvoice?.status === 'Paid'}
               />
               <Form.Text className="text-muted">
                 Số tiền giảm giá (VND) - được tính tự động khi áp dụng mã
@@ -315,6 +388,7 @@ const Invoice = () => {
                 name="status"
                 value={formData.status}
                 onChange={handleInputChange}
+                disabled={editingInvoice?.status === 'Paid'}
               >
                 <option value="Pending">Chờ thanh toán</option>
                 <option value="Paid">Đã thanh toán</option>
@@ -326,7 +400,7 @@ const Invoice = () => {
             <Button variant="secondary" onClick={handleCloseModal}>
               Hủy
             </Button>
-            <Button variant="primary" type="submit">
+            <Button variant="primary" type="submit" disabled={editingInvoice?.status === 'Paid'}>
               Cập nhật
             </Button>
           </Modal.Footer>

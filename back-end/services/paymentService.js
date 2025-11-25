@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const querystring = require('qs');
 const moment = require('moment');
 const { create: createPayment, findOneAndUpdate: updatePayment } = require('../access/paymentAccess');
+const { confirmPayment } = require('../access/invoiceAccess');
 
 class PaymentService {
 
@@ -100,11 +101,16 @@ class PaymentService {
 
             const paymentId = responseData.vnp_TxnRef;
 
-            await updatePayment(paymentId, {
+            const updatedPayment = await updatePayment(paymentId, {
                 status: responseData.vnp_ResponseCode === '00' ? 'Success' : 'Failed',
                 paymentDate: new Date(),
                 transactionCode: responseData.vnp_TransactionNo
             });
+
+            // Nếu thanh toán thành công và có invoiceId, cập nhật trạng thái invoice
+            if (responseData.vnp_ResponseCode === '00' && updatedPayment.invoiceId) {
+                await confirmPayment(updatedPayment.invoiceId);
+            }
 
             return responseData.vnp_ResponseCode === '00' ? 'Payment successful' : 'Payment failed';
         } catch (error) {
