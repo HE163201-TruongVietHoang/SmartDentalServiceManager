@@ -28,9 +28,14 @@ function ReceptionistLayout({ children }) {
       path: "/receptionist/appointment/create",
     },
     {
-      name: "Hóa đơn",
+      name: "Thanh toán hóa đơn",
       icon: <FaTags />,
       path: "/receptionist/invoice",
+    },
+    {
+      name: "Hóa đơn chờ xử lý",
+      icon: <FaTags />,
+      path: "/receptionist/invoices",
     },
     {
       name: "Chat",
