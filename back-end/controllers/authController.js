@@ -19,6 +19,7 @@ const {
   sendVerificationOtp,
   verifyAccountOtp,
 } = require("../services/authService");
+const { getFirstReceptionist } = require("../access/userAccess");
 
 async function loginController(req, res) {
   try {
@@ -220,6 +221,19 @@ async function verifyOtp(req, res) {
     res.status(400).json({ error: err.message });
   }
 }
+
+async function getReceptionistController(req, res) {
+  try {
+    const receptionist = await getFirstReceptionist();
+    if (!receptionist) {
+      return res.status(404).json({ message: 'Không tìm thấy lễ tân' });
+    }
+    res.json(receptionist);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
 module.exports = {
   loginController,
   profileController,
@@ -239,4 +253,5 @@ module.exports = {
   logoutDeviceController,
   logoutAllDevicesController,
   verifyOtp,
+  getReceptionistController,
 };

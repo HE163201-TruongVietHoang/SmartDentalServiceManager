@@ -286,6 +286,19 @@ const logoutAllSessions = async (userId) => {
     .query(`UPDATE UserSessions SET isActive=0 WHERE userId=@userId`);
 };
 
+async function getFirstReceptionist() {
+  const pool = await getPool();
+  const result = await pool.request()
+    .query(`
+      SELECT TOP 1 u.userId, u.fullName, u.email, u.phone
+      FROM dbo.Users u
+      JOIN dbo.Roles r ON u.roleId = r.roleId
+      WHERE r.roleName = 'Receptionist' AND u.isActive = 1
+      ORDER BY u.userId
+    `);
+  return result.recordset[0];
+}
+
 module.exports = {
   findUserByEmailOrPhone,
   activateUser,
@@ -305,6 +318,7 @@ module.exports = {
   logoutAllSessions,
   findUserByEmail,
   findUserByPhone,
-  verifyUserOtp
+  verifyUserOtp,
+  getFirstReceptionist
 }
 

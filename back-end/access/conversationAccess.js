@@ -22,7 +22,14 @@ async function getConversationsByUser(userId) {
     const pool = await getPool();
     const result = await pool.request()
         .input('userId', sql.Int, userId)
-        .query('SELECT * FROM Conversations WHERE participant1Id = @userId OR participant2Id = @userId ORDER BY lastMessageAt DESC, createdAt DESC');
+        .query(`
+            SELECT c.*, u1.fullName as participant1Name, u2.fullName as participant2Name
+            FROM Conversations c
+            LEFT JOIN Users u1 ON c.participant1Id = u1.userId
+            LEFT JOIN Users u2 ON c.participant2Id = u2.userId
+            WHERE c.participant1Id = @userId OR c.participant2Id = @userId
+            ORDER BY c.lastMessageAt DESC, c.createdAt DESC
+        `);
     return result.recordset;
 }
 
