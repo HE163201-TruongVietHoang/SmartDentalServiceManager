@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Row, Col, Card, Button, Table, Modal, Form, Alert, Badge } from 'react-bootstrap';
-import { getAllInvoices, updateInvoice, getInvoicesByPatient, createPaymentUrl, applyPromotion } from '../../api/api';
+import { getAllInvoices, updateInvoice, getInvoicesByPatient, createPaymentUrl, applyPromotion, getInvoiceDetail } from '../../api/api';
 
 const Invoice = () => {
   const [invoices, setInvoices] = useState([]);
@@ -15,6 +15,7 @@ const Invoice = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [promotionError, setPromotionError] = useState('');
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     loadInvoices();
@@ -189,55 +190,82 @@ const Invoice = () => {
       setError('Lỗi khi thanh toán');
     }
   };
-  const handleExport = (invoice) => {
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>Hóa đơn ${invoice.invoiceId}</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 20px; }
-            h1 { text-align: center; }
-            .info { margin-bottom: 20px; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; }
-          </style>
-        </head>
-        <body>
-          <h1>Hóa đơn #${invoice.invoiceId}</h1>
-          <div class="info">
-            <p><strong>Bệnh nhân:</strong> ${invoice.patientName || `ID: ${invoice.patientId}`}</p>
-            <p><strong>Lịch hẹn:</strong> ${invoice.workDate ? 
-              `${new Date(invoice.workDate).toLocaleDateString('vi-VN')}: ${formatTime(invoice.startTime)} - ${formatTime(invoice.endTime)}` : 
-              `ID: ${invoice.appointmentId}`}</p>
-            <p><strong>Khuyến mãi:</strong> ${invoice.promotionCode || 'Không có'}</p>
-            <p><strong>Ngày tạo:</strong> ${new Date(invoice.issuedDate).toLocaleString('vi-VN')}</p>
-          </div>
-          <table>
-            <tr>
-              <th>Mô tả</th>
-              <th>Số tiền</th>
-            </tr>
-            <tr>
-              <td>Tổng tiền</td>
-              <td>${formatCurrency(invoice.totalAmount)}</td>
-            </tr>
-            <tr>
-              <td>Giảm giá</td>
-              <td>${formatCurrency(invoice.discountAmount || 0)}</td>
-            </tr>
-            <tr>
-              <td><strong>Thành tiền</strong></td>
-              <td><strong>${formatCurrency((invoice.totalAmount || 0) - (invoice.discountAmount || 0))}</strong></td>
-            </tr>
-          </table>
-          <p><strong>Trạng thái:</strong> ${invoice.status === 'Paid' ? 'Đã thanh toán' : invoice.status}</p>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
-    printWindow.print();
+  const handleExport = async (invoice) => {
+    setExporting(true);
+    try {
+      const detail = await getInvoiceDetail(invoice.invoiceId);
+      const { header, diagnosis, services, medicines } = detail;
+
+      let servicesHtml = '<h3>Dịch vụ</h3><table><tr><th>Tên dịch vụ</th><th>Giá</th></tr>';
+      services.forEach(srv => {
+        servicesHtml += `<tr><td>${srv.serviceName}</td><td>${formatCurrency(srv.price)}</td></tr>`;
+      });
+      servicesHtml += '</table>';
+
+      let medicinesHtml = '<h3>Thuốc</h3><table><tr><th>Tên thuốc</th><th>Liều lượng</th><th>Hướng dẫn</th><th>Số lượng</th></tr>';
+      medicines.forEach(med => {
+        medicinesHtml += `<tr><td>${med.medicineName}</td><td>${med.dosage}</td><td>${med.usageInstruction}</td><td>${med.quantity}</td></tr>`;
+      });
+      medicinesHtml += '</table>';
+
+      let diagnosisHtml = '';
+      if (diagnosis) {
+        diagnosisHtml = `<h3>Chẩn đoán</h3><p><strong>Triệu chứng:</strong> ${diagnosis.symptoms || 'N/A'}</p><p><strong>Kết quả:</strong> ${diagnosis.diagnosisResult || 'N/A'}</p><p><strong>Ghi chú:</strong> ${diagnosis.doctorNote || 'N/A'}</p>`;
+      }
+
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Hóa đơn ${header.invoiceId}</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              h1 { text-align: center; }
+              .info { margin-bottom: 20px; }
+              table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+              th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+              th { background-color: #f2f2f2; }
+            </style>
+          </head>
+          <body>
+            <h1>Hóa đơn #${header.invoiceId}</h1>
+            <div class="info">
+              <p><strong>Bệnh nhân:</strong> ${header.patientName}</p>
+              <p><strong>Số điện thoại:</strong> ${header.patientPhone || 'N/A'}</p>
+              <p><strong>Bác sĩ:</strong> ${header.doctorName || 'N/A'}</p>
+              <p><strong>Ngày khám:</strong> ${header.examDate ? new Date(header.examDate).toLocaleDateString('vi-VN') : 'N/A'}</p>
+              <p><strong>Thời gian:</strong> ${header.startTime} - ${header.endTime}</p>
+              <p><strong>Ngày tạo:</strong> ${new Date(invoice.issuedDate).toLocaleString('vi-VN')}</p>
+            </div>
+            ${diagnosisHtml}
+            ${servicesHtml}
+            ${medicinesHtml}
+            <h3>Tóm tắt</h3>
+            <table>
+              <tr>
+                <td>Tổng tiền</td>
+                <td>${formatCurrency(header.totalAmount)}</td>
+              </tr>
+              <tr>
+                <td>Giảm giá</td>
+                <td>${formatCurrency(invoice.discountAmount || 0)}</td>
+              </tr>
+              <tr>
+                <td><strong>Thành tiền</strong></td>
+                <td><strong>${formatCurrency(header.finalAmount)}</strong></td>
+              </tr>
+            </table>
+            <p><strong>Trạng thái:</strong> ${header.status === 'Paid' ? 'Đã thanh toán' : header.status}</p>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    } catch (err) {
+      setError('Không thể tải chi tiết hóa đơn để xuất');
+    } finally {
+      setExporting(false);
+    }
   };
 
   return (
@@ -292,8 +320,9 @@ const Invoice = () => {
                         size="sm"
                         onClick={() => handleExport(invoice)}
                         className="me-2"
+                        disabled={exporting}
                       >
-                        Xuất hóa đơn
+                        {exporting ? 'Đang xuất...' : 'Xuất hóa đơn'}
                       </Button>
                     ) : (
                       <Button

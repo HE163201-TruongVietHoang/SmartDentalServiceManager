@@ -73,6 +73,15 @@ export const getInvoiceById = async (id) => {
   return res.data;
 };
 
+export const getInvoiceDetail = async (id) => {
+  const res = await axios.get(`${API_URL}/invoices/${id}`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}` // Giả sử token lưu trong localStorage
+    }
+  });
+  return res.data;
+};
+
 export const getInvoicesByPatient = async (patientId) => {
   const res = await axios.get(`${API_URL}/invoices/patient/${patientId}`);
   return res.data;
