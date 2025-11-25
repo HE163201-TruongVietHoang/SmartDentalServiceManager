@@ -1,6 +1,6 @@
 const { getPool, sql } = require("../config/db");
 const { checkSlot, markAsBooked, unmarkAsBooked } = require("../access/slotAccess");
-const { create, getByUser, getAll, getById, cancelAppointments, countUserCancellations, updateStatus, findUserByEmailOrPhone, createUser } = require("../access/appointmentAccess");
+const { create, getByUser, getAll, getById, cancelAppointments, countUserCancellations, updateStatus, findUserByEmailOrPhone, createUser, addServiceToAppointment } = require("../access/appointmentAccess");
 const { normalizeTime } = require("../utils/timeUtils");
 const appointmentService = {
   async makeAppointment({ patientId, doctorId, slotId, reason, workDate, appointmentType }, io) {
@@ -265,6 +265,11 @@ const appointmentService = {
       startTime: appointment.startTime.toISOString().slice(11, 16),
       endTime: appointment.endTime.toISOString().slice(11, 16)
     };
+  },
+
+  async addServiceToAppointment(appointmentId, serviceId) {
+    await addServiceToAppointment(appointmentId, serviceId);
+    return { success: true, message: "Dịch vụ đã được thêm vào cuộc hẹn" };
   }
 };
 module.exports = { appointmentService };

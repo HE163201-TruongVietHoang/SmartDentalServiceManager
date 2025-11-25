@@ -64,16 +64,52 @@ exports.updatePromotion = async (req, res) => {
   }
 };
 
+// Áp dụng promotion
+exports.applyPromotion = async (req, res) => {
+  const { total, code } = req.body;
+  try {
+    const pool = await getPool();
+    // Lấy promotion active
+    const promoResult = await pool.request()
+      .input('code', sql.NVarChar, code)
+      .query('SELECT * FROM Promotions WHERE code = @code AND isActive = 1 AND startDate <= GETDATE() AND endDate >= GETDATE()');
+    
+    if (promoResult.recordset.length === 0) {
+      return res.status(400).send('Promotion not found or inactive');
+    }
+    
+    const promotion = promoResult.recordset[0];
+    let discount = 0;
+    if (promotion.discountType === 'percent') {
+      discount = (total * promotion.discountValue) / 100;
+    } else if (promotion.discountType === 'amount') {
+      discount = promotion.discountValue;
+    }
+    
+    res.json({
+      originalTotal: total,
+      discount,
+      finalTotal: total - discount,
+      promotion
+    });
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
+};
+
 // Xóa promotion
 exports.deletePromotion = async (req, res) => {
   const { id } = req.params;
+
   try {
     const pool = await getPool();
     await pool.request()
       .input('id', sql.Int, id)
-      .query('DELETE FROM Promotions WHERE promotionId=@id');
+      .query('DELETE FROM Promotions WHERE promotionId = @id');
     res.send('Promotion deleted successfully');
   } catch (err) {
     res.status(500).send(err.message);
   }
 };
+
+module.exports = exports;

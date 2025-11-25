@@ -101,5 +101,19 @@ const appointmentController = {
       res.status(400).json({ success: false, message: err.message });
     }
   },
+
+  async addServiceToAppointment(req, res) {
+    try {
+      const appointmentId = parseInt(req.params.appointmentId);
+      const { serviceId } = req.body;
+      const result = await appointmentService.addServiceToAppointment(
+        appointmentId,
+        serviceId
+      );
+      res.json(result);
+    } catch (err) {
+      res.status(400).json({ success: false, message: err.message });
+    }
+  },
 };
 module.exports = { appointmentController };

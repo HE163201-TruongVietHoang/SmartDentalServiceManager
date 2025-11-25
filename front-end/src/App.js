@@ -56,6 +56,9 @@ import CreateAppointmentReceptionist from "./pages/Receptionist/CreateAppointmen
 
 import NurseLayout from "./pages/Nurse/NurseLayout";
 import NurseProfile from "./pages/Nurse/NurseProfile";
+import Promotion from "./pages/ClinicManager/Promotion";
+import Invoice from "./pages/ClinicManager/Invoice";
+import VnpayReturn from "./pages/VnpayReturn";
 import DoctorPrescription from "./components/doctor/DoctorPrescription";
 import ReceptionistInvoiceListPage from "./pages/Receptionist/InvoiceListPage";
 import ReceptionistInvoiceDetailPage from "./pages/Receptionist/InvoiceDetailPage";
@@ -153,7 +156,22 @@ function App() {
             </ClinicManagerLayout>
           }
         />
-
+        <Route
+          path="/clinicmanager/promotion"
+          element={
+            <ClinicManagerLayout>
+              <Promotion />
+            </ClinicManagerLayout>
+          }
+        />
+        <Route
+          path="/clinicmanager/invoice"
+          element={
+            <ClinicManagerLayout>
+              <Invoice />
+            </ClinicManagerLayout>
+          }
+        />
         {/* Trang cho Doctor */}
         <Route
           path="/doctor/schedule"
@@ -273,6 +291,7 @@ function App() {
             </ReceptionistLayout>
           }
         />
+        <Route path="/vnpay_return_url" element={<VnpayReturn />} />
 
         <Route
           path="/receptionist/invoices"

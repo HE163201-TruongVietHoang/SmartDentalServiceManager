@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ChatList = ({ conversations, selectedConversation, onSelectConversation, onStartConversation }) => {
+const ChatList = ({ conversations, selectedConversation, onSelectConversation, onStartConversation, unreadCounts }) => {
   // Lấy userId từ localStorage user object
   let currentUserId = 0;
   try {
@@ -10,34 +10,92 @@ const ChatList = ({ conversations, selectedConversation, onSelectConversation, o
     currentUserId = 0;
   }
   return (
-    <div style={{ width: 300, borderRight: '1px solid #eee', overflowY: 'auto' }}>
-      <div style={{ padding: 16, borderBottom: '1px solid #eee', fontWeight: 'bold' }}>Danh sách trò chuyện</div>
+    <div style={{ width: '350px', borderRight: '1px solid #e0e0e0', overflowY: 'auto', background: '#ffffff' }}>
+      <div style={{ padding: '16px', borderBottom: '1px solid #e0e0e0', fontWeight: 'bold', fontSize: '18px', color: '#333', background: '#f0f0f0' }}>
+        <i className="fas fa-comments" style={{ marginRight: '8px', color: '#2ECCB6' }}></i>
+        Trò chuyện
+      </div>
       {conversations.map(conv => {
         const otherId = conv.participant1Id === currentUserId ? conv.participant2Id : conv.participant1Id;
+        const isSelected = selectedConversation && selectedConversation.conversationId === conv.conversationId;
+        const unreadCount = unreadCounts[conv.conversationId] || 0;
+        const isUnread = unreadCount > 0;
         return (
           <div
             key={conv.conversationId}
             style={{
-              padding: 12,
-              background: selectedConversation && selectedConversation.conversationId === conv.conversationId ? '#f0f0f0' : 'white',
+              padding: '12px 16px',
+              background: isSelected ? '#e8f5f3' : '#ffffff',
               cursor: 'pointer',
-              borderBottom: '1px solid #eee'
+              borderBottom: '1px solid #f0f0f0',
+              transition: 'background 0.2s',
+              display: 'flex',
+              alignItems: 'center'
             }}
             onClick={() => onSelectConversation(conv)}
+            onMouseEnter={(e) => e.target.style.background = '#f5f5f5'}
+            onMouseLeave={(e) => e.target.style.background = isSelected ? '#e8f5f3' : '#ffffff'}
           >
-            <div>Đối thoại với User {otherId}</div>
-            <div style={{ fontSize: 12, color: '#888' }}>
-              {conv.lastMessageAt ? `Cập nhật: ${new Date(conv.lastMessageAt).toLocaleString()}` : ''}
+            <div style={{
+              width: '50px',
+              height: '50px',
+              borderRadius: '50%',
+              background: '#2ECCB6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              fontSize: '20px',
+              marginRight: '12px',
+              position: 'relative'
+            }}>
+              <i className="fas fa-user"></i>
+              {isUnread && (
+                <div style={{
+                  position: 'absolute',
+                  top: '-5px',
+                  right: '-5px',
+                  width: '20px',
+                  height: '20px',
+                  borderRadius: '50%',
+                  background: '#ff0000',
+                  color: '#fff',
+                  fontSize: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold'
+                }}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </div>
+              )}
+            </div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: isUnread ? 'bold' : '600', color: '#333', fontSize: '16px' }}>
+                User {otherId}
+              </div>
+              <div style={{ fontSize: '14px', color: isUnread ? '#000' : '#666', marginTop: '2px', fontWeight: isUnread ? 'bold' : 'normal' }}>
+                {conv.lastMessageAt ? `Tin nhắn cuối: ${new Date(conv.lastMessageAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}` : 'Chưa có tin nhắn'}
+              </div>
+            </div>
+            <div style={{ fontSize: '12px', color: '#999', textAlign: 'right' }}>
+              {conv.lastMessageAt ? new Date(conv.lastMessageAt).toLocaleDateString('vi-VN') : ''}
             </div>
           </div>
         );
       })}
-      {/* Demo nút tạo mới */}
-      <div style={{ padding: 16 }}>
-        <button onClick={() => {
-          const otherId = prompt('Nhập userId muốn chat:');
-          if (otherId) onStartConversation(currentUserId, Number(otherId));
-        }}>Tạo cuộc trò chuyện mới</button>
+      <div style={{ padding: '16px', borderTop: '1px solid #e0e0e0' }}>
+        <button
+          className="btn w-100"
+          style={{ background: '#2ECCB6', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px' }}
+          onClick={() => {
+            const otherId = prompt('Nhập userId muốn chat:');
+            if (otherId) onStartConversation(currentUserId, Number(otherId));
+          }}
+        >
+          <i className="fas fa-plus" style={{ marginRight: '8px' }}></i>
+          Bắt đầu trò chuyện mới
+        </button>
       </div>
     </div>
   );

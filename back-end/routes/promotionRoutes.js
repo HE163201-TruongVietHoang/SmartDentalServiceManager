@@ -6,5 +6,6 @@ router.get('/', promotionController.getAllPromotions);
 router.post('/', promotionController.createPromotion);
 router.put('/:id', promotionController.updatePromotion);
 router.delete('/:id', promotionController.deletePromotion);
+router.post('/apply', promotionController.applyPromotion);
 
 module.exports = router;
