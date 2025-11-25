@@ -13,6 +13,7 @@ export default function DoctorSchedule({ doctorId }) {
 
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [pendingScheduleId, setPendingScheduleId] = useState(null);
+  const [calendarKey, setCalendarKey] = useState(0);
 
   // 🔹 Tải lịch làm việc của bác sĩ
   useEffect(() => {
@@ -143,6 +144,7 @@ export default function DoctorSchedule({ doctorId }) {
         <div className="calendar-wrapper-v2">
           <div className="calendar-card-v2">
             <FullCalendar
+              key={calendarKey} // 🔹 dùng key
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
               initialView="timeGridWeek"
               height={500}
@@ -422,8 +424,16 @@ export default function DoctorSchedule({ doctorId }) {
                       alert("✅ Đã hủy yêu cầu lịch thành công");
                       setShowCancelModal(false);
                       setPendingScheduleId(null);
-                      // 🔄 Tải lại lịch
-                      loadDoctorSchedules();
+
+                      // 🔹 Xóa event khỏi state
+                      setEvents((prev) =>
+                        prev.filter(
+                          (e) => e.extendedProps.requestId !== pendingScheduleId
+                        )
+                      );
+
+                      // 🔹 Force FullCalendar rerender
+                      setCalendarKey((prev) => prev + 1);
                     } else {
                       alert("❌ " + data.message);
                     }

@@ -14,7 +14,7 @@ import DiagnosisPlan from "./components/doctor/DiagnosisPlan";
 import TreatmentProgress from "./components/doctor/TreatmentProgress";
 import ScheduleRequest from "./components/doctor/ScheduleRequest";
 
-import ProfilePage from "./pages/Profile/ProfileView";
+import ProfilePage from "./pages/profile/ProfileView";
 import ServicesPage from "./pages/Service/Service";
 
 import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
@@ -45,6 +45,7 @@ import DoctorCreateSchedule from "./pages/Doctor/DotorCreateSchedule";
 import DoctorProfile from "./pages/Doctor/DoctorProfile";
 import DoctorDiagnosis from "./pages/Doctor/DoctorDiagnosis";
 import DoctorDiagnosisHistory from "./pages/Doctor/DoctorDiagnosisHistory";
+import DoctorMedicinePage from "./pages/Doctor/DoctorMedicinePage";
 
 import PatientAppointmentsPage from "./pages/Receptionist/PatientAppointmentsPage";
 import ReceptionistLayout from "./pages/Receptionist/ReceptionistLayout";
@@ -58,7 +59,6 @@ import NurseProfile from "./pages/Nurse/NurseProfile";
 import DoctorPrescription from "./components/doctor/DoctorPrescription";
 import ReceptionistInvoiceListPage from "./pages/Receptionist/InvoiceListPage";
 import ReceptionistInvoiceDetailPage from "./pages/Receptionist/InvoiceDetailPage";
-import DoctorMedicinePage from "./pages/Doctor/DoctorMedicinePage";
 
 function App() {
   return (
