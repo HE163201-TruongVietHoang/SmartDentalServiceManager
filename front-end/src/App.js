@@ -45,6 +45,7 @@ import DoctorCreateSchedule from "./pages/Doctor/DotorCreateSchedule";
 import DoctorProfile from "./pages/Doctor/DoctorProfile";
 import DoctorDiagnosis from "./pages/Doctor/DoctorDiagnosis";
 import DoctorDiagnosisHistory from "./pages/Doctor/DoctorDiagnosisHistory";
+import DoctorMedicinePage from "./pages/Doctor/DoctorMedicinePage";
 
 import PatientAppointmentsPage from "./pages/Receptionist/PatientAppointmentsPage";
 import ReceptionistLayout from "./pages/Receptionist/ReceptionistLayout";
@@ -61,7 +62,6 @@ import VnpayReturn from "./pages/VnpayReturn";
 import DoctorPrescription from "./components/doctor/DoctorPrescription";
 import ReceptionistInvoiceListPage from "./pages/Receptionist/InvoiceListPage";
 import ReceptionistInvoiceDetailPage from "./pages/Receptionist/InvoiceDetailPage";
-import DoctorMedicinePage from "./pages/Doctor/DoctorMedicinePage";
 
 function App() {
   return (
