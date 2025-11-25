@@ -82,6 +82,11 @@ export const getInvoiceDetail = async (id) => {
   return res.data;
 };
 
+export const getReceptionist = async () => {
+  const res = await axios.get(`${API_URL}/auth/receptionist`);
+  return res.data;
+};
+
 export const getInvoicesByPatient = async (patientId) => {
   const res = await axios.get(`${API_URL}/invoices/patient/${patientId}`);
   return res.data;

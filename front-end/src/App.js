@@ -301,12 +301,27 @@ function App() {
             </ReceptionistLayout>
           }
         />
-
+  <Route
+          path="/receptionist/invoice"
+          element={
+            <ReceptionistLayout>
+              <Invoice />
+            </ReceptionistLayout>
+          }
+        />
         <Route
           path="/receptionist/invoices/:invoiceId"
           element={
             <ReceptionistLayout>
               <ReceptionistInvoiceDetailPage />
+            </ReceptionistLayout>
+          }
+        />
+          <Route
+          path="/receptionist/chat"
+          element={
+            <ReceptionistLayout>
+              <ChatPage />
             </ReceptionistLayout>
           }
         />

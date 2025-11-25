@@ -19,7 +19,8 @@ const {
     updateRoleController,
     toggleUserActiveController,
     deleteUserController,
-    verifyOtp
+    verifyOtp,
+    getReceptionistController
 } = require('../controllers/authController');
 const { authMiddleware } = require("../middlewares/authMiddleware");
 const authorizeRoles = require("../middlewares/roleMiddleware");
@@ -32,6 +33,8 @@ router.post('/reset-password', resetPasswordController);
 router.post('/change-password', authMiddleware, changePasswordController);
 router.get("/profile", authMiddleware, profileController);
 router.put('/profile', authMiddleware, updateProfileController);
+
+router.get('/receptionist', getReceptionistController);
 
 router.get("/devices", authMiddleware, getDevicesController);
 router.post(

@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
-const ChatList = ({ conversations, selectedConversation, onSelectConversation, onStartConversation, unreadCounts }) => {
+const ChatList = ({ conversations, selectedConversation, onSelectConversation, onStartConversation, unreadCounts, defaultUserId }) => {
   // Lấy userId từ localStorage user object
   let currentUserId = 0;
   try {
@@ -9,6 +9,19 @@ const ChatList = ({ conversations, selectedConversation, onSelectConversation, o
   } catch {
     currentUserId = 0;
   }
+  console.log("Current User ID:", currentUserId);
+  console.log("Default User ID:", defaultUserId);
+  useEffect(() => {
+    if (defaultUserId && currentUserId && currentUserId !== defaultUserId) {
+      const existingConv = conversations.find(conv =>
+        (conv.participant1Id === currentUserId && conv.participant2Id === defaultUserId) ||
+        (conv.participant1Id === defaultUserId && conv.participant2Id === currentUserId)
+      );
+      if (!existingConv) {
+        onStartConversation(currentUserId, defaultUserId);
+      }
+    }
+  }, [defaultUserId, currentUserId, conversations, onStartConversation]);
   return (
     <div style={{ width: '350px', borderRight: '1px solid #e0e0e0', overflowY: 'auto', background: '#ffffff' }}>
       <div style={{ padding: '16px', borderBottom: '1px solid #e0e0e0', fontWeight: 'bold', fontSize: '18px', color: '#333', background: '#f0f0f0' }}>
@@ -17,6 +30,7 @@ const ChatList = ({ conversations, selectedConversation, onSelectConversation, o
       </div>
       {conversations.map(conv => {
         const otherId = conv.participant1Id === currentUserId ? conv.participant2Id : conv.participant1Id;
+        const otherName = conv.participant1Id === currentUserId ? conv.participant2Name : conv.participant1Name;
         const isSelected = selectedConversation && selectedConversation.conversationId === conv.conversationId;
         const unreadCount = unreadCounts[conv.conversationId] || 0;
         const isUnread = unreadCount > 0;
@@ -72,7 +86,7 @@ const ChatList = ({ conversations, selectedConversation, onSelectConversation, o
             </div>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: isUnread ? 'bold' : '600', color: '#333', fontSize: '16px' }}>
-                User {otherId}
+                {otherName || `User ${otherId}`}
               </div>
               <div style={{ fontSize: '14px', color: isUnread ? '#000' : '#666', marginTop: '2px', fontWeight: isUnread ? 'bold' : 'normal' }}>
                 {conv.lastMessageAt ? `Tin nhắn cuối: ${new Date(conv.lastMessageAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}` : 'Chưa có tin nhắn'}
@@ -84,19 +98,21 @@ const ChatList = ({ conversations, selectedConversation, onSelectConversation, o
           </div>
         );
       })}
-      <div style={{ padding: '16px', borderTop: '1px solid #e0e0e0' }}>
-        <button
-          className="btn w-100"
-          style={{ background: '#2ECCB6', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px' }}
-          onClick={() => {
-            const otherId = prompt('Nhập userId muốn chat:');
-            if (otherId) onStartConversation(currentUserId, Number(otherId));
-          }}
-        >
-          <i className="fas fa-plus" style={{ marginRight: '8px' }}></i>
-          Bắt đầu trò chuyện mới
-        </button>
-      </div>
+      {!defaultUserId && (
+        <div style={{ padding: '16px', borderTop: '1px solid #e0e0e0' }}>
+          <button
+            className="btn w-100"
+            style={{ background: '#2ECCB6', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px' }}
+            onClick={() => {
+              const otherId = prompt('Nhập userId muốn chat:');
+              if (otherId) onStartConversation(currentUserId, Number(otherId));
+            }}
+          >
+            <i className="fas fa-plus" style={{ marginRight: '8px' }}></i>
+            Bắt đầu trò chuyện mới
+          </button>
+        </div>
+      )}
     </div>
   );
 };

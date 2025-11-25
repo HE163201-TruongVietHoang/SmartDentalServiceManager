@@ -27,62 +27,65 @@ const ChatWindow = ({ conversation, messages, loading }) => {
         </div>
       ) : null}
       <div style={{ flex: 1, paddingBottom: '16px' }}>
-        {messages.map(msg => {
-          const isMine = msg.senderId === Number(localStorage.getItem('userId'));
-          return (
-            <div key={msg.messageId} style={{ marginBottom: '16px', display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
-              {!isMine && (
+        {(() => {
+          const currentUser = JSON.parse(localStorage.getItem('user'));
+          return messages.map(msg => {
+            const isMine = msg.senderId === currentUser?.userId;
+            return (
+              <div key={msg.messageId} style={{ marginBottom: '16px', display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
+                {!isMine && (
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    background: '#ddd',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#666',
+                    fontSize: '16px',
+                    marginRight: '8px',
+                    marginTop: 'auto'
+                  }}>
+                    <i className="fas fa-user"></i>
+                  </div>
+                )}
                 <div style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '50%',
-                  background: '#ddd',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#666',
-                  fontSize: '16px',
-                  marginRight: '8px',
-                  marginTop: 'auto'
+                  maxWidth: '60%',
+                  background: isMine ? '#2ECCB6' : '#ffffff',
+                  color: isMine ? '#ffffff' : '#333',
+                  padding: '12px 16px',
+                  borderRadius: isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                  wordWrap: 'break-word',
+                  position: 'relative'
                 }}>
-                  <i className="fas fa-user"></i>
+                  <div>{msg.content}</div>
+                  <div style={{ fontSize: '10px', opacity: 0.7, marginTop: '4px', textAlign: 'right' }}>
+                    {new Date(msg.sentAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                  </div>
                 </div>
-              )}
-              <div style={{
-                maxWidth: '60%',
-                background: isMine ? '#2ECCB6' : '#ffffff',
-                color: isMine ? '#ffffff' : '#333',
-                padding: '12px 16px',
-                borderRadius: isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                wordWrap: 'break-word',
-                position: 'relative'
-              }}>
-                <div>{msg.content}</div>
-                <div style={{ fontSize: '10px', opacity: 0.7, marginTop: '4px', textAlign: 'right' }}>
-                  {new Date(msg.sentAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
-                </div>
+                {isMine && (
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    background: '#2ECCB6',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    fontSize: '16px',
+                    marginLeft: '8px',
+                    marginTop: 'auto'
+                  }}>
+                    <i className="fas fa-user"></i>
+                  </div>
+                )}
               </div>
-              {isMine && (
-                <div style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '50%',
-                  background: '#2ECCB6',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#fff',
-                  fontSize: '16px',
-                  marginLeft: '8px',
-                  marginTop: 'auto'
-                }}>
-                  <i className="fas fa-user"></i>
-                </div>
-              )}
-            </div>
-          );
-        })}
+            );
+          });
+        })()}
       </div>
       <div ref={bottomRef} />
     </div>
