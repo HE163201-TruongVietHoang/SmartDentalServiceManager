@@ -32,4 +32,9 @@ router.post(
   "/receptionist",
   appointmentController.makeAppointmentReceptionistController
 );
+router.post(
+  "/:appointmentId/services",
+  authMiddleware,
+  appointmentController.addServiceToAppointment
+);
 module.exports = router;

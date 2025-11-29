@@ -1,0 +1,153 @@
+{
+  "info": {
+    "name": "Smart Dental API - Invoices and Payments",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Invoices",
+      "item": [
+        {
+          "name": "Get All Invoices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/invoices",
+              "host": ["{{base_url}}"],
+              "path": ["api", "invoices"]
+            }
+          }
+        },
+        {
+          "name": "Create Invoice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": 1,\n  \"appointmentId\": 1,\n  \"diagnosisId\": null,\n  \"prescriptionId\": null,\n  \"promotionId\": null,\n  \"totalAmount\": 500000,\n  \"status\": \"Pending\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/invoices",
+              "host": ["{{base_url}}"],
+              "path": ["api", "invoices"]
+            }
+          }
+        },
+        {
+          "name": "Get Invoice by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/invoices/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "invoices", "1"]
+            }
+          }
+        },
+        {
+          "name": "Update Invoice",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Paid\",\n  \"discountAmount\": 50000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/invoices/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "invoices", "1"]
+            }
+          }
+        },
+        {
+          "name": "Get Invoices by Patient",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/invoices/patient/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "invoices", "patient", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "Create Payment URL",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentId\": 1,\n  \"amount\": 500000,\n  \"invoiceId\": 1,\n  \"bankCode\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/payments/create-url",
+              "host": ["{{base_url}}"],
+              "path": ["api", "payments", "create-url"]
+            }
+          }
+        },
+        {
+          "name": "Handle VNPay Return",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/payments/vnpay-return?vnp_ResponseCode=00&vnp_TxnRef=1&vnp_TransactionNo=123456&vnp_SecureHash=...",
+              "host": ["{{base_url}}"],
+              "path": ["api", "payments", "vnpay-return"],
+              "query": [
+                {
+                  "key": "vnp_ResponseCode",
+                  "value": "00"
+                },
+                {
+                  "key": "vnp_TxnRef",
+                  "value": "1"
+                },
+                {
+                  "key": "vnp_TransactionNo",
+                  "value": "123456"
+                },
+                {
+                  "key": "vnp_SecureHash",
+                  "value": "..."
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000"
+    }
+  ]
+}

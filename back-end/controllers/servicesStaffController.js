@@ -39,16 +39,18 @@ exports.getServiceById = async (req, res) => {
 // Thêm mới dịch vụ
 exports.createService = async (req, res) => {
   try {
-    const { serviceName, description, price } = req.body;
+    const { serviceName, description, price, duration, imageUrl } = req.body;
     const pool = await getPool();
 
     await pool
       .request()
       .input("serviceName", sql.NVarChar, serviceName)
       .input("description", sql.NVarChar, description)
-      .input("price", sql.Decimal(18, 2), price).query(`
-        INSERT INTO [Services] (serviceName, description, price, createdAt, updatedAt)
-        VALUES (@serviceName, @description, @price, GETDATE(), GETDATE())
+      .input("price", sql.Decimal(18, 2), price)
+      .input("duration", sql.Int, duration)
+      .input("imageUrl", sql.NVarChar, imageUrl).query(`
+        INSERT INTO [Services] (serviceName, description, price, duration, imageUrl, createdAt, updatedAt)
+        VALUES (@serviceName, @description, @price, @duration, @imageUrl, GETDATE(), GETDATE())
       `);
 
     res.status(201).json({ message: "Service created successfully" });
@@ -61,7 +63,7 @@ exports.createService = async (req, res) => {
 // Cập nhật dịch vụ
 exports.updateService = async (req, res) => {
   try {
-    const { serviceName, description, price } = req.body;
+    const { serviceName, description, price, duration, imageUrl } = req.body;
     const pool = await getPool();
 
     await pool
@@ -69,11 +71,15 @@ exports.updateService = async (req, res) => {
       .input("serviceId", sql.Int, req.params.id)
       .input("serviceName", sql.NVarChar, serviceName)
       .input("description", sql.NVarChar, description)
-      .input("price", sql.Decimal(18, 2), price).query(`
+      .input("price", sql.Decimal(18, 2), price)
+      .input("duration", sql.Int, duration)
+      .input("imageUrl", sql.NVarChar, imageUrl).query(`
         UPDATE [Services]
         SET serviceName = @serviceName,
             description = @description,
             price = @price,
+            duration = @duration,
+            imageUrl = @imageUrl,
             updatedAt = GETDATE()
         WHERE serviceId = @serviceId
       `);

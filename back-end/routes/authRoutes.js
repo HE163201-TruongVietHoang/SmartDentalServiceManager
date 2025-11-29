@@ -19,7 +19,8 @@ const {
     toggleUserActiveController,
     deleteUserController,
     verifyOtp,
-    updateAvatarController
+    updateAvatarController,
+    getReceptionistController
 } = require('../controllers/authController');
 const upload = require("../middlewares/upload");
 const { authMiddleware } = require("../middlewares/authMiddleware");
@@ -34,6 +35,7 @@ router.post('/change-password', authMiddleware, changePasswordController);
 router.get("/profile", authMiddleware, profileController);
 router.put('/profile', authMiddleware, updateProfileController);
 router.put("/profile/avatar", upload.single("avatar"),authMiddleware, updateAvatarController);
+router.get('/receptionist', getReceptionistController);
 router.get("/devices", authMiddleware, getDevicesController);
 router.post(
   "/devices/:sessionId/logout",

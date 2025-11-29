@@ -84,13 +84,11 @@ export default function MyAppointmentsPage() {
       // 🔹 Thành công
       alert("Hủy lịch hẹn thành công!");
       fetchAppointments();
-
     } catch (err) {
       console.error(err);
       alert("Không thể hủy lịch hẹn. Vui lòng thử lại!");
     }
   };
-
 
   return (
     <div>
@@ -113,7 +111,7 @@ export default function MyAppointmentsPage() {
                     <th>Khung giờ</th>
                     <th>Loại khám</th>
                     <th>Trạng thái</th>
-                    <th style={{ width: '200px' }}>Hành động</th>
+                    <th style={{ width: "200px" }}>Hành động</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -143,12 +141,22 @@ export default function MyAppointmentsPage() {
                           {a.status === "Completed" && (
                             <button
                               className="btn btn-success btn-sm"
-                              onClick={() => navigate(`/appointment/${a.appointmentId}/review?doctorId=${a.doctorId}&serviceId=${a.serviceId || ''}`)}
+                              onClick={() =>
+                                navigate(
+                                  `/appointment/${
+                                    a.appointmentId
+                                  }/review?doctorId=${a.doctorId}&serviceId=${
+                                    a.serviceId || ""
+                                  }`
+                                )
+                              }
                             >
                               Đánh giá
                             </button>
                           )}
-                          {a.status !== "Scheduled" && a.status !== "Completed" && ""}
+                          {a.status !== "Scheduled" &&
+                            a.status !== "Completed" &&
+                            ""}
                         </div>
                       </td>
                     </tr>

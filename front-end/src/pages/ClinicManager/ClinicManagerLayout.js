@@ -27,6 +27,16 @@ function ClinicManagerLayout({ children }) {
       icon: <FaTags />,
       path: "/clinicmanager/doctorschedule",
     },
+    {
+      name: "Quản lý khuyến mãi",
+      icon: <FaTags />,
+      path: "/clinicmanager/promotion",
+    },
+    {
+      name: "Quản lý hóa đơn",
+      icon: <FaTags />,
+      path: "/clinicmanager/invoice",
+    },
   ];
 
   const handleLogout = async () => {
