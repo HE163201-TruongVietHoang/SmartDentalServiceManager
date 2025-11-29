@@ -28,7 +28,8 @@
     "nodemailer": "^7.0.10",
     "sequelize": "^6.37.7",
     "socket.io": "^4.8.1",
-    "sql": "^0.78.0"
+    "sql": "^0.78.0",
+    "streamifier": "^0.1.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.10",
