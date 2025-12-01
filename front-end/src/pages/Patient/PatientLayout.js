@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
+import ChatPopup from "../../components/ChatPopup";
 
 function PatientLayout() {
   const [showPendingPopup, setShowPendingPopup] = useState(false);
+  const [showChat, setShowChat] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -85,6 +87,30 @@ function PatientLayout() {
           </div>
         </div>
       )}
+      <ChatPopup isOpen={showChat} onClose={() => setShowChat(false)} />
+      <button
+        onClick={() => setShowChat(!showChat)}
+        style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          width: '60px',
+          height: '60px',
+          borderRadius: '50%',
+          background: '#2ECCB6',
+          border: 'none',
+          color: '#fff',
+          fontSize: '24px',
+          cursor: 'pointer',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+          zIndex: 999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
+        <i className="fas fa-comments"></i>
+      </button>
       <Outlet />
     </>
   );

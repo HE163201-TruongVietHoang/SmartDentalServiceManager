@@ -3,15 +3,14 @@ const { getPool, sql } = require('../config/db');
 // Tạo hoặc lấy cuộc trò chuyện giữa 2 user
 async function findOrCreateConversation(participant1Id, participant2Id) {
     const pool = await getPool();
-    const [p1, p2] = participant1Id < participant2Id ? [participant1Id, participant2Id] : [participant2Id, participant1Id];
     let result = await pool.request()
-        .input('participant1Id', sql.Int, p1)
-        .input('participant2Id', sql.Int, p2)
+        .input('participant1Id', sql.Int, participant1Id)
+        .input('participant2Id', sql.Int, participant2Id)
         .query('SELECT * FROM Conversations WHERE participant1Id = @participant1Id AND participant2Id = @participant2Id');
     if (result.recordset.length > 0) return result.recordset[0];
     let insert = await pool.request()
-        .input('participant1Id', sql.Int, p1)
-        .input('participant2Id', sql.Int, p2)
+        .input('participant1Id', sql.Int, participant1Id)
+        .input('participant2Id', sql.Int, participant2Id)
         .query('INSERT INTO Conversations (participant1Id, participant2Id) OUTPUT INSERTED.* VALUES (@participant1Id, @participant2Id)');
     return insert.recordset[0];
 }
@@ -42,8 +41,28 @@ async function getConversationById(conversationId) {
     return result.recordset[0];
 }
 
+// Kiểm tra xem userId đã có cuộc trò chuyện chưa (userId là participant2Id - bệnh nhân)
+async function checkConversationForUser(userId) {
+    const pool = await getPool();
+    const result = await pool.request()
+        .input('userId', sql.Int, userId)
+        .query('SELECT participant1Id FROM Conversations WHERE participant2Id = @userId');
+    return result.recordset.length > 0 ? result.recordset[0].participant1Id : null; // Trả về participant1Id nếu có, ngược lại null
+}
+
+// Chuyển cuộc trò chuyện sang lễ tân khác(participant1Id là lễ tân)
+async function transferConversation(conversationId, newReceptionistId) {
+    const pool = await getPool();
+    await pool.request()
+        .input('conversationId', sql.Int, conversationId)
+        .input('newReceptionistId', sql.Int, newReceptionistId)
+        .query('UPDATE Conversations SET participant1Id = @newReceptionistId WHERE conversationId = @conversationId');
+}
+
 module.exports = {
     findOrCreateConversation,
     getConversationsByUser,
-    getConversationById
+    getConversationById,
+    checkConversationForUser,
+    transferConversation
 };

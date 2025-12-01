@@ -33,11 +33,23 @@ async function markMessagesReadService(conversationId, userId) {
     await messageAccess.markMessagesAsRead(conversationId, userId);
 }
 
+// Kiểm tra cuộc trò chuyện cho user
+async function checkConversationForUserService(userId) {
+    return await conversationAccess.checkConversationForUser(userId);
+}
+
+// Chuyển cuộc trò chuyện sang lễ tân khác
+async function transferConversationService(conversationId, newReceptionistId) {
+    return await conversationAccess.transferConversation(conversationId, newReceptionistId);
+}
+
 module.exports = {
     getOrCreateConversationService,
     getUserConversationsService,
     sendMessageService,
     getMessagesService,
     getConversationByIdService,
-    markMessagesReadService
+    markMessagesReadService,
+    checkConversationForUserService,
+    transferConversationService
 };

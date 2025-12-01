@@ -87,6 +87,11 @@ export const getReceptionist = async () => {
   return res.data;
 };
 
+export const getReceptionists = async () => {
+  const res = await axios.get(`${API_URL}/auth/receptionists`);
+  return res.data;
+};
+
 export const getInvoicesByPatient = async (patientId) => {
   const res = await axios.get(`${API_URL}/invoices/patient/${patientId}`);
   return res.data;

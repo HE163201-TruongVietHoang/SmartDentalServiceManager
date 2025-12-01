@@ -311,9 +311,20 @@ async function getFirstReceptionist() {
       FROM dbo.Users u
       JOIN dbo.Roles r ON u.roleId = r.roleId
       WHERE r.roleName = 'Receptionist' AND u.isActive = 1
-      ORDER BY u.userId
+      ORDER BY NEWID()
     `);
   return result.recordset[0];
+}
+async function getAllReceptionist() {
+  const pool = await getPool();
+  const result = await pool.request()
+    .query(`
+      SELECT u.userId, u.fullName, u.email, u.phone
+      FROM dbo.Users u
+      JOIN dbo.Roles r ON u.roleId = r.roleId
+      WHERE r.roleName = 'Receptionist' AND u.isActive = 1
+    `);
+  return result.recordset;
 }
 
 module.exports = {
@@ -337,6 +348,7 @@ module.exports = {
   findUserByPhone,
   verifyUserOtp,
   updateAvatar,
-  getFirstReceptionist
+  getFirstReceptionist,
+  getAllReceptionist
 }
 
