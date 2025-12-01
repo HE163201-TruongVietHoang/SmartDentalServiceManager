@@ -15,10 +15,7 @@ import TreatmentProgress from "./components/doctor/TreatmentProgress";
 import ScheduleRequest from "./components/doctor/ScheduleRequest";
 
 import ProfilePage from "./pages/profile/ProfileView";
-import ServicesPage from "./pages/Hone/Service";
-import ServiceDetail from "./pages/Hone/ServiceDeatil";
-import DoctorsPage from "./pages/Hone/DoctorsPage";
-import DoctorDetail from "./pages/Hone/DoctorDetatil";
+import ServicesPage from "./pages/Service/Service";
 
 import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
 
@@ -64,6 +61,8 @@ import VnpayReturn from "./pages/VnpayReturn";
 import DoctorPrescription from "./components/doctor/DoctorPrescription";
 import ReceptionistInvoiceListPage from "./pages/Receptionist/InvoiceListPage";
 import ReceptionistInvoiceDetailPage from "./pages/Receptionist/InvoiceDetailPage";
+
+import MedicalRecordPage from "./pages/Patient/MedicalRecordPage";
 
 function App() {
   return (
@@ -112,6 +111,7 @@ function App() {
         <Route path="/admin/users" element={<UserManagement />} />
         <Route path="/appointment" element={<AppointmentPage />} />
         <Route path="/appointment/me" element={<MyAppointmentsPage />} />
+        <Route path="/medical-record" element={<MedicalRecordPage />} />
         <Route
           path="/appointment/:appointmentId/review"
           element={<AppointmentReview />}

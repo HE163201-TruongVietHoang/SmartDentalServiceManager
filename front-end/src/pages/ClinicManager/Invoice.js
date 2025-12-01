@@ -16,6 +16,15 @@ const Invoice = () => {
   const [success, setSuccess] = useState('');
   const [promotionError, setPromotionError] = useState('');
   const [exporting, setExporting] = useState(false);
+  const [filters, setFilters] = useState({
+    status: '',
+    dateFrom: '',
+    dateTo: '',
+    patient: '',
+    doctor: ''
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     loadInvoices();
@@ -26,6 +35,10 @@ const Invoice = () => {
 
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
 
   const loadInvoices = async () => {
     try {
@@ -87,6 +100,14 @@ const Invoice = () => {
       setPromotionError('Mã giảm giá không hợp lệ hoặc đã hết hạn');
       setSuccess('');
     }
+  };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters({
+      ...filters,
+      [name]: value
+    });
   };
 
   const handleInputChange = (e) => {
@@ -172,24 +193,24 @@ const Invoice = () => {
     // console.log('formatTime result (fallback):', ''));
     return '';
   };
- const handlePayment = async (invoice) => {
-    try {
-      const payload = {
-        appointmentId: invoice.appointmentId,
-        amount: (invoice.totalAmount || 0) - (invoice.discountAmount || 0), // Sử dụng finalAmount
-        invoiceId: invoice.invoiceId,
-        bankCode: ""
-      };
-      const response = await createPaymentUrl(payload);
-      if (response.success) {
-        window.location.href = response.data.vnpUrl;
-      } else {
-        setError('Không thể tạo URL thanh toán');
-      }
-    } catch (err) {
-      setError('Lỗi khi thanh toán');
-    }
-  };
+//  const handlePayment = async (invoice) => {
+//     try {
+//       const payload = {
+//         appointmentId: invoice.appointmentId,
+//         amount: (invoice.totalAmount || 0) - (invoice.discountAmount || 0), // Sử dụng finalAmount
+//         invoiceId: invoice.invoiceId,
+//         bankCode: ""
+//       };
+//       const response = await createPaymentUrl(payload);
+//       if (response.success) {
+//         window.location.href = response.data.vnpUrl;
+//       } else {
+//         setError('Không thể tạo URL thanh toán');
+//       }
+//     } catch (err) {
+//       setError('Lỗi khi thanh toán');
+//     }
+//   };
   const handleExport = async (invoice) => {
     setExporting(true);
     try {
@@ -268,6 +289,29 @@ const Invoice = () => {
     }
   };
 
+  const filteredInvoices = invoices.filter(invoice => {
+    const matchesStatus = !filters.status || invoice.status === filters.status;
+    const matchesPatient = !filters.patient || (invoice.patientName && invoice.patientName.toLowerCase().includes(filters.patient.toLowerCase()));
+    const matchesDoctor = !filters.doctor || (invoice.doctorName && invoice.doctorName.toLowerCase().includes(filters.doctor.toLowerCase()));
+    const invoiceDate = new Date(invoice.issuedDate);
+    const fromDate = filters.dateFrom ? new Date(filters.dateFrom) : null;
+    const toDate = filters.dateTo ? new Date(filters.dateTo) : null;
+    const matchesDate = (!fromDate || invoiceDate >= fromDate) && (!toDate || invoiceDate <= toDate);
+    return matchesStatus && matchesPatient && matchesDoctor && matchesDate;
+  });
+
+  const totalPages = Math.ceil(filteredInvoices.length / itemsPerPage);
+  const paginatedInvoices = filteredInvoices.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (e) => {
+    setItemsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
+
   return (
     <Container fluid>
       <Row className="mb-4">
@@ -278,6 +322,49 @@ const Invoice = () => {
 
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
+
+      <Card className="mb-4">
+        <Card.Body>
+          <h5>Bộ lọc</h5>
+          <Row>
+            <Col md={2}>
+              <Form.Group>
+                <Form.Label>Trạng thái</Form.Label>
+                <Form.Select name="status" value={filters.status} onChange={handleFilterChange}>
+                  <option value="">Tất cả</option>
+                  <option value="Pending">Chờ thanh toán</option>
+                  <option value="Paid">Đã thanh toán</option>
+                  <option value="Cancelled">Đã hủy</option>
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col md={2}>
+              <Form.Group>
+                <Form.Label>Từ ngày</Form.Label>
+                <Form.Control type="date" name="dateFrom" value={filters.dateFrom} onChange={handleFilterChange} />
+              </Form.Group>
+            </Col>
+            <Col md={2}>
+              <Form.Group>
+                <Form.Label>Đến ngày</Form.Label>
+                <Form.Control type="date" name="dateTo" value={filters.dateTo} onChange={handleFilterChange} />
+              </Form.Group>
+            </Col>
+            <Col md={3}>
+              <Form.Group>
+                <Form.Label>Bệnh nhân</Form.Label>
+                <Form.Control type="text" name="patient" value={filters.patient} onChange={handleFilterChange} placeholder="Tên bệnh nhân" />
+              </Form.Group>
+            </Col>
+            <Col md={3}>
+              <Form.Group>
+                <Form.Label>Bác sĩ</Form.Label>
+                <Form.Control type="text" name="doctor" value={filters.doctor} onChange={handleFilterChange} placeholder="Tên bác sĩ" />
+              </Form.Group>
+            </Col>
+          </Row>
+        </Card.Body>
+      </Card>
 
       <Card>
         <Card.Body>
@@ -297,15 +384,12 @@ const Invoice = () => {
               </tr>
             </thead>
             <tbody>
-              {invoices.map((invoice) => (
+              {paginatedInvoices.map((invoice) => (
                 <tr key={invoice.invoiceId}>
                   <td>{invoice.invoiceId}</td>
                   <td>{invoice.patientName || `ID: ${invoice.patientId}`}</td>
                   <td>
-                    {invoice.workDate ? 
-                      `${new Date(invoice.workDate).toLocaleDateString('vi-VN')}: ${formatTime(invoice.startTime)} - ${formatTime(invoice.endTime)}` : 
-                      `ID: ${invoice.appointmentId}`
-                    }
+                    {invoice.workDate ? `${new Date(invoice.workDate).toLocaleDateString('vi-VN')}: ${formatTime(invoice.startTime)} - ${formatTime(invoice.endTime)}` : `ID: ${invoice.appointmentId}`}
                   </td>
                   <td>{invoice.promotionCode || 'Không có'}</td>
                   <td>{formatCurrency(invoice.totalAmount)}</td>
@@ -334,7 +418,7 @@ const Invoice = () => {
                         Cập nhật
                       </Button>
                     )}
-                    {invoice.status !== 'Paid' && (
+                    {/* {invoice.status !== 'Paid' && (
                       <Button
                         variant="outline-success"
                         size="sm"
@@ -342,7 +426,7 @@ const Invoice = () => {
                       >
                         Thanh toán
                       </Button>
-                    )}
+                    )} */}
                   </td>
                 </tr>
               ))}
@@ -350,6 +434,51 @@ const Invoice = () => {
           </Table>
         </Card.Body>
       </Card>
+
+      {totalPages > 1 && (
+        <Row className="mb-4">
+          <Col className="d-flex justify-content-between align-items-center">
+            <div>
+              <Form.Select value={itemsPerPage} onChange={handleItemsPerPageChange} style={{ width: 'auto' }}>
+                <option value={10}>10 mỗi trang</option>
+                <option value={20}>20 mỗi trang</option>
+                <option value={50}>50 mỗi trang</option>
+              </Form.Select>
+            </div>
+            <div>
+              <Button
+                variant="outline-secondary"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="me-2"
+              >
+                Trước
+              </Button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <Button
+                  key={page}
+                  variant={page === currentPage ? "primary" : "outline-primary"}
+                  onClick={() => handlePageChange(page)}
+                  className="me-1"
+                >
+                  {page}
+                </Button>
+              ))}
+              <Button
+                variant="outline-secondary"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="ms-2"
+              >
+                Sau
+              </Button>
+            </div>
+            <div>
+              Trang {currentPage} / {totalPages} ({filteredInvoices.length} kết quả)
+            </div>
+          </Col>
+        </Row>
+      )}
 
       <Modal show={showModal} onHide={handleCloseModal} size="lg">
         <Modal.Header closeButton>
@@ -400,7 +529,6 @@ const Invoice = () => {
                 type="number"
                 name="discountAmount"
                 value={formData.discountAmount}
-                onChange={handleInputChange}
                 min="0"
                 step="0.01"
                 readOnly

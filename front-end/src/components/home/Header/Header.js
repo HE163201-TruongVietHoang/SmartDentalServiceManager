@@ -93,6 +93,25 @@ export default function Header() {
                 </button>
               </li>
               <li>
+                <button
+                  className="dropdown-item"
+                  onClick={() => navigate("/medical-record")}
+                >
+                  Hồ sơ khám bệnh
+                </button>
+              </li>
+              <li>
+                <hr className="dropdown-divider" />
+              </li>
+                 <li>
+                <button
+                  className="dropdown-item"
+                  onClick={() => navigate("/invoice/me")}
+                >
+                  Hóa đơn của tôi
+                </button>
+              </li>
+              <li>
                 <hr className="dropdown-divider" />
               </li>
             </>
@@ -191,8 +210,8 @@ export default function Header() {
               >
                 Liên hệ
               </a>
-            </li> */}
-            {user && (
+            </li>
+            {user?.roleName === "Patient" && (
               <li className="nav-item">
                 <a
                   className="nav-link"
