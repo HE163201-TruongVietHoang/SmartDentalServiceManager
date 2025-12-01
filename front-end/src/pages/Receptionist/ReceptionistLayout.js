@@ -5,6 +5,11 @@ import {
   FaTags,
   FaSignOutAlt,
   FaUserCircle,
+  FaCalendarCheck,
+  FaUsers,
+  FaCalendarPlus,
+  FaFileInvoiceDollar,
+  FaComments,
 } from "react-icons/fa";
 
 function ReceptionistLayout({ children }) {
@@ -14,32 +19,27 @@ function ReceptionistLayout({ children }) {
   const menu = [
     {
       name: "Lịch khám bệnh nhân",
-      icon: <FaServicestack />,
+      icon: <FaCalendarCheck />,
       path: "/receptionist/patient/appointment",
     },
     {
       name: "Bệnh nhân",
-      icon: <FaTags />,
+      icon: <FaUsers />,
       path: "/receptionist/patients",
     },
     {
       name: "Tạo lịch khám",
-      icon: <FaTags />,
+      icon: <FaCalendarPlus />,
       path: "/receptionist/appointment/create",
     },
     {
       name: "Thanh toán hóa đơn",
-      icon: <FaTags />,
+      icon: <FaFileInvoiceDollar />,
       path: "/receptionist/invoice",
     },
     {
-      name: "Hóa đơn chờ xử lý",
-      icon: <FaTags />,
-      path: "/receptionist/invoices",
-    },
-    {
       name: "Chat",
-      icon: <FaTags />,
+      icon: <FaComments />,
       path: "/chat",
     },
   ];

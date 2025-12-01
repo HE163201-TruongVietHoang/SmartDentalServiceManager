@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './StatisticsPage.css'; // Tạo CSS nếu cần
+
 
 const StatisticsPage = () => {
   const [appointmentStats, setAppointmentStats] = useState({});
