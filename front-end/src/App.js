@@ -14,7 +14,7 @@ import DiagnosisPlan from "./components/doctor/DiagnosisPlan";
 import TreatmentProgress from "./components/doctor/TreatmentProgress";
 import ScheduleRequest from "./components/doctor/ScheduleRequest";
 
-import ProfilePage from "./pages/Profile/ProfileView";
+import ProfilePage from "./pages/profile/ProfileView";
 import ServicesPage from "./pages/Service/Service";
 
 import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
@@ -62,6 +62,8 @@ import VnpayReturn from "./pages/VnpayReturn";
 import DoctorPrescription from "./components/doctor/DoctorPrescription";
 import ReceptionistInvoiceListPage from "./pages/Receptionist/InvoiceListPage";
 import ReceptionistInvoiceDetailPage from "./pages/Receptionist/InvoiceDetailPage";
+import StatisticsPage from "./pages/ClinicManager/StatisticsPage";
+import DashboardPage from "./pages/ClinicManager/DashboardPage";
 
 function App() {
   return (
@@ -169,6 +171,22 @@ function App() {
           element={
             <ClinicManagerLayout>
               <Invoice />
+            </ClinicManagerLayout>
+          }
+        />
+        <Route
+          path="/clinicmanager/statistics"
+          element={
+            <ClinicManagerLayout>
+              <StatisticsPage />
+            </ClinicManagerLayout>
+          }
+        />
+        <Route
+          path="/clinicmanager/dashboard"
+          element={
+            <ClinicManagerLayout>
+              <DashboardPage />
             </ClinicManagerLayout>
           }
         />
