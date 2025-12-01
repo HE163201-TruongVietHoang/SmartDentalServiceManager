@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const serviceController = require("../../back-end/controllers/servicesStaffController");
-
+const upload = require("../middlewares/upload");
 router.get("/", serviceController.getAllServices);
 router.get("/:id", serviceController.getServiceById);
-router.post("/", serviceController.createService);
-router.put("/:id", serviceController.updateService);
+router.post("/",upload.single("image"), serviceController.createService);
+router.put("/:id", upload.single("image"),serviceController.updateService);
 router.delete("/:id", serviceController.deleteService);
 
 module.exports = router;

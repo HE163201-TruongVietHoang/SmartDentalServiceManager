@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const {
-
     loginController,
     refreshTokenController,
     changePasswordController,
@@ -19,8 +18,11 @@ const {
     updateRoleController,
     toggleUserActiveController,
     deleteUserController,
-    verifyOtp
+    verifyOtp,
+    updateAvatarController,
+    getReceptionistController
 } = require('../controllers/authController');
+const upload = require("../middlewares/upload");
 const { authMiddleware } = require("../middlewares/authMiddleware");
 const authorizeRoles = require("../middlewares/roleMiddleware");
 router.post('/login', loginController);
@@ -32,7 +34,8 @@ router.post('/reset-password', resetPasswordController);
 router.post('/change-password', authMiddleware, changePasswordController);
 router.get("/profile", authMiddleware, profileController);
 router.put('/profile', authMiddleware, updateProfileController);
-
+router.put("/profile/avatar", upload.single("avatar"),authMiddleware, updateAvatarController);
+router.get('/receptionist', getReceptionistController);
 router.get("/devices", authMiddleware, getDevicesController);
 router.post(
   "/devices/:sessionId/logout",

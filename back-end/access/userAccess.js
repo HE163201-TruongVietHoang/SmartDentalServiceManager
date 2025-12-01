@@ -60,7 +60,7 @@ async function getUserById(userId) {
     .request()
     .input("userId", sql.Int, userId)
     .query(
-      `SELECT u.userId, u.fullName, u.email, u.phone, u.gender, u.dob, u.address, r.roleName, u.createdAt
+      `SELECT u.userId, u.fullName, u.email, u.phone, u.gender, u.dob, u.address,u.avatar , u.citizenIdNumber, u.occupation, u.ethnicity, r.roleName, u.createdAt
            FROM dbo.Users u
            JOIN dbo.Roles r ON u.roleId = r.roleId
            WHERE u.userId = @userId`
@@ -190,7 +190,7 @@ async function findUserById(userId) {
     .request()
     .input("userId", sql.Int, userId)
     .query(
-      `SELECT u.userId, u.email, u.fullName, u.phone, u.gender, u.dob, u.address, u.roleId, r.roleName, u.isActive
+      `SELECT u.userId, u.email, u.fullName, u.phone, u.gender, u.dob, u.address, u.citizenIdNumber, u.occupation, u.ethnicity, u.roleId, r.roleName, u.isActive
            FROM dbo.Users u
            JOIN dbo.Roles r ON u.roleId = r.roleId
            WHERE u.userId = @userId`
@@ -244,7 +244,7 @@ async function deleteUser(userId) {
 }
 
 const updateUserProfile = async (userId, data) => {
-  const { fullName, phone, gender, dob, address } = data;
+  const { fullName, phone, gender, dob, address, citizenIdNumber, occupation, ethnicity } = data;
   const pool = await getPool();
   await pool
     .request()
@@ -253,9 +253,14 @@ const updateUserProfile = async (userId, data) => {
     .input("phone", sql.NVarChar, phone)
     .input("gender", sql.NVarChar, gender)
     .input("dob", sql.Date, dob)
-    .input("address", sql.NVarChar, address).query(`
+    .input("address", sql.NVarChar, address)
+    .input("citizenIdNumber", sql.NVarChar, citizenIdNumber)
+    .input("occupation", sql.NVarChar, occupation)
+    .input("ethnicity", sql.NVarChar, ethnicity)
+    .query(`
           UPDATE Users
-          SET fullName=@fullName, phone=@phone, gender=@gender, dob=@dob, address=@address, updatedAt=GETDATE()
+          SET fullName=@fullName, phone=@phone, gender=@gender, dob=@dob, address=@address, updatedAt=GETDATE(), 
+          citizenIdNumber=@citizenIdNumber, occupation=@occupation, ethnicity=@ethnicity 
           WHERE userId=@userId
         `);
 };
@@ -285,6 +290,31 @@ const logoutAllSessions = async (userId) => {
     .input("userId", sql.Int, userId)
     .query(`UPDATE UserSessions SET isActive=0 WHERE userId=@userId`);
 };
+const updateAvatar = async (userId, avatarUrl) => {
+  const pool = await getPool();
+  await pool.request()
+    .input("userId", sql.Int, userId)
+    .input("avatar", sql.NVarChar(255), avatarUrl)
+    .query(`
+      UPDATE Users
+      SET avatar = @avatar, updatedAt = GETDATE()
+      WHERE userId = @userId
+    `);
+
+  return true;
+};
+async function getFirstReceptionist() {
+  const pool = await getPool();
+  const result = await pool.request()
+    .query(`
+      SELECT TOP 1 u.userId, u.fullName, u.email, u.phone
+      FROM dbo.Users u
+      JOIN dbo.Roles r ON u.roleId = r.roleId
+      WHERE r.roleName = 'Receptionist' AND u.isActive = 1
+      ORDER BY u.userId
+    `);
+  return result.recordset[0];
+}
 
 module.exports = {
   findUserByEmailOrPhone,
@@ -305,6 +335,8 @@ module.exports = {
   logoutAllSessions,
   findUserByEmail,
   findUserByPhone,
-  verifyUserOtp
+  verifyUserOtp,
+  updateAvatar,
+  getFirstReceptionist
 }
 

@@ -14,7 +14,7 @@ import DiagnosisPlan from "./components/doctor/DiagnosisPlan";
 import TreatmentProgress from "./components/doctor/TreatmentProgress";
 import ScheduleRequest from "./components/doctor/ScheduleRequest";
 
-import ProfilePage from "./pages/profile/ProfileView";
+import ProfilePage from "./pages/Profile/ProfileView";
 import ServicesPage from "./pages/Service/Service";
 
 import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
@@ -35,6 +35,7 @@ import AppointmentReview from "./pages/Patient/AppointmentReview";
 
 import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
 import Service from "./pages/ClinicManager/Services";
+import ServiceDetail from "./pages/Service/ServiceDeatil";
 import ClinicManagerProfile from "./pages/ClinicManager/ClinicManagerProfile";
 import ClinicManagerLayout from "./pages/ClinicManager/ClinicManagerLayout";
 
@@ -44,6 +45,7 @@ import DoctorCreateSchedule from "./pages/Doctor/DotorCreateSchedule";
 import DoctorProfile from "./pages/Doctor/DoctorProfile";
 import DoctorDiagnosis from "./pages/Doctor/DoctorDiagnosis";
 import DoctorDiagnosisHistory from "./pages/Doctor/DoctorDiagnosisHistory";
+import DoctorMedicinePage from "./pages/Doctor/DoctorMedicinePage";
 
 import PatientAppointmentsPage from "./pages/Receptionist/PatientAppointmentsPage";
 import ReceptionistLayout from "./pages/Receptionist/ReceptionistLayout";
@@ -54,11 +56,17 @@ import CreateAppointmentReceptionist from "./pages/Receptionist/CreateAppointmen
 
 import NurseLayout from "./pages/Nurse/NurseLayout";
 import NurseProfile from "./pages/Nurse/NurseProfile";
+import Promotion from "./pages/ClinicManager/Promotion";
+import Invoice from "./pages/ClinicManager/Invoice";
+import VnpayReturn from "./pages/VnpayReturn";
 import DoctorPrescription from "./components/doctor/DoctorPrescription";
 import ReceptionistInvoiceListPage from "./pages/Receptionist/InvoiceListPage";
 import ReceptionistInvoiceDetailPage from "./pages/Receptionist/InvoiceDetailPage";
+
 import DoctorMedicinePage from "./pages/Doctor/DoctorMedicinePage";
 import MedicalRecordPage from "./pages/Patient/MedicalRecordPage";
+
+
 
 function App() {
   return (
@@ -67,6 +75,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/service" element={<ServicesPage />} />
+        <Route path="/service/:id" element={<ServiceDetail />} />
 
         <Route path="/doctor/home" element={<HomeDoctor />} />
         {/* <Route path="/doctor/profile" element={<DoctorProfile />} /> */}
@@ -153,7 +162,22 @@ function App() {
             </ClinicManagerLayout>
           }
         />
-
+        <Route
+          path="/clinicmanager/promotion"
+          element={
+            <ClinicManagerLayout>
+              <Promotion />
+            </ClinicManagerLayout>
+          }
+        />
+        <Route
+          path="/clinicmanager/invoice"
+          element={
+            <ClinicManagerLayout>
+              <Invoice />
+            </ClinicManagerLayout>
+          }
+        />
         {/* Trang cho Doctor */}
         <Route
           path="/doctor/schedule"
@@ -273,6 +297,7 @@ function App() {
             </ReceptionistLayout>
           }
         />
+        <Route path="/vnpay_return_url" element={<VnpayReturn />} />
 
         <Route
           path="/receptionist/invoices"
@@ -282,12 +307,27 @@ function App() {
             </ReceptionistLayout>
           }
         />
-
+  <Route
+          path="/receptionist/invoice"
+          element={
+            <ReceptionistLayout>
+              <Invoice />
+            </ReceptionistLayout>
+          }
+        />
         <Route
           path="/receptionist/invoices/:invoiceId"
           element={
             <ReceptionistLayout>
               <ReceptionistInvoiceDetailPage />
+            </ReceptionistLayout>
+          }
+        />
+          <Route
+          path="/receptionist/chat"
+          element={
+            <ReceptionistLayout>
+              <ChatPage />
             </ReceptionistLayout>
           }
         />

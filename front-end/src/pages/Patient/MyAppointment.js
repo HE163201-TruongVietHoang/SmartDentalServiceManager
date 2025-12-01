@@ -55,10 +55,35 @@ export default function MyAppointmentsPage() {
         }
       );
 
-      if (!res.ok) throw new Error("Không thể hủy lịch hẹn");
+      const data = await res.json(); // luôn đọc JSON
 
+      // 🔹 TH1: Token hết hạn → backend trả 401
+      if (res.status === 401) {
+        alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+        localStorage.removeItem("token");
+        navigate("/signin");
+        return;
+      }
+
+      // 🔹 TH2: Tài khoản bị khóa
+      if (data.code === "ACCOUNT_LOCKED") {
+        alert(data.message);
+        localStorage.removeItem("token");
+        localStorage.removeItem("sessionId");
+        localStorage.removeItem("user");
+        navigate("/signin");
+        return;
+      }
+
+      // 🔹 TH3: Hủy không được vì lý do khác
+      if (!res.ok || !data.success) {
+        alert(data.message || "Không thể hủy lịch hẹn!");
+        return;
+      }
+
+      // 🔹 Thành công
       alert("Hủy lịch hẹn thành công!");
-      fetchAppointments(); // Refresh lại danh sách
+      fetchAppointments();
     } catch (err) {
       console.error(err);
       alert("Không thể hủy lịch hẹn. Vui lòng thử lại!");
@@ -86,7 +111,7 @@ export default function MyAppointmentsPage() {
                     <th>Khung giờ</th>
                     <th>Loại khám</th>
                     <th>Trạng thái</th>
-                    <th style={{ width: '200px' }}>Hành động</th>
+                    <th style={{ width: "200px" }}>Hành động</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -116,12 +141,22 @@ export default function MyAppointmentsPage() {
                           {a.status === "Completed" && (
                             <button
                               className="btn btn-success btn-sm"
-                              onClick={() => navigate(`/appointment/${a.appointmentId}/review?doctorId=${a.doctorId}&serviceId=${a.serviceId || ''}`)}
+                              onClick={() =>
+                                navigate(
+                                  `/appointment/${
+                                    a.appointmentId
+                                  }/review?doctorId=${a.doctorId}&serviceId=${
+                                    a.serviceId || ""
+                                  }`
+                                )
+                              }
                             >
                               Đánh giá
                             </button>
                           )}
-                          {a.status !== "Scheduled" && a.status !== "Completed" && "-"}
+                          {a.status !== "Scheduled" &&
+                            a.status !== "Completed" &&
+                            ""}
                         </div>
                       </td>
                     </tr>

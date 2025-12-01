@@ -27,6 +27,21 @@ function ReceptionistLayout({ children }) {
       icon: <FaTags />,
       path: "/receptionist/appointment/create",
     },
+    {
+      name: "Thanh toán hóa đơn",
+      icon: <FaTags />,
+      path: "/receptionist/invoice",
+    },
+    {
+      name: "Hóa đơn chờ xử lý",
+      icon: <FaTags />,
+      path: "/receptionist/invoices",
+    },
+    {
+      name: "Chat",
+      icon: <FaTags />,
+      path: "/chat",
+    },
   ];
 
   // 🧠 Hàm xử lý đăng xuất

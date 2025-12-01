@@ -189,6 +189,23 @@ export default function Header() {
                 Liên hệ
               </a>
             </li>
+            {user && (
+              <li className="nav-item">
+                <a
+                  className="nav-link"
+                  href="#"
+                  style={{ color: "#333", fontWeight: 500 }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/chat");
+                  }}
+                  onMouseEnter={(e) => (e.target.style.color = "#2ECCB6")}
+                  onMouseLeave={(e) => (e.target.style.color = "#333")}
+                >
+                  Trò chuyện với lễ tân
+                </a>
+              </li>
+            )}
           </ul>
 
           {!user ? (

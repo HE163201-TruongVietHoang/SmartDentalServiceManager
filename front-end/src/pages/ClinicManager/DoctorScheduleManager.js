@@ -230,15 +230,25 @@ export default function ScheduleRequests() {
                           {new Date(s.workDate).toLocaleDateString("vi-VN")}
                         </td>
                         <td>
-                          {new Date(s.startTime).toLocaleTimeString("vi-VN", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}{" "}
+                          {new Date(s.startTime)
+                            .getUTCHours()
+                            .toString()
+                            .padStart(2, "0")}
+                          :
+                          {new Date(s.startTime)
+                            .getUTCMinutes()
+                            .toString()
+                            .padStart(2, "0")}{" "}
                           -{" "}
-                          {new Date(s.endTime).toLocaleTimeString("vi-VN", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+                          {new Date(s.endTime)
+                            .getUTCHours()
+                            .toString()
+                            .padStart(2, "0")}
+                          :
+                          {new Date(s.startTime)
+                            .getUTCMinutes()
+                            .toString()
+                            .padStart(2, "0")}
                         </td>
                         <td>{s.roomId ? `Phòng ${s.roomId}` : "Chưa có"}</td>
                         <td>

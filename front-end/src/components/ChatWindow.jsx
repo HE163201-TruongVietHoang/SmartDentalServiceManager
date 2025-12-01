@@ -7,19 +7,86 @@ const ChatWindow = ({ conversation, messages, loading }) => {
     if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  if (!conversation) return <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#888' }}>Chọn một cuộc trò chuyện</div>;
+  if (!conversation) return (
+    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#666', background: '#f8f9fa', fontSize: '18px' }}>
+      <div className="text-center">
+        <i className="fas fa-comments" style={{ fontSize: '48px', color: '#2ECCB6', marginBottom: '16px' }}></i>
+        <p>Chọn một cuộc trò chuyện để bắt đầu nhắn tin</p>
+      </div>
+    </div>
+  );
 
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: 16, background: '#fafbfc' }}>
-      {loading ? <div>Đang tải tin nhắn...</div> : null}
-      {messages.map(msg => (
-        <div key={msg.messageId} style={{ marginBottom: 12, textAlign: msg.senderId === Number(localStorage.getItem('userId')) ? 'right' : 'left' }}>
-          <div style={{ display: 'inline-block', background: msg.senderId === Number(localStorage.getItem('userId')) ? '#d1f7c4' : '#fff', padding: 8, borderRadius: 8, maxWidth: 300 }}>
-            {msg.content}
+    <div style={{ flex: 1, overflowY: 'auto', padding: '16px', background: '#f8f9fa', display: 'flex', flexDirection: 'column' }}>
+      {loading ? (
+        <div className="text-center" style={{ padding: '20px' }}>
+          <div className="spinner-border" style={{ color: '#2ECCB6' }} role="status">
+            <span className="visually-hidden">Đang tải...</span>
           </div>
-          <div style={{ fontSize: 10, color: '#aaa' }}>{new Date(msg.sentAt).toLocaleTimeString()}</div>
+          <p style={{ marginTop: '10px', color: '#666' }}>Đang tải tin nhắn...</p>
         </div>
-      ))}
+      ) : null}
+      <div style={{ flex: 1, paddingBottom: '16px' }}>
+        {(() => {
+          const currentUser = JSON.parse(localStorage.getItem('user'));
+          return messages.map(msg => {
+            const isMine = msg.senderId === currentUser?.userId;
+            return (
+              <div key={msg.messageId} style={{ marginBottom: '16px', display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
+                {!isMine && (
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    background: '#ddd',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#666',
+                    fontSize: '16px',
+                    marginRight: '8px',
+                    marginTop: 'auto'
+                  }}>
+                    <i className="fas fa-user"></i>
+                  </div>
+                )}
+                <div style={{
+                  maxWidth: '60%',
+                  background: isMine ? '#2ECCB6' : '#ffffff',
+                  color: isMine ? '#ffffff' : '#333',
+                  padding: '12px 16px',
+                  borderRadius: isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                  wordWrap: 'break-word',
+                  position: 'relative'
+                }}>
+                  <div>{msg.content}</div>
+                  <div style={{ fontSize: '10px', opacity: 0.7, marginTop: '4px', textAlign: 'right' }}>
+                    {new Date(msg.sentAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                </div>
+                {isMine && (
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    background: '#2ECCB6',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    fontSize: '16px',
+                    marginLeft: '8px',
+                    marginTop: 'auto'
+                  }}>
+                    <i className="fas fa-user"></i>
+                  </div>
+                )}
+              </div>
+            );
+          });
+        })()}
+      </div>
       <div ref={bottomRef} />
     </div>
   );

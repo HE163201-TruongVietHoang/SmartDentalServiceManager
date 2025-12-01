@@ -18,7 +18,9 @@ const {
   logoutAllDevices,
   sendVerificationOtp,
   verifyAccountOtp,
+  uploadUserAvatar 
 } = require("../services/authService");
+const { getFirstReceptionist } = require("../access/userAccess");
 
 async function loginController(req, res) {
   try {
@@ -168,15 +170,34 @@ async function deleteUserController(req, res) {
     res.status(400).json({ error: err.message });
   }
 }
-async function updateProfileController(req, res) {
+const updateProfileController = async (req, res) => {
   try {
+    const { fullName, phone, gender, dob, address, citizenIdNumber, occupation, ethnicity } = req.body;
+
+    // ✅ Validate phone
+    if (phone) {
+      const phoneRegex = /^0\d{0,10}$/; // bắt đầu 0, tối đa 11 chữ số
+      if (!phoneRegex.test(phone)) {
+        return res.status(400).json({ message: "Số điện thoại không hợp lệ (bắt đầu bằng 0 và tối đa 11 số)" });
+      }
+    }
+
+    // ✅ Validate căn cước
+    if (citizenIdNumber) {
+      const citizenRegex = /^\d{0,12}$/; // tối đa 12 chữ số
+      if (!citizenRegex.test(citizenIdNumber)) {
+        return res.status(400).json({ message: "Số căn cước công dân không hợp lệ (tối đa 12 số)" });
+      }
+    }
+
     await updateProfile(req.user.userId, req.body);
     res.json({ message: "Cập nhật hồ sơ thành công" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Lỗi server" });
   }
-}
+};
+
 
 async function getDevicesController(req, res) {
   try {
@@ -220,6 +241,48 @@ async function verifyOtp(req, res) {
     res.status(400).json({ error: err.message });
   }
 }
+
+async function  updateAvatarController (req, res) {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "Invalid file or no file uploaded" });
+    }
+
+    const userId = req.user.userId;
+    const result = await uploadUserAvatar (userId, req.file);
+
+    res.json({
+      success: true,
+      avatar: result.avatarUrl,
+      message: "Avatar updated successfully"
+    });
+
+  } catch (err) {
+    console.error("Error:", err);
+
+    // Lỗi từ Multer
+    if (err.message.includes("File too large")) {
+      return res.status(400).json({ error: "File size must be under 10MB" });
+    }
+    if (err.message.includes("allowed")) {
+      return res.status(400).json({ error: err.message });
+    }
+
+    res.status(500).json({ error: err.message });
+  }
+}
+async function getReceptionistController(req, res) {
+  try {
+    const receptionist = await getFirstReceptionist();
+    if (!receptionist) {
+      return res.status(404).json({ message: 'Không tìm thấy lễ tân' });
+    }
+    res.json(receptionist);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
+
 module.exports = {
   loginController,
   profileController,
@@ -239,4 +302,6 @@ module.exports = {
   logoutDeviceController,
   logoutAllDevicesController,
   verifyOtp,
-};
+  updateAvatarController,
+  getReceptionistController,
+}

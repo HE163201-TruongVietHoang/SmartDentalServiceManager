@@ -15,7 +15,6 @@ router.get(
   appointmentController.getAppointmentById
 ); // Lấy chi tiết 1 lịch hẹn //chưa lam
 router.put("/:appointmentId/inprogress", appointmentController.markInProgress);
-router.get("/me", authMiddleware, appointmentController.getMyAppointments); // Lấy lịch hẹn của user hiện tại
 router.put(
   "/:id/cancel",
   authMiddleware,
@@ -32,5 +31,10 @@ router.put(
 router.post(
   "/receptionist",
   appointmentController.makeAppointmentReceptionistController
+);
+router.post(
+  "/:appointmentId/services",
+  authMiddleware,
+  appointmentController.addServiceToAppointment
 );
 module.exports = router;

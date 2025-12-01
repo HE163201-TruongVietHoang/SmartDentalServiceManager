@@ -1,40 +1,21 @@
-// import React from "react";
-// import Header from "../components/home/Header/Header";
-// import Footer from "../components/home/Footer/Footer";
-// import Sale from "../components/home/Sale/Sale";
-// import Banner from "../components/Banner/Banner";
-// import CustomSlider from "../components/slider/Slider";
-
-// function Home() {
-//   return (
-//     <div>
-//       <Header />
-//       <Banner /> {/* Hiển thị banner ngay sau header */}
-//       <CustomSlider />
-//       <main style={{ padding: "20px" }}>
-//         <h2>Chào mừng bạn đến với phòng khám nha khoa</h2>
-//         <p>
-//           Chúng tôi mang đến dịch vụ chăm sóc răng miệng chất lượng cao, hiện
-//           đại và an toàn.
-//         </p>
-
-//         <Sale />
-//       </main>
-//       <Footer />
-//     </div>
-//   );
-// }
-
-// export default Home;
-
 import Header from "../components/home/Header/Header";
 import Footer from "../components/home/Footer/Footer";
 import Feedback from "../components/home/Feedback/Feedback";
 import Slider from "react-slick";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useState } from "react";
 
 export default function Home() {
   const navigate = useNavigate();
+  const [services, setServices] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:5000/api/services") // đổi đúng port API của bạn
+      .then((res) => res.json())
+      .then((data) => setServices(data))
+      .catch((err) => console.error("Error fetching services:", err));
+  }, []);
   return (
     <div>
       {/* Header */}
@@ -138,30 +119,16 @@ export default function Home() {
           </div>
 
           <div className="row g-4">
-            {[
-              {
-                icon: "fa-tooth",
-                title: "Trồng răng giả",
-                desc: "Khôi phục răng đã mất bằng răng giả bền, đẹp và tự nhiên.",
-              },
-              {
-                icon: "fa-syringe",
-                title: "Tẩy trắng răng",
-                desc: "Mang lại nụ cười trắng sáng tự nhiên chỉ trong 1 buổi.",
-              },
-              {
-                icon: "fa-smile-beam",
-                title: "Niềng răng",
-                desc: "Điều chỉnh răng đều đẹp, cải thiện khớp cắn và thẩm mỹ.",
-              },
-            ].map((s, i) => (
-              <div key={i} className="col-md-6 col-lg-4">
+            {services.map((s, index) => (
+              <div key={s.serviceId} className="col-md-6 col-lg-4">
                 <div
                   className="card border-0 shadow-sm h-100 text-center p-4"
                   style={{
                     borderRadius: "15px",
                     transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                    cursor: "pointer",
                   }}
+                  onClick={() => navigate(`/service/${s.serviceId}`)}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = "translateY(-5px)";
                     e.currentTarget.style.boxShadow =
@@ -173,23 +140,27 @@ export default function Home() {
                       "0 4px 12px rgba(0,0,0,0.05)";
                   }}
                 >
-                  <div
-                    className="d-flex align-items-center justify-content-center mb-3"
-                    style={{
-                      width: "70px",
-                      height: "70px",
-                      margin: "0 auto",
-                      borderRadius: "50%",
-                      backgroundColor: "#E8FAF6",
-                    }}
-                  >
+                  {/* Icon */}
+                  <div className="icon mb-3">
                     <i
-                      className={`fa-solid ${s.icon}`}
-                      style={{ color: "#2ECCB6", fontSize: "2rem" }}
+                      className={`fas ${
+                        index % 3 === 0
+                          ? "fa-tooth"
+                          : index % 3 === 1
+                          ? "fa-teeth-open"
+                          : "fa-teeth"
+                      }`}
+                      style={{ fontSize: "40px", color: "#2ECCB6" }}
                     ></i>
                   </div>
-                  <h5 className="fw-bold mb-2">{s.title}</h5>
-                  <p className="text-muted small">{s.desc}</p>
+
+                  {/* Name */}
+                  <h5 className="fw-bold mb-2">{s.serviceName}</h5>
+
+                  {/* Description */}
+                  <p className="text-muted small">
+                    {s.description?.slice(0, 80)}...
+                  </p>
                 </div>
               </div>
             ))}

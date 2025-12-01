@@ -1,6 +1,6 @@
 const { getPool } = require("../config/db");
 const sql = require("mssql");
-
+const cloudinary = require("../config/cloudinary");
 // ==========================
 // 📦 CRUD cho bảng Services
 // ==========================
@@ -39,16 +39,54 @@ exports.getServiceById = async (req, res) => {
 // Thêm mới dịch vụ
 exports.createService = async (req, res) => {
   try {
-    const { serviceName, description, price } = req.body;
+    const { serviceName, description, price, duration } = req.body;
     const pool = await getPool();
+    let imageUrl = null;
+
+    // Nếu có file ảnh
+    if (req.file) {
+      const streamifier = require("streamifier");
+
+      const streamUpload = (buffer) => {
+        return new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "services" },
+            (error, result) => {
+              if (error) {
+                console.error("Cloudinary upload error:", error);
+                reject(error);
+              } else {
+                resolve(result);
+              }
+            }
+          );
+          streamifier.createReadStream(buffer).pipe(stream);
+        });
+      };
+
+      try {
+        const result = await streamUpload(req.file.buffer);
+        imageUrl = result.secure_url;
+      } catch (err) {
+        console.error("Error uploading to Cloudinary:", err);
+        return res.status(400).json({ error: "Failed to upload image" });
+      }
+    }
+
+    // Kiểm tra dữ liệu trước khi insert
+    if (!serviceName || !price) {
+      return res.status(400).json({ error: "serviceName and price are required" });
+    }
 
     await pool
       .request()
       .input("serviceName", sql.NVarChar, serviceName)
       .input("description", sql.NVarChar, description)
-      .input("price", sql.Decimal(18, 2), price).query(`
-        INSERT INTO [Services] (serviceName, description, price, createdAt, updatedAt)
-        VALUES (@serviceName, @description, @price, GETDATE(), GETDATE())
+      .input("price", sql.Decimal(18, 2), price)
+      .input("duration", sql.Int, duration)
+      .input("imageUrl", sql.NVarChar, imageUrl).query(`
+        INSERT INTO [Services] (serviceName, description, price, duration, imageUrl, createdAt, updatedAt)
+        VALUES (@serviceName, @description, @price, @duration, @imageUrl, GETDATE(), GETDATE())
       `);
 
     res.status(201).json({ message: "Service created successfully" });
@@ -61,19 +99,58 @@ exports.createService = async (req, res) => {
 // Cập nhật dịch vụ
 exports.updateService = async (req, res) => {
   try {
-    const { serviceName, description, price } = req.body;
+    const { serviceName, description, price, duration } = req.body;
     const pool = await getPool();
+    let imageUrl = null;
 
+    // Nếu có file ảnh
+    if (req.file) {
+      const streamifier = require("streamifier");
+
+      const streamUpload = (buffer) => {
+        return new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "services" },
+            (error, result) => {
+              if (error) {
+                console.error("Cloudinary upload error:", error);
+                reject(error);
+              } else {
+                resolve(result);
+              }
+            }
+          );
+          streamifier.createReadStream(buffer).pipe(stream);
+        });
+      };
+
+      try {
+        const result = await streamUpload(req.file.buffer);
+        imageUrl = result.secure_url;
+      } catch (err) {
+        console.error("Error uploading to Cloudinary:", err);
+        return res.status(400).json({ error: "Failed to upload image" });
+      }
+    }
+
+    // Kiểm tra dữ liệu trước khi insert
+    if (!serviceName || !price) {
+      return res.status(400).json({ error: "serviceName and price are required" });
+    }
     await pool
       .request()
       .input("serviceId", sql.Int, req.params.id)
       .input("serviceName", sql.NVarChar, serviceName)
       .input("description", sql.NVarChar, description)
-      .input("price", sql.Decimal(18, 2), price).query(`
+      .input("price", sql.Decimal(18, 2), price)
+      .input("duration", sql.Int, duration)
+      .input("imageUrl", sql.NVarChar, imageUrl).query(`
         UPDATE [Services]
         SET serviceName = @serviceName,
             description = @description,
             price = @price,
+            duration = @duration,
+            imageUrl = @imageUrl,
             updatedAt = GETDATE()
         WHERE serviceId = @serviceId
       `);
