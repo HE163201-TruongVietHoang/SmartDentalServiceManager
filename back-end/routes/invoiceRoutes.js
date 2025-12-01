@@ -10,13 +10,15 @@ const {
 } = require("../controllers/invoiceController");
 router.get('/', invoiceController.getAllInvoices);
 router.post('/', invoiceController.createInvoice);
+
+// Specific routes before generic ones
+router.get("/pending", authMiddleware, getPendingInvoices);
+router.get("/patient/:patientId", invoiceController.getInvoicesByPatient);
+router.post("/pay", authMiddleware, confirmPayment);
+
+// Generic routes
 router.get("/:invoiceId", authMiddleware, getInvoiceDetail);
 router.get('/:id', invoiceController.getInvoiceById);
 router.put('/:id', invoiceController.updateInvoice);
-router.get('/patient/:patientId', invoiceController.getInvoicesByPatient);
-
-router.get("/pending", authMiddleware, getPendingInvoices);
-
-router.post("/pay", authMiddleware, confirmPayment);
 
 module.exports = router;

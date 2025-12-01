@@ -115,23 +115,23 @@ const DashboardPage = () => {
             </Card.Header>
             <Card.Body>
               <Row>
-                <Col md={3} className="text-center">
+                <Col md={2} className="text-center">
                   <h3 style={{ color: '#2ecc71' }}>{overview.totalAppointments || 0}</h3>
                   <p>Tổng Appointments</p>
                 </Col>
-                <Col md={3} className="text-center">
+                <Col md={2} className="text-center">
                   <h3 style={{ color: '#3498db' }}>{overview.totalInvoices || 0}</h3>
                   <p>Tổng Hóa Đơn Đã Thanh Toán</p>
                 </Col>
-                <Col md={3} className="text-center">
+                <Col md={2} className="text-center">
                   <h3 style={{ color: '#e74c3c' }}>{overview.totalRevenue || 0} VND</h3>
                   <p>Tổng Doanh Thu</p>
                 </Col>
-                <Col md={3} className="text-center">
+                <Col md={2} className="text-center">
                   <h3 style={{ color: '#9b59b6' }}>{overview.totalPatients || 0}</h3>
                   <p>Tổng Bệnh Nhân</p>
                 </Col>
-                <Col md={3} className="text-center mt-3">
+                <Col md={4} className="text-center">
                   <h3 style={{ color: '#f39c12' }}>{overview.totalDoctors || 0}</h3>
                   <p>Tổng Bác Sĩ</p>
                 </Col>
