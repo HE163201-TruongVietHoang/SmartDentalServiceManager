@@ -2,17 +2,18 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Home from "./pages/Home";
+import PatientLayout from "./pages/Patient/PatientLayout";
 import ChatPage from "./pages/ChatPage";
 
 import HomeDoctor from "./pages/HomeDoctor";
-import Appointments from "./components/doctor/Appointments";
-import PatientRecords from "./components/doctor/PatientRecords";
-import Schedule from "./components/doctor/Schedule";
-import Examination from "./components/doctor/Examination";
-import Prescription from "./components/doctor/PrescribeMedication";
-import DiagnosisPlan from "./components/doctor/DiagnosisPlan";
-import TreatmentProgress from "./components/doctor/TreatmentProgress";
-import ScheduleRequest from "./components/doctor/ScheduleRequest";
+// import Appointments from "./components/doctor/Appointments";
+// import PatientRecords from "./components/doctor/PatientRecords";
+// import Schedule from "./components/doctor/Schedule";
+// import Examination from "./components/doctor/Examination";
+// import Prescription from "./components/doctor/PrescribeMedication";
+// import DiagnosisPlan from "./components/doctor/DiagnosisPlan";
+// import TreatmentProgress from "./components/doctor/TreatmentProgress";
+// import ScheduleRequest from "./components/doctor/ScheduleRequest";
 
 import ProfilePage from "./pages/profile/ProfileView";
 import ServicesPage from "./pages/Service/Service";
@@ -69,12 +70,14 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/chat" element={<ChatPage />} />
-        <Route path="/service" element={<ServicesPage />} />
-        <Route path="/service/:id" element={<ServiceDetail />} />
-
-        <Route path="/doctor/home" element={<HomeDoctor />} />
+        {/* Patient routes with popup logic */}
+        <Route element={<PatientLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/service" element={<ServicesPage />} />
+          <Route path="/service/:id" element={<ServiceDetail />} />
+          <Route path="/doctor/home" element={<HomeDoctor />} />
+        </Route>
+        {/* ...existing code... */}
         {/* <Route path="/doctor/profile" element={<DoctorProfile />} /> */}
         {/* <Route path="/doctor/appointments" element={<Appointments />} />
         <Route path="/doctor/patients" element={<PatientRecords />} />
@@ -84,7 +87,7 @@ function App() {
         <Route path="/doctor/diagnosis" element={<DiagnosisPlan />} />
         <Route path="/doctor/progress" element={<TreatmentProgress />} />
         <Route path="/doctor/create-schedule" element={<ScheduleRequest />} /> */}
-        <Route
+        {/* <Route
           path="/test/doctor-rating/:doctorId"
           element={<DoctorRatingTestPage />}
         />
@@ -92,14 +95,14 @@ function App() {
         <Route
           path="/test/service-rating/:serviceId"
           element={<ServiceRatingTestPage />}
-        />
+        /> */}
 
         {/* <Route path="/schedule-requests" element={<ScheduleRequests />} />
         <Route
           path="/schedule-requests/:id"
           element={<ScheduleRequestDetail />}
         /> */}
-
+           <Route path="/chat" element={<ChatPage />} />
         <Route path="/profile" element={<ProfilePage />} />
 
         <Route path="/signin" element={<SignIn />} />

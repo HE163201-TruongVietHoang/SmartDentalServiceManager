@@ -2,13 +2,13 @@
 import React, { useEffect, useState } from "react";
 import Header from "../../components/home/Header/Header";
 import Footer from "../../components/home/Footer/Footer";
-import {  getInvoicesByPatient, createPaymentUrl } from '../../api/api';
+import { createPaymentUrl } from '../../api/api';
 
-export default function InvoiceListPage() {
+export default function WaitingPaymentPage() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [filters, setFilters] = useState({ dateFrom: '', dateTo: '', doctor: '' });
+  const [filters, setFilters] = useState({ dateFrom: '', dateTo: '' });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
@@ -44,7 +44,7 @@ export default function InvoiceListPage() {
     try {
       const payload = {
         appointmentId: invoice.appointmentId,
-        amount: (invoice.totalAmount || 0) - (invoice.discountAmount || 0), // Sử dụng finalAmount
+        amount: (invoice.totalAmount || 0) - (invoice.discountAmount || 0),
         invoiceId: invoice.invoiceId,
         bankCode: ""
       };
@@ -64,10 +64,10 @@ export default function InvoiceListPage() {
       <div>
         <Header />
         <div className="container py-5 text-center">
-          <div className="spinner-border text-primary" role="status">
+          <div className="spinner-border text-warning" role="status">
             <span className="visually-hidden">Đang tải...</span>
           </div>
-          <p className="mt-3">Đang tải thông tin...</p>
+          <p className="mt-3" style={{color:'#ff9800'}}>Đang tải hóa đơn chờ thanh toán...</p>
         </div>
         <Footer />
       </div>
@@ -78,13 +78,16 @@ export default function InvoiceListPage() {
     <div style={{ background: "#f6fbff", minHeight: "100vh" }}>
       <Header />
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 0 0 0" }}>
-        <h2 style={{ color: "#1E90FF", fontWeight: 700, textAlign: "center", marginBottom: 24, letterSpacing: 1 }}>Hóa đơn chờ thanh toán</h2>
-        <div style={{ padding: '16px', background: '#f9f9f9', borderRadius: '8px', marginBottom: '16px' }}>
-          <h5 style={{ marginBottom: '12px', color: '#1E90FF' }}>Lọc hóa đơn</h5>
+        <div style={{ textAlign: 'center', marginBottom: 16 }}>
+          <img src="https://png.pngtree.com/png-clipart/20230403/original/pngtree-bill-line-icon-png-image_9021663.png" alt="invoice" style={{ width: 80, marginBottom: 8, filter: 'drop-shadow(0 2px 8px #ddd)' }} />
+          <h2 style={{ color: "#4682b4", fontWeight: 700, textAlign: "center", marginBottom: 8, letterSpacing: 1 }}>Chờ thanh toán hóa đơn</h2>
+          <div style={{ color: '#666', fontSize: 16, marginBottom: 12 }}>Vui lòng hoàn tất thanh toán để tiếp tục sử dụng dịch vụ.</div>
+        </div>
+        <div style={{ padding: '16px', background: '#f8f9fa', borderRadius: '8px', marginBottom: '16px', border: '1px solid #e9ecef' }}>
+          <h5 style={{ marginBottom: '12px', color: '#4682b4' }}>Lọc theo ngày</h5>
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
             <label>Từ ngày: <input type="date" value={filters.dateFrom} onChange={e => setFilters({...filters, dateFrom: e.target.value})} style={{ padding: '4px', borderRadius: '4px' }} /></label>
             <label>Đến ngày: <input type="date" value={filters.dateTo} onChange={e => setFilters({...filters, dateTo: e.target.value})} style={{ padding: '4px', borderRadius: '4px' }} /></label>
-            <label>Bác sĩ: <input type="text" placeholder="Tên bác sĩ" value={filters.doctor} onChange={e => setFilters({...filters, doctor: e.target.value})} style={{ padding: '4px', borderRadius: '4px' }} /></label>
           </div>
         </div>
         {(() => {
@@ -93,8 +96,7 @@ export default function InvoiceListPage() {
             const fromDate = filters.dateFrom ? new Date(filters.dateFrom) : null;
             const toDate = filters.dateTo ? new Date(filters.dateTo) : null;
             const matchesDate = (!fromDate || itemDate >= fromDate) && (!toDate || itemDate <= toDate);
-            const matchesDoctor = !filters.doctor || item.doctorName.toLowerCase().includes(filters.doctor.toLowerCase());
-            return matchesDate && matchesDoctor;
+            return matchesDate;
           });
           const totalPages = Math.ceil(filteredList.length / itemsPerPage);
           const paginatedList = filteredList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -103,41 +105,45 @@ export default function InvoiceListPage() {
               <div style={{
                 background: "#fff",
                 borderRadius: 16,
-                boxShadow: "0 4px 16px rgba(30,144,255,0.07)",
+                boxShadow: "0 4px 16px rgba(70,130,180,0.07)",
                 padding: 0,
                 overflow: "hidden",
+                border: '1px solid #e9ecef',
               }}>
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
-                    <tr style={{ background: "#eaf6ff" }}>
-                      <th style={th}>Mã hóa đơn</th>
-                      <th style={th}>Bác sĩ</th>
-                      <th style={th}>Ngày</th>
-                      <th style={th}>Giờ khám</th>
-                      <th style={th}>Trạng thái</th>
-                      <th style={th}></th>
+                    <tr style={{ background: "#e6f3ff" }}>
+                      <th style={thWait}>Mã hóa đơn</th>
+                      <th style={thWait}>Bác sĩ</th>
+                      <th style={thWait}>Ngày</th>
+                      <th style={thWait}>Giờ khám</th>
+                      <th style={thWait}>Trạng thái</th>
+                      <th style={thWait}></th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredList.length === 0 ? (
                       <tr>
-                        <td style={{ padding: 24, textAlign: "center", color: "#888" }} colSpan={6}>
-                          {list.length === 0 ? "Không có hóa đơn nào đang chờ thanh toán." : "Không có hóa đơn nào khớp với bộ lọc."}
+                        <td style={{ padding: 32, textAlign: "center", color: "#b26a00", fontSize: 18 }} colSpan={6}>
+                          {list.length === 0 ? (
+                            <>
+                              <img src="https://png.pngtree.com/png-clipart/20230403/original/pngtree-bill-line-icon-png-image_9021663.png" alt="no-waiting" style={{ width: 60, marginBottom: 8, opacity: 0.7 }} />
+                              <div>Bạn không có hóa đơn chờ thanh toán nào.</div>
+                            </>
+                          ) : "Không có hóa đơn nào khớp với bộ lọc ngày."}
                         </td>
                       </tr>
                     ) : (
                       paginatedList.map((i) => (
-                        <tr key={i.invoiceId} style={tr}>
-                          <td style={td}>#{i.invoiceId}</td>
-                          <td style={td}>{i.doctorName}</td>
-                          <td style={td}>{i.examDate ? new Date(i.examDate).toLocaleDateString("vi-VN") : "Không rõ"}</td>
-                          <td style={td}>{i.startTime} - {i.endTime}</td>
-                          <td style={tdStatus}><span className="badge-status">Chờ thanh toán</span></td>
-                          <td style={td}>
-                            <a href={`/invoice/me/${i.invoiceId}`} style={btn}>Xem chi tiết</a>
-                            {i.status !== 'Paid' && (
-                              <button onClick={() => handlePayment(i)} style={{...btn, background: '#28a745', marginLeft: '8px'}}>Thanh toán</button>
-                            )}
+                        <tr key={i.invoiceId} style={trWait}>
+                          <td style={tdWait}>#{i.invoiceId}</td>
+                          <td style={tdWait}>{i.doctorName}</td>
+                          <td style={tdWait}>{i.examDate ? new Date(i.examDate).toLocaleDateString("vi-VN") : "Không rõ"}</td>
+                          <td style={tdWait}>{i.startTime} - {i.endTime}</td>
+                          <td style={tdStatusWait}><span className="badge-status-wait">Chờ thanh toán</span></td>
+                          <td style={tdWait}>
+                            <a href={`/invoice/me/${i.invoiceId}`} style={btnWait}>Xem chi tiết</a>
+                            <button onClick={() => handlePayment(i)} style={{...btnWait, background: '#ff9800', marginLeft: '8px', animation: 'pulse 1.2s infinite'}}>Thanh toán</button>
                           </td>
                         </tr>
                       ))
@@ -147,11 +153,11 @@ export default function InvoiceListPage() {
               </div>
               {totalPages > 1 && (
                 <div style={{ display: 'flex', justifyContent: 'center', padding: '16px', flexWrap: 'wrap' }}>
-                  <button onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1} style={currentPage === 1 ? {...pageBtn, opacity: 0.5, cursor: 'not-allowed'} : pageBtn}>Trước</button>
+                  <button onClick={() => setCurrentPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1} style={currentPage === 1 ? {...pageBtnWait, opacity: 0.5, cursor: 'not-allowed'} : pageBtnWait}>Trước</button>
                   {Array.from({length: totalPages}, (_, i) => i + 1).map(page => (
-                    <button key={page} onClick={() => setCurrentPage(page)} style={currentPage === page ? {...pageBtn, background: '#1E90FF', color: '#fff'} : pageBtn}>{page}</button>
+                    <button key={page} onClick={() => setCurrentPage(page)} style={currentPage === page ? {...pageBtnWait, background: '#ff9800', color: '#fff'} : pageBtnWait}>{page}</button>
                   ))}
-                  <button onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} style={currentPage === totalPages ? {...pageBtn, opacity: 0.5, cursor: 'not-allowed'} : pageBtn}>Sau</button>
+                  <button onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages} style={currentPage === totalPages ? {...pageBtnWait, opacity: 0.5, cursor: 'not-allowed'} : pageBtnWait}>Sau</button>
                 </div>
               )}
             </>
@@ -160,73 +166,80 @@ export default function InvoiceListPage() {
       </div>
       <Footer />
       <style>{`
-        .badge-status {
+        .badge-status-wait {
           display: inline-block;
-          background: #ffecb3;
-          color: #b26a00;
-          font-weight: 600;
-          font-size: 13px;
+          font-weight: 700;
+          font-size: 14px;
           border-radius: 8px;
-          padding: 4px 12px;
+          padding: 5px 14px;
+          background: #e6f3ff;
+          color: #4682b4;
+          border: 1px solid #b0d4ff;
+        }
+        @keyframes pulse {
+          0% { box-shadow: 0 0 0 0 #e6f3ff; }
+          70% { box-shadow: 0 0 0 10px rgba(70, 130, 180, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(70, 130, 180, 0); }
         }
         @media (max-width: 600px) {
           table, thead, tbody, th, td, tr { display: block; }
           thead tr { display: none; }
           tr { margin-bottom: 18px; }
           td { border: none !important; padding: 10px 8px !important; }
-          .badge-status { font-size: 12px; }
+          .badge-status-wait { font-size: 13px; }
         }
       `}</style>
     </div>
   );
 }
 
-// STYLE
-const th = {
+// STYLE cho trang chờ thanh toán
+const thWait = {
   padding: "14px 8px",
   fontWeight: 700,
-  color: "#1E90FF",
+  color: "#4682b4",
   fontSize: 15,
-  borderBottom: "1px solid #e3eaf3",
+  borderBottom: "1px solid #e9ecef",
 };
 
-const td = {
+const tdWait = {
   padding: "13px 8px",
-  borderBottom: "1px solid #f0f0f0",
+  borderBottom: "1px solid #f8f9fa",
   fontSize: 15,
-  color: "#222",
+  color: "#333",
 };
 
-const tdStatus = {
+const tdStatusWait = {
   padding: "13px 8px",
-  borderBottom: "1px solid #f0f0f0",
+  borderBottom: "1px solid #f8f9fa",
   textAlign: "center",
 };
 
-const tr = {
+const trWait = {
   background: "#fff",
   transition: "background 0.15s",
 };
 
-const btn = {
+const btnWait = {
   padding: "7px 16px",
-  background: "#1E90FF",
+  background: "#4682b4",
   color: "#fff",
   borderRadius: "8px",
   textDecoration: "none",
   fontWeight: 600,
   fontSize: 14,
-  boxShadow: "0 2px 8px #eaf6ff",
+  boxShadow: "0 2px 8px #e6f3ff",
   transition: "background 0.15s, color 0.15s",
   display: "inline-block",
+  border: 'none',
 };
 
-const pageBtn = {
+const pageBtnWait = {
   padding: "8px 12px",
   margin: "0 4px",
-  border: "1px solid #1E90FF",
+  border: "1px solid #4682b4",
   background: "#fff",
-  color: "#1E90FF",
+  color: "#4682b4",
   borderRadius: "4px",
   cursor: "pointer",
   transition: "background 0.15s, color 0.15s",
