@@ -114,6 +114,14 @@ export default function Header() {
               <li>
                 <hr className="dropdown-divider" />
               </li>
+              <li>
+                <button
+                  className="dropdown-item"
+                  onClick={() => navigate("/payments/me")}
+                >
+                  Thanh toán của tôi
+                </button>
+              </li>
             </>
           )}
           <li>
@@ -196,38 +204,17 @@ export default function Header() {
                 Đội ngũ bác sĩ
               </a>
             </li>
-            {/* <li className="nav-item">
+            <li className="nav-item">
               <a
                 className="nav-link"
-                href="#"
+                href="/contact"
                 style={{ color: "#333", fontWeight: 500 }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleScroll("contact");
-                }}
                 onMouseEnter={(e) => (e.target.style.color = "#2ECCB6")}
                 onMouseLeave={(e) => (e.target.style.color = "#333")}
               >
                 Liên hệ
               </a>
-            </li> */}
-            {user?.roleName === "Patient" && (
-              <li className="nav-item">
-                <a
-                  className="nav-link"
-                  href="#"
-                  style={{ color: "#333", fontWeight: 500 }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate("/chat");
-                  }}
-                  onMouseEnter={(e) => (e.target.style.color = "#2ECCB6")}
-                  onMouseLeave={(e) => (e.target.style.color = "#333")}
-                >
-                  Trò chuyện với lễ tân
-                </a>
-              </li>
-            )}
+            </li> 
           </ul>
 
           {!user ? (

@@ -61,7 +61,7 @@ import Promotion from "./pages/ClinicManager/Promotion";
 import Invoice from "./pages/ClinicManager/Invoice";
 import VnpayReturn from "./pages/VnpayReturn";
 import DoctorPrescription from "./components/doctor/DoctorPrescription";
-import ReceptionistInvoiceListPage from "./pages/Receptionist/InvoiceListPage";
+// import ReceptionistInvoiceListPage from "./pages/Receptionist/InvoiceListPage";
 import ReceptionistInvoiceDetailPage from "./pages/Receptionist/InvoiceDetailPage";
 
 import MedicalRecordPage from "./pages/Patient/MedicalRecordPage";
@@ -73,6 +73,9 @@ import DashboardPage from "./pages/ClinicManager/DashboardPage";
 import MyInvoice from "./pages/Patient/MyInvoice";
 import ServicesPage from "./pages/Hone/Service";
 import ServiceDetail from "./pages/Hone/ServiceDeatil";
+import Contact from "./pages/Home/Contact";
+import PaymentList from "./pages/ClinicManager/PaymentList";
+import MyPayments from "./pages/Patient/MyPayments";
 function App() {
   return (
     <Router>
@@ -82,11 +85,13 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/service" element={<ServicesPage />} />
           <Route path="/service/:id" element={<ServiceDetail />} />
+          <Route path="/contact" element={<Contact />} />
           <Route path="/doctor/home" element={<HomeDoctor />} />
         </Route>
-           <Route path="/chat" element={<ChatPage />} />
+           {/* <Route path="/chat" element={<ChatPage />} /> */}
         <Route path="/profile" element={<ProfilePage />} />
-
+          <Route path="/contact" element={<Contact />} />
+        {/* Authentication routes */}
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
@@ -100,16 +105,8 @@ function App() {
         <Route path="/invoice/me/:invoiceId" element={<InvoiceDetailPage />} />
         <Route path="/invoice/me" element={<MyInvoice />} />
          <Route path="/invoice-pending/me" element={<InvoiceListPage />} />
+        <Route path="/payments/me" element={<MyPayments />} />
         {/*clinic Manager*/}
-
-        <Route
-          path="/test/doctor-rating/:doctorId"
-          element={<DoctorRatingTestPage />}
-        />
-        <Route
-          path="/test/service-rating/:serviceId"
-          element={<ServiceRatingTestPage />}
-        />
 
         {/* Trang cho Clinic Manager */}
         <Route
@@ -173,6 +170,14 @@ function App() {
           element={
             <ClinicManagerLayout>
               <DashboardPage />
+            </ClinicManagerLayout>
+          }
+        />
+        <Route
+          path="/clinicmanager/payments"
+          element={
+            <ClinicManagerLayout>
+              <PaymentList />
             </ClinicManagerLayout>
           }
         />
@@ -294,9 +299,16 @@ function App() {
             </ReceptionistLayout>
           }
         />
+            <Route
+          path="/receptionist/payments"
+          element={
+            <ReceptionistLayout>
+              <PaymentList />
+            </ReceptionistLayout>
+          }
+        />
         <Route path="/vnpay_return_url" element={<VnpayReturn />} />
 
-        {/* Chỉ giữ ReceptionistInvoiceDetailPage cho path này */}
         <Route
           path="/receptionist/invoices/:invoiceId"
           element={
@@ -332,9 +344,9 @@ function App() {
         <Route
           path="/receptionist/chat"
           element={
-            <ReceptionistLayout>
+            
               <ChatPage />
-            </ReceptionistLayout>
+           
           }
         />
         {/* Route 404 */}

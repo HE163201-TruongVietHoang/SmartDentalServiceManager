@@ -40,7 +40,12 @@ function ReceptionistLayout({ children }) {
     {
       name: "Chat",
       icon: <FaComments />,
-      path: "/chat",
+      path: "/receptionist/chat",
+    },
+    {
+      name: "Thanh toán",
+      icon: <FaFileInvoiceDollar />,
+      path: "/receptionist/payments",
     },
   ];
 
