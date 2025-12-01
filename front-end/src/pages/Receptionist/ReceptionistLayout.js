@@ -38,11 +38,6 @@ function ReceptionistLayout({ children }) {
       path: "/receptionist/invoice",
     },
     {
-      name: "Thanh toán hóa đơns",
-      icon: <FaFileInvoiceDollar />,
-      path: "/receptionist/invoices",
-    },
-    {
       name: "Chat",
       icon: <FaComments />,
       path: "/chat",
