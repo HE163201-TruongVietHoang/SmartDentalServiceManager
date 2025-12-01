@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.10",
+    "postcss-opacity-percentage": "^3.0.0",
     "sequelize-cli": "^6.6.3"
   },
   "description": ""
