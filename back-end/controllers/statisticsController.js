@@ -175,6 +175,35 @@ const statisticsController = {
       console.error('Error in getRatingStats:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
+  },
+
+  // Thống kê tổng quan
+  async getOverallStats(req, res) {
+    try {
+      const pool = await getPool();
+
+      const totalAppointmentsQuery = 'SELECT COUNT(*) as total FROM Appointments';
+      const totalAppointmentsResult = await pool.request().query(totalAppointmentsQuery);
+
+      const totalRevenueQuery = 'SELECT SUM(totalAmount - discountAmount) as totalRevenue FROM Invoices WHERE status = \'Paid\'';
+      const totalRevenueResult = await pool.request().query(totalRevenueQuery);
+
+      const totalDoctorsQuery = 'SELECT COUNT(*) as total FROM Users WHERE roleId = (SELECT roleId FROM Roles WHERE roleName = \'Doctor\')';
+      const totalDoctorsResult = await pool.request().query(totalDoctorsQuery);
+
+      const totalPatientsQuery = 'SELECT COUNT(*) as total FROM Users WHERE roleId = (SELECT roleId FROM Roles WHERE roleName = \'Patient\')';
+      const totalPatientsResult = await pool.request().query(totalPatientsQuery);
+
+      res.json({
+        totalAppointments: totalAppointmentsResult.recordset[0].total,
+        totalRevenue: totalRevenueResult.recordset[0].totalRevenue || 0,
+        totalDoctors: totalDoctorsResult.recordset[0].total,
+        totalPatients: totalPatientsResult.recordset[0].total
+      });
+    } catch (error) {
+      console.error('Error in getOverallStats:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
   }
 };
 
