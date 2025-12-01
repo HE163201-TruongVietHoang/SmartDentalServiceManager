@@ -147,14 +147,17 @@ async function getInvoiceDetail(invoiceId) {
       CONVERT(varchar(5), S.startTime, 108) AS startTime,
       CONVERT(varchar(5), S.endTime, 108) AS endTime,
       I.totalAmount,
+      I.discountAmount,
       I.finalAmount,
-      I.status
+      I.status,
+      PR.code AS promotionCode
     FROM Invoices I
     JOIN Appointments A ON I.appointmentId = A.appointmentId
     JOIN Users U ON A.patientId = U.userId
     JOIN Users D ON A.doctorId = D.userId
     JOIN Slots S ON A.slotId = S.slotId
     JOIN Schedules SCH ON S.scheduleId = SCH.scheduleId
+    LEFT JOIN Promotions PR ON I.promotionId = PR.promotionId
     WHERE I.invoiceId = @id
   `);
   // DIAGNOSIS
