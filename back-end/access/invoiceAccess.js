@@ -30,8 +30,8 @@ async function getAll() {
         u.fullName as patientName,
         sch.workDate,
         s.slotId,
-        s.startTime,
-        s.endTime,
+        CONVERT(varchar(5), s.startTime, 108) AS startTime,
+        CONVERT(varchar(5), s.endTime, 108) AS endTime,
         pr.code as promotionCode
       FROM Invoices i
       LEFT JOIN Users u ON i.patientId = u.userId
@@ -54,8 +54,8 @@ async function getById(invoiceId) {
         u.fullName as patientName,
         sch.workDate,
         s.slotId,
-        s.startTime,
-        s.endTime,
+        CONVERT(varchar(5), s.startTime, 108) AS startTime,
+        CONVERT(varchar(5), s.endTime, 108) AS endTime,
         pr.code as promotionCode
       FROM Invoices i
       LEFT JOIN Users u ON i.patientId = u.userId
@@ -92,8 +92,8 @@ async function getByPatientId(patientId) {
         u.fullName as patientName,
         sch.workDate,
         s.slotId,
-        s.startTime,
-        s.endTime,
+        CONVERT(varchar(5), s.startTime, 108) AS startTime,
+        CONVERT(varchar(5), s.endTime, 108) AS endTime,
         pr.code as promotionCode
       FROM Invoices i
       LEFT JOIN Users u ON i.patientId = u.userId
