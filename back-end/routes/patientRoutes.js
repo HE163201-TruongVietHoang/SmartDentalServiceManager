@@ -1,5 +1,11 @@
 const express = require("express");
-const { getAllPatients, getPatientDetail } = require("../controllers/patientController");
+const {
+  getAllPatients,
+  getPatientDetail,
+  getPatientMedicalRecord,
+} = require("../controllers/patientController");
+const { authMiddleware } = require("../middlewares/authMiddleware");
+const authorizeRoles = require("../middlewares/roleMiddleware");
 
 const router = express.Router();
 
@@ -8,5 +14,12 @@ router.get("/", getAllPatients);
 
 // Xem chi tiết patient
 router.get("/:id", getPatientDetail);
+
+router.get(
+  "/:id/medical-record",
+  authMiddleware,
+  authorizeRoles("Patient"),
+  getPatientMedicalRecord
+);
 
 module.exports = router;

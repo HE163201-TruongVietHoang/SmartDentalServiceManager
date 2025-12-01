@@ -63,6 +63,11 @@ import DoctorPrescription from "./components/doctor/DoctorPrescription";
 import ReceptionistInvoiceListPage from "./pages/Receptionist/InvoiceListPage";
 import ReceptionistInvoiceDetailPage from "./pages/Receptionist/InvoiceDetailPage";
 
+import DoctorMedicinePage from "./pages/Doctor/DoctorMedicinePage";
+import MedicalRecordPage from "./pages/Patient/MedicalRecordPage";
+
+
+
 function App() {
   return (
     <Router>
@@ -108,6 +113,7 @@ function App() {
         <Route path="/admin/users" element={<UserManagement />} />
         <Route path="/appointment" element={<AppointmentPage />} />
         <Route path="/appointment/me" element={<MyAppointmentsPage />} />
+        <Route path="/medical-record" element={<MedicalRecordPage />} />
         <Route
           path="/appointment/:appointmentId/review"
           element={<AppointmentReview />}

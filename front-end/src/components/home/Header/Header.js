@@ -121,55 +121,59 @@ export default function Header() {
         >
           Xin chào, {user.fullName}
         </button>
-
-        {dropdownOpen && (
-          <ul
-            className="shadow-sm p-2"
-            style={{
-              position: "absolute",
-              right: 0,
-              top: "100%",
-              backgroundColor: "#fff",
-              borderRadius: "10px",
-              listStyle: "none",
-              padding: "10px 0",
-              margin: 0,
-              minWidth: "180px",
-              boxShadow: "0 2px 8px rgba(0,0,0,.15)",
-              zIndex: 1000,
-            }}
-          >
-            {user.roleName === "Patient" && (
-              <>
-                <li>
-                  <button
-                    className="dropdown-item"
-                    onClick={() => navigate("/appointment/me")}
-                  >
-                    Lịch hẹn của tôi
-                  </button>
-                </li>
-                <li>
-                  <hr className="dropdown-divider" />
-                </li>
-              </>
-            )}
-            <li>
-              <button className="dropdown-item" onClick={() => navigate("/profile")}>
-                Hồ sơ cá nhân
-              </button>
-            </li>
-            <li>
-              <button className="dropdown-item" onClick={() => navigate("/change-password")}>
-                Đổi mật khẩu
-              </button>
-            </li>
-            <li>
-              <button className="dropdown-item text-danger" onClick={handleLogout}>
-                Đăng xuất
-              </button>
-            </li>
-          </ul>
+        {dropdownOpen && (            
+        <ul
+          className="dropdown-menu dropdown-menu-end shadow-sm"
+          aria-labelledby="dropdownMenuButton"
+        >
+          {user.roleName === "Patient" && (
+            <>
+              <li>
+                <button
+                  className="dropdown-item"
+                  onClick={() => navigate("/appointment/me")}
+                >
+                  Lịch hẹn của tôi
+                </button>
+              </li>
+              <li>
+                <button
+                  className="dropdown-item"
+                  onClick={() => navigate("/medical-record")}
+                >
+                  Hồ sơ khám bệnh
+                </button>
+              </li>
+              <li>
+                <hr className="dropdown-divider" />
+              </li>
+            </>
+          )}
+          <li>
+            <button
+              className="dropdown-item"
+              onClick={() => navigate("/profile")}
+            >
+              Hồ sơ cá nhân
+            </button>
+          </li>
+          <li>
+            <button
+              className="dropdown-item"
+              onClick={() => navigate("/change-password")}
+            >
+              Đổi mật khẩu
+            </button>
+          </li>
+          <li>
+            <button
+              className="dropdown-item text-danger"
+              onClick={handleLogout}
+            >
+              Đăng xuất
+            </button>
+          </li>
+        </ul>
         )}
       </div>
     );
