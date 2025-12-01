@@ -83,31 +83,6 @@ function App() {
           <Route path="/service/:id" element={<ServiceDetail />} />
           <Route path="/doctor/home" element={<HomeDoctor />} />
         </Route>
-        {/* ...existing code... */}
-        {/* <Route path="/doctor/profile" element={<DoctorProfile />} /> */}
-        {/* <Route path="/doctor/appointments" element={<Appointments />} />
-        <Route path="/doctor/patients" element={<PatientRecords />} />
-        <Route path="/doctor/schedule" element={<Schedule />} />
-        <Route path="/doctor/examination" element={<Examination />} />
-        <Route path="/doctor/prescription" element={<Prescription />} />
-        <Route path="/doctor/diagnosis" element={<DiagnosisPlan />} />
-        <Route path="/doctor/progress" element={<TreatmentProgress />} />
-        <Route path="/doctor/create-schedule" element={<ScheduleRequest />} /> */}
-        {/* <Route
-          path="/test/doctor-rating/:doctorId"
-          element={<DoctorRatingTestPage />}
-        />
-
-        <Route
-          path="/test/service-rating/:serviceId"
-          element={<ServiceRatingTestPage />}
-        /> */}
-
-        {/* <Route path="/schedule-requests" element={<ScheduleRequests />} />
-        <Route
-          path="/schedule-requests/:id"
-          element={<ScheduleRequestDetail />}
-        /> */}
            <Route path="/chat" element={<ChatPage />} />
         <Route path="/profile" element={<ProfilePage />} />
 
