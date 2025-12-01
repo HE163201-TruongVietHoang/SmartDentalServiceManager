@@ -16,7 +16,7 @@ import HomeDoctor from "./pages/HomeDoctor";
 // import ScheduleRequest from "./components/doctor/ScheduleRequest";
 
 import ProfilePage from "./pages/profile/ProfileView";
-import ServicesPage from "./pages/Service/Service";
+
 
 import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
 
@@ -71,6 +71,8 @@ import InvoiceDetailPage from "./pages/Patient/InvoiceDetailPage";
 import StatisticsPage from "./pages/ClinicManager/StatisticsPage";
 import DashboardPage from "./pages/ClinicManager/DashboardPage";
 import MyInvoice from "./pages/Patient/MyInvoice";
+import ServicesPage from "./pages/Hone/Service";
+import ServiceDetail from "./pages/Hone/ServiceDeatil";
 function App() {
   return (
     <Router>
@@ -312,7 +314,6 @@ function App() {
           }
         />
         <Route
-        <Route
           path="/receptionist/invoice"
           element={
             <ReceptionistLayout>
@@ -328,7 +329,6 @@ function App() {
             </ReceptionistLayout>
           }
         />
-        <Route
         <Route
           path="/receptionist/chat"
           element={

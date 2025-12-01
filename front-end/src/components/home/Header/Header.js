@@ -210,7 +210,7 @@ export default function Header() {
               >
                 Liên hệ
               </a>
-            </li>
+            </li> */}
             {user?.roleName === "Patient" && (
               <li className="nav-item">
                 <a
