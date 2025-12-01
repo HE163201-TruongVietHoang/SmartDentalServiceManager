@@ -181,7 +181,7 @@ export default function Header() {
                 Liên hệ
               </a>
             </li>
-            {user && (
+            {user?.role === "customer" && (
               <li className="nav-item">
                 <a
                   className="nav-link"
