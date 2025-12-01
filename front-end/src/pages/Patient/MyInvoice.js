@@ -8,7 +8,7 @@ export default function InvoiceListPage() {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
-  const [filters, setFilters] = useState({ dateFrom: '', dateTo: '', doctor: '' });
+  const [filters, setFilters] = useState({ dateFrom: '', dateTo: '', doctor: '', status: '' });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(10);
 
@@ -77,11 +77,17 @@ export default function InvoiceListPage() {
   return (
     <div style={{ background: "#f6fbff", minHeight: "100vh" }}>
       <Header />
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 0 0 0" }}>
-        <h2 style={{ color: "#1E90FF", fontWeight: 700, textAlign: "center", marginBottom: 24, letterSpacing: 1 }}>Hóa đơn chờ thanh toán</h2>
+      <div style={{ maxWidth: 1000, margin: "0 auto", padding: "32px 0 0 0" }}>
+        <h2 style={{ color: "#1E90FF", fontWeight: 700, textAlign: "center", marginBottom: 24, letterSpacing: 1 }}>Lịch sử hóa đơn</h2>
         <div style={{ padding: '16px', background: '#f9f9f9', borderRadius: '8px', marginBottom: '16px' }}>
           <h5 style={{ marginBottom: '12px', color: '#1E90FF' }}>Lọc hóa đơn</h5>
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <label>Trạng thái: <select value={filters.status} onChange={e => setFilters({...filters, status: e.target.value})} style={{ padding: '4px', borderRadius: '4px' }}>
+              <option value="">Tất cả</option>
+              <option value="Pending">Chờ thanh toán</option>
+              <option value="Paid">Đã thanh toán</option>
+              <option value="Cancelled">Đã hủy</option>
+            </select></label>
             <label>Từ ngày: <input type="date" value={filters.dateFrom} onChange={e => setFilters({...filters, dateFrom: e.target.value})} style={{ padding: '4px', borderRadius: '4px' }} /></label>
             <label>Đến ngày: <input type="date" value={filters.dateTo} onChange={e => setFilters({...filters, dateTo: e.target.value})} style={{ padding: '4px', borderRadius: '4px' }} /></label>
             <label>Bác sĩ: <input type="text" placeholder="Tên bác sĩ" value={filters.doctor} onChange={e => setFilters({...filters, doctor: e.target.value})} style={{ padding: '4px', borderRadius: '4px' }} /></label>
@@ -94,7 +100,8 @@ export default function InvoiceListPage() {
             const toDate = filters.dateTo ? new Date(filters.dateTo) : null;
             const matchesDate = (!fromDate || itemDate >= fromDate) && (!toDate || itemDate <= toDate);
             const matchesDoctor = !filters.doctor || item.doctorName.toLowerCase().includes(filters.doctor.toLowerCase());
-            return matchesDate && matchesDoctor;
+            const matchesStatus = !filters.status || item.status === filters.status;
+            return matchesDate && matchesDoctor && matchesStatus;
           });
           const totalPages = Math.ceil(filteredList.length / itemsPerPage);
           const paginatedList = filteredList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -122,7 +129,7 @@ export default function InvoiceListPage() {
                     {filteredList.length === 0 ? (
                       <tr>
                         <td style={{ padding: 24, textAlign: "center", color: "#888" }} colSpan={6}>
-                          {list.length === 0 ? "Không có hóa đơn nào đang chờ thanh toán." : "Không có hóa đơn nào khớp với bộ lọc."}
+                          {list.length === 0 ? "Bạn chưa có hóa đơn nào." : "Không có hóa đơn nào khớp với bộ lọc."}
                         </td>
                       </tr>
                     ) : (
@@ -132,7 +139,7 @@ export default function InvoiceListPage() {
                           <td style={td}>{i.doctorName}</td>
                           <td style={td}>{i.examDate ? new Date(i.examDate).toLocaleDateString("vi-VN") : "Không rõ"}</td>
                           <td style={td}>{i.startTime} - {i.endTime}</td>
-                          <td style={tdStatus}><span className="badge-status">Chờ thanh toán</span></td>
+                          <td style={tdStatus}><span className={`badge-status ${i.status === 'Paid' ? 'paid' : i.status === 'Cancelled' ? 'cancelled' : 'pending'}`}>{i.status === 'Paid' ? 'Đã thanh toán' : i.status === 'Cancelled' ? 'Đã hủy' : 'Chờ thanh toán'}</span></td>
                           <td style={td}>
                             <a href={`/invoice/me/${i.invoiceId}`} style={btn}>Xem chi tiết</a>
                             {i.status !== 'Paid' && (
@@ -162,12 +169,22 @@ export default function InvoiceListPage() {
       <style>{`
         .badge-status {
           display: inline-block;
-          background: #ffecb3;
-          color: #b26a00;
           font-weight: 600;
           font-size: 13px;
           border-radius: 8px;
           padding: 4px 12px;
+        }
+        .badge-status.pending {
+          background: #ffecb3;
+          color: #b26a00;
+        }
+        .badge-status.paid {
+          background: #d4edda;
+          color: #155724;
+        }
+        .badge-status.cancelled {
+          background: #f8d7da;
+          color: #721c24;
         }
         @media (max-width: 600px) {
           table, thead, tbody, th, td, tr { display: block; }
