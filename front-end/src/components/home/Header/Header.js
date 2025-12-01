@@ -93,6 +93,14 @@ export default function Header() {
                 </button>
               </li>
               <li>
+                <button
+                  className="dropdown-item"
+                  onClick={() => navigate("/medical-record")}
+                >
+                  Hồ sơ khám bệnh
+                </button>
+              </li>
+              <li>
                 <hr className="dropdown-divider" />
               </li>
             </>
