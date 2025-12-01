@@ -63,7 +63,6 @@ import DoctorPrescription from "./components/doctor/DoctorPrescription";
 import ReceptionistInvoiceListPage from "./pages/Receptionist/InvoiceListPage";
 import ReceptionistInvoiceDetailPage from "./pages/Receptionist/InvoiceDetailPage";
 
-import DoctorMedicinePage from "./pages/Doctor/DoctorMedicinePage";
 import MedicalRecordPage from "./pages/Patient/MedicalRecordPage";
 
 
