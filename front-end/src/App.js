@@ -60,11 +60,11 @@ import Promotion from "./pages/ClinicManager/Promotion";
 import Invoice from "./pages/ClinicManager/Invoice";
 import VnpayReturn from "./pages/VnpayReturn";
 import DoctorPrescription from "./components/doctor/DoctorPrescription";
-import ReceptionistInvoiceListPage from "./pages/Receptionist/InvoiceListPage";
-import ReceptionistInvoiceDetailPage from "./pages/Receptionist/InvoiceDetailPage";
+import InvoiceListPage from "./pages/Patient/InvoiceListPage";
+import InvoiceDetailPage from "./pages/Patient/InvoiceDetailPage";
 import StatisticsPage from "./pages/ClinicManager/StatisticsPage";
 import DashboardPage from "./pages/ClinicManager/DashboardPage";
-
+import MyInvoice from "./pages/Patient/MyInvoice";
 function App() {
   return (
     <Router>
@@ -109,11 +109,11 @@ function App() {
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/admin/users" element={<UserManagement />} />
         <Route path="/appointment" element={<AppointmentPage />} />
+        <Route path="/appointment/:appointmentId/review" element={<AppointmentReview />} />
         <Route path="/appointment/me" element={<MyAppointmentsPage />} />
-        <Route
-          path="/appointment/:appointmentId/review"
-          element={<AppointmentReview />}
-        />
+        <Route path="/invoice/me/:invoiceId" element={<InvoiceDetailPage />} />
+        <Route path="/invoice/me" element={<MyInvoice />} />
+         <Route path="/invoice-pending/me" element={<InvoiceListPage />} />
         {/*clinic Manager*/}
 
         <Route
@@ -266,7 +266,6 @@ function App() {
             </NurseLayout>
           }
         />
-        <Route path="/nurse/materials" element={<NurseMaterialPage />} />
 
         {/* Receptionist */}
         <Route
@@ -286,18 +285,18 @@ function App() {
           }
         />
         <Route
-          path="/receptionist/patients"
-          element={
-            <ReceptionistLayout>
-              <PatientListPage />
-            </ReceptionistLayout>
-          }
-        />
-        <Route
           path="/receptionist/patients/:userId"
           element={
             <ReceptionistLayout>
               <PatientDetailPage />
+            </ReceptionistLayout>
+          }
+        />
+        <Route
+          path="/receptionist/patients"
+          element={
+            <ReceptionistLayout>
+              <PatientListPage />
             </ReceptionistLayout>
           }
         />
@@ -312,14 +311,22 @@ function App() {
         <Route path="/vnpay_return_url" element={<VnpayReturn />} />
 
         <Route
-          path="/receptionist/invoices"
+          path="/receptionist/invoices/:invoiceId"
           element={
             <ReceptionistLayout>
-              <ReceptionistInvoiceListPage />
+              <InvoiceDetailPage />
             </ReceptionistLayout>
           }
         />
-  <Route
+        <Route
+          path="/receptionist/invoices"
+          element={
+            <ReceptionistLayout>
+              <InvoiceListPage />
+            </ReceptionistLayout>
+          }
+        />
+        <Route
           path="/receptionist/invoice"
           element={
             <ReceptionistLayout>
@@ -328,14 +335,6 @@ function App() {
           }
         />
         <Route
-          path="/receptionist/invoices/:invoiceId"
-          element={
-            <ReceptionistLayout>
-              <ReceptionistInvoiceDetailPage />
-            </ReceptionistLayout>
-          }
-        />
-          <Route
           path="/receptionist/chat"
           element={
             <ReceptionistLayout>

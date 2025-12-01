@@ -107,6 +107,7 @@ async function getByPatientId(patientId) {
   return result.recordset;
 }
 
+
 async function getPendingInvoices() {
   const pool = await getPool();
   const result = await pool.request().query(`
@@ -133,6 +134,63 @@ async function getPendingInvoices() {
   return result.recordset;
 }
 
+// Lấy hóa đơn chờ thanh toán theo userId (bệnh nhân)
+async function getPendingInvoicesByUserId(userId) {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('userId', sql.Int, userId)
+    .query(`
+      SELECT 
+        I.invoiceId,
+        I.issuedDate,
+        CONVERT(date, SCH.workDate) AS examDate,
+        A.appointmentId,
+        U.fullName AS patientName,
+        D.fullName AS doctorName,
+        CONVERT(varchar(5), S.startTime, 108) AS startTime,
+        CONVERT(varchar(5), S.endTime, 108) AS endTime,
+        I.totalAmount,
+        I.status
+      FROM Invoices I
+      JOIN Appointments A ON I.appointmentId = A.appointmentId
+      JOIN Users U ON A.patientId = U.userId
+      JOIN Users D ON A.doctorId = D.userId
+      JOIN Slots S ON A.slotId = S.slotId
+      JOIN Schedules SCH ON S.scheduleId = SCH.scheduleId
+      WHERE I.status = 'Pending' AND U.userId = @userId
+      ORDER BY I.issuedDate DESC
+    `);
+  return result.recordset;
+}
+async function getInvoicesByUserId(userId) {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('userId', sql.Int, userId)
+    .query(`
+      SELECT 
+        I.invoiceId,
+        I.issuedDate,
+        CONVERT(date, SCH.workDate) AS examDate,
+        A.appointmentId,
+        U.fullName AS patientName,
+        D.fullName AS doctorName,
+        CONVERT(varchar(5), S.startTime, 108) AS startTime,
+        CONVERT(varchar(5), S.endTime, 108) AS endTime,
+        I.totalAmount,
+        I.discountAmount,
+        I.finalAmount,
+        I.status
+      FROM Invoices I
+      JOIN Appointments A ON I.appointmentId = A.appointmentId
+      JOIN Users U ON A.patientId = U.userId
+      JOIN Users D ON A.doctorId = D.userId
+      JOIN Slots S ON A.slotId = S.slotId
+      JOIN Schedules SCH ON S.scheduleId = SCH.scheduleId
+      WHERE U.userId = @userId
+      ORDER BY I.issuedDate DESC
+    `);
+  return result.recordset;
+}
 async function getInvoiceDetail(invoiceId) {
   const pool = await getPool();
   // HEADER
@@ -221,6 +279,17 @@ async function confirmPayment(invoiceId) {
   `);
   return true;
 }
+async function checkPendingInvoicesByUserId(userId) {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('userId', sql.Int, userId)
+    .query(`
+      SELECT COUNT(*) as count
+      FROM Invoices I
+      JOIN Appointments A ON I.appointmentId = A.appointmentId
+      WHERE I.status = 'Pending' AND A.patientId = @userId
+    `);
+  return result.recordset[0].count > 0;
+}
 
-module.exports = { create, getAll, getById, update, getByPatientId, getPendingInvoices, getInvoiceDetail, confirmPayment };
-
+module.exports = { create, getAll, getById, update, getByPatientId, getPendingInvoices, getPendingInvoicesByUserId, getInvoiceDetail, confirmPayment, getInvoicesByUserId, checkPendingInvoicesByUserId };

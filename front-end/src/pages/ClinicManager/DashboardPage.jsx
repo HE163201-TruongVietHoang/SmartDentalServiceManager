@@ -49,26 +49,43 @@ const DashboardPage = () => {
   const filteredMonthlyRevenue = (revenue.monthlyRevenue || []).filter(stat => stat.year === selectedYear);
   const filteredMonthlyPayments = (payments.monthlyPaymentStats || []).filter(stat => stat.year === selectedYear);
 
-  // Export to CSV
-  const exportToCSV = (data, filename, headers = []) => {
-    if (data.length === 0) return;
-    const csvRows = [];
-    if (headers.length > 0) {
-      csvRows.push(headers.join(','));
-    } else {
-      csvRows.push(Object.keys(data[0]).join(','));
-    }
-    data.forEach(row => {
-      csvRows.push(Object.values(row).join(','));
+  // Export all data as zip of CSVs
+  const exportAllToZip = async () => {
+    // Dynamically import JSZip only when needed
+    const JSZip = (await import('jszip')).default;
+    const zip = new JSZip();
+    // Helper to convert array to CSV string
+    const toCSV = (data, headers = []) => {
+      if (!data || data.length === 0) return '';
+      const csvRows = [];
+      if (headers.length > 0) {
+        csvRows.push(headers.join(','));
+      } else {
+        csvRows.push(Object.keys(data[0]).join(','));
+      }
+      data.forEach(row => {
+        csvRows.push(Object.values(row).join(','));
+      });
+      return csvRows.join('\n');
+    };
+    // Prepare all datasets
+    zip.file('monthly_revenue.csv', toCSV(revenue.monthlyRevenue || []));
+    zip.file('yearly_revenue.csv', toCSV(revenue.yearlyRevenue || []));
+    zip.file('service_revenue.csv', toCSV(revenue.serviceRevenue || []));
+    zip.file('invoice_status_revenue.csv', toCSV(revenue.invoiceStatusRevenue || []));
+    zip.file('payment_methods.csv', toCSV(payments.paymentMethodStats || []));
+    zip.file('monthly_payments.csv', toCSV((payments.monthlyPaymentStats || []).filter(stat => stat.year === selectedYear)));
+    // Generate and download zip
+    zip.generateAsync({ type: 'blob' }).then(content => {
+      const url = URL.createObjectURL(content);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'dashboard_exports.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     });
-    const csvContent = 'data:text/csv;charset=utf-8,' + csvRows.join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', filename);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
 
@@ -105,12 +122,7 @@ const DashboardPage = () => {
           </Form.Group>
         </Col>
         <Col md={8} className="d-flex flex-wrap gap-2 justify-content-md-end justify-content-center mt-3 mt-md-0">
-          <Button variant="success" onClick={() => exportToCSV(revenue.monthlyRevenue || [], 'monthly_revenue.csv')} className="export-btn">Export Monthly Revenue</Button>
-          <Button variant="success" onClick={() => exportToCSV(revenue.yearlyRevenue || [], 'yearly_revenue.csv')} className="export-btn">Export Yearly Revenue</Button>
-          <Button variant="success" onClick={() => exportToCSV(revenue.serviceRevenue || [], 'service_revenue.csv')} className="export-btn">Export Service Revenue</Button>
-          <Button variant="success" onClick={() => exportToCSV(revenue.invoiceStatusRevenue || [], 'invoice_status_revenue.csv')} className="export-btn">Export Invoice Status Revenue</Button>
-          <Button variant="success" onClick={() => exportToCSV(payments.paymentMethodStats || [], 'payment_methods.csv')} className="export-btn">Export Payment Methods</Button>
-          <Button variant="success" onClick={() => exportToCSV(filteredMonthlyPayments, 'monthly_payments.csv')} className="export-btn">Export Monthly Payments</Button>
+          <Button variant="success" onClick={exportAllToZip} className="export-btn">Export All</Button>
         </Col>
       </Row>
 

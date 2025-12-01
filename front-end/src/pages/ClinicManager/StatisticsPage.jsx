@@ -59,26 +59,45 @@ const StatisticsPage = () => {
   const filteredMonthlyServiceStats = (serviceStats.monthlyServiceStats || []).filter(stat => stat.year === selectedYear);
   const filteredMonthlyMedicineStats = (medicineStats.monthlyMedicineStats || []).filter(stat => stat.year === selectedYear);
 
-  // Export to CSV
-  const exportToCSV = (data, filename, headers = []) => {
-    if (data.length === 0) return;
-    const csvRows = [];
-    if (headers.length > 0) {
-      csvRows.push(headers.join(','));
-    } else {
-      csvRows.push(Object.keys(data[0]).join(','));
-    }
-    data.forEach(row => {
-      csvRows.push(Object.values(row).join(','));
+
+  // Export all statistics as zip of CSVs
+  const exportAllToZip = async () => {
+    const JSZip = (await import('jszip')).default;
+    const zip = new JSZip();
+    // Helper to convert array to CSV string
+    const toCSV = (data, headers = []) => {
+      if (!data || data.length === 0) return '';
+      const csvRows = [];
+      if (headers.length > 0) {
+        csvRows.push(headers.join(','));
+      } else {
+        csvRows.push(Object.keys(data[0]).join(','));
+      }
+      data.forEach(row => {
+        csvRows.push(Object.values(row).join(','));
+      });
+      return csvRows.join('\n');
+    };
+    // Prepare all datasets
+    zip.file('appointment_status.csv', toCSV(appointmentStats.statusStats || []));
+    zip.file('appointment_doctors.csv', toCSV(appointmentStats.doctorStats || []));
+    zip.file('appointment_monthly.csv', toCSV(filteredMonthlyStats));
+    zip.file('services.csv', toCSV(serviceStats.serviceStats || []));
+    zip.file('doctors.csv', toCSV(doctorStats.doctorStats || []));
+    zip.file('medicines.csv', toCSV(medicineStats.medicineStats || []));
+    zip.file('doctor_ratings.csv', toCSV(ratingStats.doctorRatings || []));
+    zip.file('service_ratings.csv', toCSV(ratingStats.serviceRatings || []));
+    // Generate and download zip
+    zip.generateAsync({ type: 'blob' }).then(content => {
+      const url = URL.createObjectURL(content);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'statistics_exports.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     });
-    const csvContent = 'data:text/csv;charset=utf-8,' + csvRows.join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', filename);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
 
@@ -115,14 +134,7 @@ const StatisticsPage = () => {
           </Form.Group>
         </Col>
         <Col md={8} className="d-flex flex-wrap gap-2 justify-content-md-end justify-content-center mt-3 mt-md-0">
-          <Button variant="success" onClick={() => exportToCSV(appointmentStats.statusStats || [], 'appointment_status.csv')} className="export-btn">Export Appointments Status</Button>
-          <Button variant="success" onClick={() => exportToCSV(appointmentStats.doctorStats || [], 'appointment_doctors.csv')} className="export-btn">Export Appointments Doctors</Button>
-          <Button variant="success" onClick={() => exportToCSV(filteredMonthlyStats, 'appointment_monthly.csv')} className="export-btn">Export Appointments Monthly</Button>
-          <Button variant="success" onClick={() => exportToCSV(serviceStats.serviceStats || [], 'services.csv')} className="export-btn">Export Services</Button>
-          <Button variant="success" onClick={() => exportToCSV(doctorStats.doctorStats || [], 'doctors.csv')} className="export-btn">Export Doctors</Button>
-          <Button variant="success" onClick={() => exportToCSV(medicineStats.medicineStats || [], 'medicines.csv')} className="export-btn">Export Medicines</Button>
-          <Button variant="success" onClick={() => exportToCSV(ratingStats.doctorRatings || [], 'doctor_ratings.csv')} className="export-btn">Export Doctor Ratings</Button>
-          <Button variant="success" onClick={() => exportToCSV(ratingStats.serviceRatings || [], 'service_ratings.csv')} className="export-btn">Export Service Ratings</Button>
+          <Button variant="success" onClick={exportAllToZip} className="export-btn">Export All</Button>
         </Col>
       </Row>
 
