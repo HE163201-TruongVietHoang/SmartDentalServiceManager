@@ -124,6 +124,7 @@ const ChatPopup = ({ isOpen, onClose }) => {
           loading={loadingMessages}
           onLoadMore={loadMoreMessages}
           loadingMore={loadingMoreMessages}
+          isPopup={true}
         />
         <MessageInput
           onSend={handleSendMessage}

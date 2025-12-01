@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 
-const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore }) => {
+const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore, isPopup = false }) => {
   const bottomRef = useRef();
   const chatWindowRef = useRef();
   const previousScrollHeight = useRef(0);
@@ -43,18 +43,26 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore }
     </div>
   );
 
-  return (
-    <div
-      ref={chatWindowRef}
-      style={{
+  const chatWindowStyle = isPopup
+    ? {
         height: '375px',
         overflowY: 'auto',
         padding: '16px',
         background: '#f8f9fa',
         display: 'flex',
         flexDirection: 'column',
-      }}
-    >
+      }
+    : {
+        flex: 1,
+        overflowY: 'scroll',
+        padding: '16px',
+        background: '#f8f9fa',
+        display: 'flex',
+        flexDirection: 'column',
+      };
+
+  return (
+    <div ref={chatWindowRef} style={chatWindowStyle}>
       {loadingMore && (
         <div className="text-center" style={{ padding: '10px' }}>
           <div className="spinner-border" style={{ color: '#2ECCB6', width: '20px', height: '20px' }} role="status">
@@ -71,7 +79,7 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore }
           <p style={{ marginTop: '10px', color: '#666' }}>Đang tải tin nhắn...</p>
         </div>
       ) : null}
-      <div style={{ paddingBottom: '16px' }}>
+      <div style={{ flex: 1, paddingBottom: '16px' }}>
         {(() => {
           const currentUser = JSON.parse(localStorage.getItem('user'));
           return messages.map(msg => {

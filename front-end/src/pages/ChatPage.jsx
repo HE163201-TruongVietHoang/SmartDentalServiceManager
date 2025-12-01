@@ -221,6 +221,7 @@ const ChatPage = () => {
           loading={loadingMessages}
           onLoadMore={loadMoreMessages}
           loadingMore={loadingMoreMessages}
+          isPopup={false}
         />
         <MessageInput
           onSend={handleSendMessage}
