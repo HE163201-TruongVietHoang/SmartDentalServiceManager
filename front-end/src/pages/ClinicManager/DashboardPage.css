@@ -1,0 +1,52 @@
+/* DashboardPage.css - UI enhancement for DashboardPage */
+
+.stat-card-overview {
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 2px 12px #e0e0e0;
+  transition: transform 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+}
+.stat-card-overview:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 6px 24px #b2f7c1;
+}
+
+.export-btn {
+  border-radius: 12px !important;
+  font-weight: 500;
+  box-shadow: 0 2px 8px #e0e0e0;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+  margin-bottom: 4px;
+}
+.export-btn:hover {
+  background: #27ae60 !important;
+  color: #fff !important;
+  box-shadow: 0 4px 16px #b2f7c1;
+}
+
+.card {
+  border-radius: 20px !important;
+}
+
+.card-header {
+  border-top-left-radius: 20px !important;
+  border-top-right-radius: 20px !important;
+}
+
+.chart-container {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px #e0e0e0;
+  padding: 16px 8px 8px 8px;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
+  .stat-card-overview {
+    margin-bottom: 12px;
+  }
+  .chart-container {
+    padding: 8px 2px 2px 2px;
+  }
+}

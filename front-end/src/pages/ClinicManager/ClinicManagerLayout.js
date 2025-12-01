@@ -5,6 +5,12 @@ import {
   FaTags,
   FaSignOutAlt,
   FaUserCircle,
+  FaTachometerAlt,
+  FaChartBar,
+  FaBox,
+  FaCalendarAlt,
+  FaPercent,
+  FaFileInvoiceDollar,
 } from "react-icons/fa";
 
 function ClinicManagerLayout({ children }) {
@@ -13,28 +19,38 @@ function ClinicManagerLayout({ children }) {
 
   const menu = [
     {
+      name: "Bảng điều khiển",
+      icon: <FaTachometerAlt />,
+      path: "/clinicmanager/dashboard",
+    },
+    {
+      name: "Thống kê",
+      icon: <FaChartBar />,
+      path: "/clinicmanager/statistics",
+    },
+    {
       name: "Quản lý dịch vụ",
       icon: <FaServicestack />,
       path: "/clinicmanager/services",
     },
     {
       name: "Quản lý vật tư",
-      icon: <FaTags />,
+      icon: <FaBox />,
       path: "/clinicmanager/material",
     },
     {
       name: "Quản lý lịch làm việc bác sĩ",
-      icon: <FaTags />,
+      icon: <FaCalendarAlt />,
       path: "/clinicmanager/doctorschedule",
     },
     {
       name: "Quản lý khuyến mãi",
-      icon: <FaTags />,
+      icon: <FaPercent />,
       path: "/clinicmanager/promotion",
     },
     {
       name: "Quản lý hóa đơn",
-      icon: <FaTags />,
+      icon: <FaFileInvoiceDollar />,
       path: "/clinicmanager/invoice",
     },
   ];
