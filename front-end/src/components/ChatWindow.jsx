@@ -21,7 +21,9 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore }
 
   useEffect(() => {
     const handleScroll = () => {
+      console.log('Scroll top:', chatWindowRef.current.scrollTop);
       if (chatWindowRef.current && chatWindowRef.current.scrollTop === 0 && onLoadMore && !loadingMore) {
+        console.log('Loading more messages');
         onLoadMore();
       }
     };
@@ -42,7 +44,17 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore }
   );
 
   return (
-    <div ref={chatWindowRef} style={{ flex: 1, overflowY: 'auto', padding: '16px', background: '#f8f9fa', display: 'flex', flexDirection: 'column' }}>
+    <div
+      ref={chatWindowRef}
+      style={{
+        height: 'calc(100% - 0px)', // full height of parent
+        overflowY: 'auto',
+        padding: '16px',
+        background: '#f8f9fa',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       {loadingMore && (
         <div className="text-center" style={{ padding: '10px' }}>
           <div className="spinner-border" style={{ color: '#2ECCB6', width: '20px', height: '20px' }} role="status">
@@ -59,7 +71,7 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore }
           <p style={{ marginTop: '10px', color: '#666' }}>Đang tải tin nhắn...</p>
         </div>
       ) : null}
-      <div style={{ flex: 1, paddingBottom: '16px' }}>
+      <div style={{ paddingBottom: '16px' }}>
         {(() => {
           const currentUser = JSON.parse(localStorage.getItem('user'));
           return messages.map(msg => {

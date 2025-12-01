@@ -16,6 +16,29 @@ const ChatPopup = ({ isOpen, onClose }) => {
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [messageOffset, setMessageOffset] = useState(0);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [loadingMoreMessages, setLoadingMoreMessages] = useState(false);
+
+  // Load thêm tin nhắn cũ hơn
+  const loadMoreMessages = useCallback(async () => {
+    if (!selectedConversation || !hasMoreMessages || loadingMoreMessages) return;
+    setLoadingMoreMessages(true);
+    try {
+      const res = await getMessages(selectedConversation.conversationId, 50, messageOffset + 50);
+      if (res.data.length > 0) {
+        setMessages(prev => [...res.data.reverse(), ...prev]);
+        setMessageOffset(prev => prev + 50);
+        if (res.data.length < 50) setHasMoreMessages(false);
+      } else {
+        setHasMoreMessages(false);
+      }
+    } catch (err) {
+      console.error('Error loading more messages:', err);
+    } finally {
+      setLoadingMoreMessages(false);
+    }
+  }, [selectedConversation, hasMoreMessages, loadingMoreMessages, messageOffset]);
 
   // Load conversation cho bệnh nhân
   useEffect(() => {
@@ -26,8 +49,12 @@ const ChatPopup = ({ isOpen, onClose }) => {
           if (res.data.length > 0) {
             const conv = res.data[0];
             setSelectedConversation(conv);
-            getMessages(conv.conversationId).then(msgRes => {
+            setMessageOffset(0);
+            setHasMoreMessages(true);
+            setLoadingMoreMessages(false);
+            getMessages(conv.conversationId, 50, 0).then(msgRes => {
               setMessages(msgRes.data.reverse());
+              if (msgRes.data.length < 50) setHasMoreMessages(false);
               markMessagesRead(conv.conversationId);
             });
           }
@@ -95,6 +122,8 @@ const ChatPopup = ({ isOpen, onClose }) => {
           conversation={selectedConversation}
           messages={messages}
           loading={loadingMessages}
+          onLoadMore={loadMoreMessages}
+          loadingMore={loadingMoreMessages}
         />
         <MessageInput
           onSend={handleSendMessage}
