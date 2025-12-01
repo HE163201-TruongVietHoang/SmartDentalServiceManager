@@ -2,18 +2,17 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Home from "./pages/Home";
-import PatientLayout from "./pages/Patient/PatientLayout";
 import ChatPage from "./pages/ChatPage";
 
 import HomeDoctor from "./pages/HomeDoctor";
-// import Appointments from "./components/doctor/Appointments";
-// import PatientRecords from "./components/doctor/PatientRecords";
-// import Schedule from "./components/doctor/Schedule";
-// import Examination from "./components/doctor/Examination";
-// import Prescription from "./components/doctor/PrescribeMedication";
-// import DiagnosisPlan from "./components/doctor/DiagnosisPlan";
-// import TreatmentProgress from "./components/doctor/TreatmentProgress";
-// import ScheduleRequest from "./components/doctor/ScheduleRequest";
+import Appointments from "./components/doctor/Appointments";
+import PatientRecords from "./components/doctor/PatientRecords";
+import Schedule from "./components/doctor/Schedule";
+import Examination from "./components/doctor/Examination";
+import Prescription from "./components/doctor/PrescribeMedication";
+import DiagnosisPlan from "./components/doctor/DiagnosisPlan";
+import TreatmentProgress from "./components/doctor/TreatmentProgress";
+import ScheduleRequest from "./components/doctor/ScheduleRequest";
 
 import ProfilePage from "./pages/profile/ProfileView";
 import ServicesPage from "./pages/Service/Service";
@@ -33,7 +32,6 @@ import NurseMaterialPage from "./pages/Nurse/NurseMaterialPage";
 import AppointmentPage from "./pages/AppointmentPage";
 import MyAppointmentsPage from "./pages/Patient/MyAppointment";
 import AppointmentReview from "./pages/Patient/AppointmentReview";
-import NotFound from "./pages/NotFound";
 
 import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
 import Service from "./pages/ClinicManager/Services";
@@ -65,25 +63,46 @@ import DoctorPrescription from "./components/doctor/DoctorPrescription";
 import ReceptionistInvoiceListPage from "./pages/Receptionist/InvoiceListPage";
 import ReceptionistInvoiceDetailPage from "./pages/Receptionist/InvoiceDetailPage";
 
+
 import MedicalRecordPage from "./pages/Patient/MedicalRecordPage";
 
-import InvoiceListPage from "./pages/Patient/InvoiceListPage";
-import InvoiceDetailPage from "./pages/Patient/InvoiceDetailPage";
-import StatisticsPage from "./pages/ClinicManager/StatisticsPage";
-import DashboardPage from "./pages/ClinicManager/DashboardPage";
-import MyInvoice from "./pages/Patient/MyInvoice";
+
+
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Patient routes with popup logic */}
-        <Route element={<PatientLayout />}>
-          <Route path="/" element={<Home />} />
-          <Route path="/service" element={<ServicesPage />} />
-          <Route path="/service/:id" element={<ServiceDetail />} />
-          <Route path="/doctor/home" element={<HomeDoctor />} />
-        </Route>
-           <Route path="/chat" element={<ChatPage />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/chat" element={<ChatPage />} />
+        <Route path="/service" element={<ServicesPage />} />
+        <Route path="/service/:id" element={<ServiceDetail />} />
+
+        <Route path="/doctor/home" element={<HomeDoctor />} />
+        {/* <Route path="/doctor/profile" element={<DoctorProfile />} /> */}
+        {/* <Route path="/doctor/appointments" element={<Appointments />} />
+        <Route path="/doctor/patients" element={<PatientRecords />} />
+        <Route path="/doctor/schedule" element={<Schedule />} />
+        <Route path="/doctor/examination" element={<Examination />} />
+        <Route path="/doctor/prescription" element={<Prescription />} />
+        <Route path="/doctor/diagnosis" element={<DiagnosisPlan />} />
+        <Route path="/doctor/progress" element={<TreatmentProgress />} />
+        <Route path="/doctor/create-schedule" element={<ScheduleRequest />} /> */}
+        <Route
+          path="/test/doctor-rating/:doctorId"
+          element={<DoctorRatingTestPage />}
+        />
+
+        <Route
+          path="/test/service-rating/:serviceId"
+          element={<ServiceRatingTestPage />}
+        />
+
+        {/* <Route path="/schedule-requests" element={<ScheduleRequests />} />
+        <Route
+          path="/schedule-requests/:id"
+          element={<ScheduleRequestDetail />}
+        /> */}
+
         <Route path="/profile" element={<ProfilePage />} />
 
         <Route path="/signin" element={<SignIn />} />
@@ -93,12 +112,12 @@ function App() {
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/admin/users" element={<UserManagement />} />
         <Route path="/appointment" element={<AppointmentPage />} />
-        <Route path="/appointment/:appointmentId/review" element={<AppointmentReview />} />
         <Route path="/appointment/me" element={<MyAppointmentsPage />} />
         <Route path="/medical-record" element={<MedicalRecordPage />} />
-        <Route path="/invoice/me/:invoiceId" element={<InvoiceDetailPage />} />
-        <Route path="/invoice/me" element={<MyInvoice />} />
-         <Route path="/invoice-pending/me" element={<InvoiceListPage />} />
+        <Route
+          path="/appointment/:appointmentId/review"
+          element={<AppointmentReview />}
+        />
         {/*clinic Manager*/}
 
         <Route
@@ -156,22 +175,6 @@ function App() {
           element={
             <ClinicManagerLayout>
               <Invoice />
-            </ClinicManagerLayout>
-          }
-        />
-        <Route
-          path="/clinicmanager/statistics"
-          element={
-            <ClinicManagerLayout>
-              <StatisticsPage />
-            </ClinicManagerLayout>
-          }
-        />
-        <Route
-          path="/clinicmanager/dashboard"
-          element={
-            <ClinicManagerLayout>
-              <DashboardPage />
             </ClinicManagerLayout>
           }
         />
@@ -251,6 +254,7 @@ function App() {
             </NurseLayout>
           }
         />
+        <Route path="/nurse/materials" element={<NurseMaterialPage />} />
 
         {/* Receptionist */}
         <Route
@@ -270,18 +274,18 @@ function App() {
           }
         />
         <Route
-          path="/receptionist/patients/:userId"
-          element={
-            <ReceptionistLayout>
-              <PatientDetailPage />
-            </ReceptionistLayout>
-          }
-        />
-        <Route
           path="/receptionist/patients"
           element={
             <ReceptionistLayout>
               <PatientListPage />
+            </ReceptionistLayout>
+          }
+        />
+        <Route
+          path="/receptionist/patients/:userId"
+          element={
+            <ReceptionistLayout>
+              <PatientDetailPage />
             </ReceptionistLayout>
           }
         />
@@ -295,24 +299,15 @@ function App() {
         />
         <Route path="/vnpay_return_url" element={<VnpayReturn />} />
 
-        {/* Chỉ giữ ReceptionistInvoiceDetailPage cho path này */}
-        <Route
-          path="/receptionist/invoices/:invoiceId"
-          element={
-            <ReceptionistLayout>
-              <ReceptionistInvoiceDetailPage />
-            </ReceptionistLayout>
-          }
-        />
         <Route
           path="/receptionist/invoices"
           element={
             <ReceptionistLayout>
-              <InvoiceListPage />
+              <ReceptionistInvoiceListPage />
             </ReceptionistLayout>
           }
         />
-        <Route
+  <Route
           path="/receptionist/invoice"
           element={
             <ReceptionistLayout>
@@ -328,7 +323,7 @@ function App() {
             </ReceptionistLayout>
           }
         />
-        <Route
+          <Route
           path="/receptionist/chat"
           element={
             <ReceptionistLayout>
@@ -336,8 +331,6 @@ function App() {
             </ReceptionistLayout>
           }
         />
-        {/* Route 404 */}
-        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
