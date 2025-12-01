@@ -2,6 +2,7 @@ const nodemailer = require("nodemailer"); // ✅ Thêm Nodemailer
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+const cloudinary = require("../config/cloudinary");
 const {
   findUserByEmailOrPhone,
   setOtpForUser,
@@ -22,6 +23,7 @@ const {
   findUserByEmail,
   verifyUserOtp,
   activateUser,
+  updateAvatar,
 } = require("../access/userAccess");
 const {
   getActiveSessions,
@@ -364,6 +366,27 @@ const logoutAllDevices = async (userId) => {
   return await logoutAllSessions(userId);
 };
 
+const uploadUserAvatar  = async (userId, file) => {
+  if (!file) throw new Error("No image uploaded");
+
+  // Upload Cloudinary
+  const uploaded = await new Promise((resolve, reject) => {
+    cloudinary.uploader.upload_stream(
+      { folder: "user_avatars" },
+      (err, result) => {
+        if (err) return reject(err);
+        resolve(result);
+      }
+    ).end(file.buffer);
+  });
+
+  const avatarUrl = uploaded.secure_url;
+
+  // Update DB
+  await updateAvatar(userId, avatarUrl);
+
+  return { avatarUrl };
+};
 module.exports = {
   login,
   refreshToken,
@@ -383,4 +406,5 @@ module.exports = {
   logoutDevice,
   logoutAllDevices,
   verifyAccountOtp,
+  uploadUserAvatar 
 };
