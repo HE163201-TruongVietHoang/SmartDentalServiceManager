@@ -256,7 +256,7 @@ const Invoice = () => {
               <p><strong>Bác sĩ:</strong> ${header.doctorName || 'N/A'}</p>
               <p><strong>Ngày khám:</strong> ${header.examDate ? new Date(header.examDate).toLocaleDateString('vi-VN') : 'N/A'}</p>
               <p><strong>Thời gian:</strong> ${header.startTime} - ${header.endTime}</p>
-              <p><strong>Ngày tạo:</strong> ${new Date(invoice.issuedDate).toLocaleString('vi-VN')}</p>
+              <p><strong>Ngày tạo:</strong> ${new Date(new Date(invoice.issuedDate).getTime() - 7 * 60 * 60 * 1000).toLocaleString('vi-VN')}</p>
             </div>
             ${diagnosisHtml}
             ${servicesHtml}
@@ -396,7 +396,7 @@ const Invoice = () => {
                   <td>{formatCurrency(invoice.discountAmount || 0)}</td>
                   <td>{formatCurrency((invoice.totalAmount || 0) - (invoice.discountAmount || 0))}</td>
                   <td>{getStatusBadge(invoice.status)}</td>
-                  <td>{new Date(invoice.issuedDate).toLocaleString('vi-VN')}</td>
+                  <td>{new Date(new Date(invoice.issuedDate).getTime() - 7 * 60 * 60 * 1000).toLocaleString('vi-VN')}</td>
                   <td>
                     {invoice.status === 'Paid' ? (
                       <Button
