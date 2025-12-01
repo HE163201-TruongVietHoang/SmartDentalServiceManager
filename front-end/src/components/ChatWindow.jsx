@@ -94,7 +94,9 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore }
                   boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                   wordWrap: 'break-word',
                   position: 'relative'
-                }}>
+                }}
+                title={`${msg.senderName} (${msg.senderEmail}) - ${new Date(msg.sentAt).toLocaleString('vi-VN')}`}
+                >
                   <div>{msg.content}</div>
                   <div style={{ fontSize: '10px', opacity: 0.7, marginTop: '4px', textAlign: 'right' }}>
                     {new Date(msg.sentAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
@@ -121,6 +123,11 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore }
             );
           });
         })()}
+        {messages.length > 0 && messages[messages.length - 1].isRead && (
+          <div style={{ textAlign: 'right', fontSize: '12px', color: '#666', marginTop: '8px' }}>
+            Đã xem
+          </div>
+        )}
       </div>
       <div ref={bottomRef} />
     </div>
