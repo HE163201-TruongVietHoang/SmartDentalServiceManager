@@ -21,7 +21,7 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore, 
 
   useEffect(() => {
     const handleScroll = () => {
-      console.log('Scroll top:', chatWindowRef.current.scrollTop);
+      //console.log('Scroll top:', chatWindowRef.current.scrollTop);
       if (chatWindowRef.current && chatWindowRef.current.scrollTop === 0 && onLoadMore && !loadingMore) {
         console.log('Loading more messages');
         onLoadMore();
@@ -42,8 +42,7 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore, 
       </div>
     </div>
   );
-
-  const chatWindowStyle = isPopup
+ const chatWindowStyle = isPopup
     ? {
         height: '375px',
         overflowY: 'auto',
@@ -60,7 +59,6 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore, 
         display: 'flex',
         flexDirection: 'column',
       };
-
   return (
     <div ref={chatWindowRef} style={chatWindowStyle}>
       {loadingMore && (
@@ -79,7 +77,7 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore, 
           <p style={{ marginTop: '10px', color: '#666' }}>Đang tải tin nhắn...</p>
         </div>
       ) : null}
-      <div style={{ flex: 1, paddingBottom: '16px' }}>
+      <div style={{ paddingBottom: '16px' }}>
         {(() => {
           const currentUser = JSON.parse(localStorage.getItem('user'));
           return messages.map(msg => {
