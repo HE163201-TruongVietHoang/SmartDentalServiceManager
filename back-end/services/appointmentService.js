@@ -1,35 +1,67 @@
 const { getPool, sql } = require("../config/db");
 const { checkSlot, markAsBooked, unmarkAsBooked } = require("../access/slotAccess");
+const { sendNotificationToMany } = require("../access/notificationAccess");
+const { getByIdPatient } = require("../access/patientAccess");
 const { create, getByUser, getAll, getById, cancelAppointments, countUserCancellations, updateStatus, findUserByEmailOrPhone, createUser, addServiceToAppointment } = require("../access/appointmentAccess");
-const { normalizeTime } = require("../utils/timeUtils");
+const { normalizeTime, minutesToHHMM } = require("../utils/timeUtils");
+const { getIO } = require("../utils/socket");
 const appointmentService = {
   async makeAppointment({ patientId, doctorId, slotId, reason, workDate, appointmentType }, io) {
-    if (!appointmentType) throw new Error("appointmentType is required");
     const pool = await getPool();
+    // Transaction
     const transaction = new sql.Transaction(pool);
-
     await transaction.begin();
-
+    let appointment;
+    let slot;
     try {
-      const slot = await checkSlot(slotId, transaction);
+      slot = await checkSlot(slotId, transaction);
       if (!slot) throw new Error("Slot không tồn tại");
       if (slot.isBooked) throw new Error("Slot đã được đặt");
 
       await markAsBooked(slotId, transaction);
 
-      const appointment = await create({ patientId, doctorId, slotId, reason, workDate, appointmentType }, transaction);
+      appointment = await create(
+        { patientId, doctorId, slotId, reason, workDate, appointmentType },
+        transaction
+      );
 
       await transaction.commit();
-
-      // Emit realtime cho frontend
-      if (io) io.emit("slotBooked", { slotId });
-
-      return appointment;
     } catch (err) {
       await transaction.rollback();
       throw err;
     }
+    // Realtime slot booked
+    io.emit("slotBooked", { slotId });
+
+    // Chuẩn bị danh sách notification
+    const notifyUsers = [];
+    const startTime = slot.startTime; // kiểu Date
+    const timeStr = startTime.toTimeString().slice(0, 5);
+    const workDateStr = slot.workDate ? slot.workDate.toISOString().slice(0, 10) : null;
+    // Bệnh nhân
+    notifyUsers.push({
+      receiverId: patientId,
+      senderId: null,
+      title: "Đặt lịch thành công",
+      message: `Bạn đã đặt lịch vào ${timeStr} ${workDateStr}`,
+      type: "appointment"
+    });
+    const patient = await getByIdPatient(patientId);
+    // Bác sĩ
+    notifyUsers.push({
+      receiverId: doctorId,
+      senderId: patientId,
+      title: "Có lịch hẹn mới",
+      message: `Bệnh nhân ${patient.fullName} vừa đặt lịch vào ${timeStr} ${workDateStr}`,
+      type: "appointment"
+    });
+
+    // Gửi tất cả notifications + realtime bằng helper
+    await sendNotificationToMany(notifyUsers);
+
+    return appointment;
   },
+
 
 
   async getUserAppointments(userId) {
@@ -137,7 +169,7 @@ const appointmentService = {
   async autoCancelNoShow(io) {
     try {
       const pool = await getPool();
-
+      const io = getIO();
       // Lấy tất cả appointment đang Scheduled
       const result = await pool.request().query(`
         SELECT a.appointmentId, a.patientId, a.slotId, s.startTime, sch.workDate
@@ -175,7 +207,7 @@ const appointmentService = {
             await transaction.begin();
 
             // Hủy appointment
-            await cancelAppointment(appt.appointmentId, transaction);
+            await cancelAppointments(appt.appointmentId, transaction);
 
             // Mở lại slot
             await unmarkAsBooked(appt.slotId, transaction);

@@ -21,6 +21,8 @@ const { getPool } = require("./config/db");
 const promotionRoutes = require('./routes/promotionRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const nurseRoutes = require("./routes/nurseRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 //const prescriptionRoutes = require("./routes/prescriptionRoutes");
 
 const app = express();
@@ -50,7 +52,8 @@ app.use("/api/diagnoses", doctorDiagnosisRoutes);
 //app.use("/api/prescriptions", prescriptionRoutes);
 app.use("/api/medicines", require("./routes/medicineRoutes"));
 app.use("/api/invoices", invoiceRoutes);
-
+app.use("/api/nurses", nurseRoutes);
+app.use("/api/notifications", notificationRoutes);
 cron.schedule("*/30 * * * *", async () => {
   console.log("Running auto-cancel job...");
   await appointmentService.autoCancelNoShow(initSocket);
