@@ -143,14 +143,17 @@ export default function DoctorDiagnosis() {
 
       // Sau khi tạo diagnosis, thêm services vào appointment
       for (const serviceId of selectedServices) {
-        await fetch(`http://localhost:5000/api/appointments/${selectedAppointment.appointmentId}/services`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ serviceId }),
-        });
+        await fetch(
+          `http://localhost:5000/api/appointments/${selectedAppointment.appointmentId}/services`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ serviceId }),
+          }
+        );
       }
 
       alert("🎉 Hoàn tất chẩn đoán & kê đơn!");
@@ -181,206 +184,201 @@ export default function DoctorDiagnosis() {
   // UI
   // =============================
   return (
-    <div style={pageWrapper}>
-      <div style={pageInner}>
-        <div style={headerBox}>
-          <h1 style={headerTitle}>Chẩn đoán & Kê đơn</h1>
+    <div style={pageInner}>
+      <div style={headerBox}>
+        <h1 style={headerTitle}>Chẩn đoán & Kê đơn</h1>
+      </div>
+
+      <div style={cardShell}>
+        {/* Chọn ca khám */}
+        <div style={appointmentRow}>
+          <div style={{ flex: 1 }}>
+            <label style={labelStrong}>Chọn ca khám</label>
+            <select
+              style={selectMain}
+              onChange={(e) => handleAppointmentChange(e.target.value)}
+              value={selectedAppointment?.appointmentId || ""}
+            >
+              <option value="">-- Chọn ca khám --</option>
+
+              {appointments.map((a) => (
+                <option key={a.appointmentId} value={a.appointmentId}>
+                  #{a.appointmentId} | {a.patientName} |{" "}
+                  {formatTime(a.startTime)} - {formatTime(a.endTime)}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div style={cardShell}>
-          {/* Chọn ca khám */}
-          <div style={appointmentRow}>
-            <div style={{ flex: 1 }}>
-              <label style={labelStrong}>Chọn ca khám</label>
-              <select
-                style={selectMain}
-                onChange={(e) => handleAppointmentChange(e.target.value)}
-                value={selectedAppointment?.appointmentId || ""}
-              >
-                <option value="">-- Chọn ca khám --</option>
-
-                {appointments.map((a) => (
-                  <option key={a.appointmentId} value={a.appointmentId}>
-                    #{a.appointmentId} | {a.patientName} |{" "}
-                    {formatTime(a.startTime)} - {formatTime(a.endTime)}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Nếu đã chọn ca khám */}
-          {selectedAppointment ? (
-            <div style={gridTwoCols}>
-              {/* Cột trái */}
-              <div style={leftCol}>
-                <div style={infoCard}>
-                  <span style={infoBadge}>Thông tin bệnh nhân</span>
-                  <p style={infoText}>
-                    <b>Bệnh nhân:</b> {selectedAppointment.patientName}
-                  </p>
-                  <p style={infoText}>
-                    <b>Thời gian:</b>{" "}
-                    {formatTime(selectedAppointment.startTime)} -{" "}
-                    {formatTime(selectedAppointment.endTime)}
-                  </p>
-                </div>
-
-                {/* Chẩn đoán */}
-                <div style={blockMint}>
-                  <h3 style={sectionTitle}>Chẩn đoán</h3>
-
-                  <textarea
-                    placeholder="Triệu chứng..."
-                    value={symptoms}
-                    onChange={(e) => setSymptoms(e.target.value)}
-                    style={{ ...inputArea, minHeight: 80 }}
-                  />
-
-                  <textarea
-                    placeholder="Kết luận chẩn đoán..."
-                    value={diagnosisResult}
-                    onChange={(e) => setDiagnosisResult(e.target.value)}
-                    style={{ ...inputArea, minHeight: 90 }}
-                  />
-
-                  <input
-                    type="text"
-                    placeholder="Ghi chú bác sĩ..."
-                    value={doctorNote}
-                    onChange={(e) => setDoctorNote(e.target.value)}
-                    style={inputText}
-                  />
-                </div>
+        {/* Nếu đã chọn ca khám */}
+        {selectedAppointment ? (
+          <div style={gridTwoCols}>
+            {/* Cột trái */}
+            <div style={leftCol}>
+              <div style={infoCard}>
+                <span style={infoBadge}>Thông tin bệnh nhân</span>
+                <p style={infoText}>
+                  <b>Bệnh nhân:</b> {selectedAppointment.patientName}
+                </p>
+                <p style={infoText}>
+                  <b>Thời gian:</b> {formatTime(selectedAppointment.startTime)}{" "}
+                  - {formatTime(selectedAppointment.endTime)}
+                </p>
               </div>
 
-              {/* Cột phải */}
-              <div style={rightCol}>
-                {/* Dịch vụ */}
-                <div style={blockMint}>
-                  <h3 style={sectionTitle}>Dịch vụ thực hiện</h3>
+              {/* Chẩn đoán */}
+              <div style={blockMint}>
+                <h3 style={sectionTitle}>Chẩn đoán</h3>
 
-                  <div style={serviceGrid}>
-                    {allServices.map((s) => (
-                      <div
-                        key={s.serviceId}
-                        onClick={() => toggleService(s.serviceId)}
-                        style={serviceBox(
-                          selectedServices.includes(s.serviceId)
-                        )}
-                      >
-                        <b>{s.serviceName}</b>
-                        <span style={servicePrice}>
-                          {s.price?.toLocaleString("vi-VN")} đ
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                <textarea
+                  placeholder="Triệu chứng..."
+                  value={symptoms}
+                  onChange={(e) => setSymptoms(e.target.value)}
+                  style={{ ...inputArea, minHeight: 80 }}
+                />
 
-                {/* Đơn thuốc */}
-                <div style={blockMint}>
-                  <h3 style={sectionTitle}>Đơn thuốc</h3>
+                <textarea
+                  placeholder="Kết luận chẩn đoán..."
+                  value={diagnosisResult}
+                  onChange={(e) => setDiagnosisResult(e.target.value)}
+                  style={{ ...inputArea, minHeight: 90 }}
+                />
 
-                  {selectedMedicines.map((med, index) => (
+                <input
+                  type="text"
+                  placeholder="Ghi chú bác sĩ..."
+                  value={doctorNote}
+                  onChange={(e) => setDoctorNote(e.target.value)}
+                  style={inputText}
+                />
+              </div>
+            </div>
+
+            {/* Cột phải */}
+            <div style={rightCol}>
+              {/* Dịch vụ */}
+              <div style={blockMint}>
+                <h3 style={sectionTitle}>Dịch vụ thực hiện</h3>
+
+                <div style={serviceGrid}>
+                  {allServices.map((s) => (
                     <div
-                      key={index}
-                      style={{ ...medicineRow, position: "relative" }}
+                      key={s.serviceId}
+                      onClick={() => toggleService(s.serviceId)}
+                      style={serviceBox(selectedServices.includes(s.serviceId))}
                     >
-                      {/* Nút xóa thuốc */}
-                      <button
-                        type="button"
-                        onClick={() => removeMedicine(index)}
-                        style={{
-                          position: "absolute",
-                          right: "-10px",
-                          top: "-10px",
-                          background: "#ff4d4f",
-                          color: "white",
-                          border: "none",
-                          borderRadius: "50%",
-                          width: 24,
-                          height: 24,
-                          cursor: "pointer",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        ×
-                      </button>
-
-                      {/* Các input thuốc giữ nguyên */}
-                      <select
-                        style={selectSmall}
-                        value={med.medicineId}
-                        onChange={(e) =>
-                          updateMedicine(index, "medicineId", e.target.value)
-                        }
-                      >
-                        <option value="">Thuốc</option>
-                        {medicines.map((m) => (
-                          <option key={m.medicineId} value={m.medicineId}>
-                            {m.medicineName}
-                          </option>
-                        ))}
-                      </select>
-
-                      <input
-                        type="number"
-                        min="1"
-                        style={inputSmall}
-                        placeholder="SL"
-                        value={med.quantity}
-                        onChange={(e) =>
-                          updateMedicine(index, "quantity", e.target.value)
-                        }
-                      />
-
-                      <input
-                        type="text"
-                        style={inputSmall}
-                        placeholder="Liều dùng"
-                        value={med.dosage}
-                        onChange={(e) =>
-                          updateMedicine(index, "dosage", e.target.value)
-                        }
-                      />
-
-                      <input
-                        type="text"
-                        style={inputSmall}
-                        placeholder="Hướng dẫn"
-                        value={med.usageInstruction}
-                        onChange={(e) =>
-                          updateMedicine(
-                            index,
-                            "usageInstruction",
-                            e.target.value
-                          )
-                        }
-                      />
+                      <b>{s.serviceName}</b>
+                      <span style={servicePrice}>
+                        {s.price?.toLocaleString("vi-VN")} đ
+                      </span>
                     </div>
                   ))}
-
-                  <button type="button" onClick={addMedicine} style={btnAdd}>
-                    + Thêm thuốc
-                  </button>
                 </div>
               </div>
 
-              <div style={footerRow}>
-                <button
-                  type="button"
-                  onClick={handleCreateDiagnosis}
-                  style={btnPrimary}
-                >
-                  HOÀN TẤT CHẨN ĐOÁN
+              {/* Đơn thuốc */}
+              <div style={blockMint}>
+                <h3 style={sectionTitle}>Đơn thuốc</h3>
+
+                {selectedMedicines.map((med, index) => (
+                  <div
+                    key={index}
+                    style={{ ...medicineRow, position: "relative" }}
+                  >
+                    {/* Nút xóa thuốc */}
+                    <button
+                      type="button"
+                      onClick={() => removeMedicine(index)}
+                      style={{
+                        position: "absolute",
+                        right: "-10px",
+                        top: "-10px",
+                        background: "#ff4d4f",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "50%",
+                        width: 24,
+                        height: 24,
+                        cursor: "pointer",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      ×
+                    </button>
+
+                    {/* Các input thuốc giữ nguyên */}
+                    <select
+                      style={selectSmall}
+                      value={med.medicineId}
+                      onChange={(e) =>
+                        updateMedicine(index, "medicineId", e.target.value)
+                      }
+                    >
+                      <option value="">Thuốc</option>
+                      {medicines.map((m) => (
+                        <option key={m.medicineId} value={m.medicineId}>
+                          {m.medicineName}
+                        </option>
+                      ))}
+                    </select>
+
+                    <input
+                      type="number"
+                      min="1"
+                      style={inputSmall}
+                      placeholder="SL"
+                      value={med.quantity}
+                      onChange={(e) =>
+                        updateMedicine(index, "quantity", e.target.value)
+                      }
+                    />
+
+                    <input
+                      type="text"
+                      style={inputSmall}
+                      placeholder="Liều dùng"
+                      value={med.dosage}
+                      onChange={(e) =>
+                        updateMedicine(index, "dosage", e.target.value)
+                      }
+                    />
+
+                    <input
+                      type="text"
+                      style={inputSmall}
+                      placeholder="Hướng dẫn"
+                      value={med.usageInstruction}
+                      onChange={(e) =>
+                        updateMedicine(
+                          index,
+                          "usageInstruction",
+                          e.target.value
+                        )
+                      }
+                    />
+                  </div>
+                ))}
+
+                <button type="button" onClick={addMedicine} style={btnAdd}>
+                  + Thêm thuốc
                 </button>
               </div>
             </div>
-          ) : (
-            <p style={emptyHint}>Vui lòng chọn ca khám để bắt đầu chẩn đoán.</p>
-          )}
-        </div>
+
+            <div style={footerRow}>
+              <button
+                type="button"
+                onClick={handleCreateDiagnosis}
+                style={btnPrimary}
+              >
+                HOÀN TẤT CHẨN ĐOÁN
+              </button>
+            </div>
+          </div>
+        ) : (
+          <p style={emptyHint}>Vui lòng chọn ca khám để bắt đầu chẩn đoán.</p>
+        )}
       </div>
     </div>
   );

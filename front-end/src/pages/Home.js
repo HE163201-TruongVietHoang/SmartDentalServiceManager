@@ -44,10 +44,22 @@ export default function Home() {
                     borderColor: "#2ECCB6",
                     color: "#fff",
                   }}
-                  onClick={() => navigate("/appointment")}
+                  onClick={() => {
+                    const token = localStorage.getItem("token");
+
+                    if (!token) {
+                      navigate("/signin", {
+                        state: { redirectTo: "/appointment" },
+                      });
+                      return;
+                    }
+
+                    navigate("/appointment");
+                  }}
                 >
                   Đặt lịch ngay
                 </button>
+
                 <button
                   className="btn btn-outline-primary btn-lg px-4"
                   style={{
@@ -119,7 +131,7 @@ export default function Home() {
           </div>
 
           <div className="row g-4">
-            {services.map((s, index) => (
+            {services.slice(5, 8).map((s, index) => (
               <div key={s.serviceId} className="col-md-6 col-lg-4">
                 <div
                   className="card border-0 shadow-sm h-100 text-center p-4"
@@ -158,9 +170,9 @@ export default function Home() {
                   <h5 className="fw-bold mb-2">{s.serviceName}</h5>
 
                   {/* Description */}
-                  <p className="text-muted small">
+                  {/* <p className="text-muted small">
                     {s.description?.slice(0, 80)}...
-                  </p>
+                  </p> */}
                 </div>
               </div>
             ))}
@@ -234,7 +246,24 @@ export default function Home() {
           <p className="lead mb-4">
             Liên hệ với chúng tôi ngay hôm nay để đặt lịch khám miễn phí.
           </p>
-          <button className="btn btn-light btn-lg fw-bold px-4">
+          <button
+            className="btn btn-lg px-4"
+            style={{
+              backgroundColor: "#fff",
+              borderColor: "#2ECCB6",
+              color: "#2ECCB6",
+            }}
+            onClick={() => {
+              const token = localStorage.getItem("token");
+
+              if (!token) {
+                navigate("/signin", { state: { redirectTo: "/appointment" } });
+                return;
+              }
+
+              navigate("/appointment");
+            }}
+          >
             Đặt lịch ngay
           </button>
         </div>
@@ -261,7 +290,7 @@ export default function Home() {
               {
                 icon: "fa-phone",
                 title: "Điện thoại",
-                text: "(+84) 123 456 789",
+                text: "(+84) 981 226 816",
               },
               {
                 icon: "fa-map-marker-alt",

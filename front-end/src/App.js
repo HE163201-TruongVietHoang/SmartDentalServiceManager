@@ -37,7 +37,6 @@ import NotFound from "./pages/NotFound";
 
 import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
 import Service from "./pages/ClinicManager/Services";
-import ServiceDetail from "./pages/Service/ServiceDeatil";
 import ClinicManagerProfile from "./pages/ClinicManager/ClinicManagerProfile";
 import ClinicManagerLayout from "./pages/ClinicManager/ClinicManagerLayout";
 
@@ -313,6 +312,7 @@ function App() {
           }
         />
         <Route
+        <Route
           path="/receptionist/invoice"
           element={
             <ReceptionistLayout>
@@ -328,6 +328,7 @@ function App() {
             </ReceptionistLayout>
           }
         />
+        <Route
         <Route
           path="/receptionist/chat"
           element={
