@@ -138,7 +138,7 @@ export default function DoctorDiagnosisHistory() {
                       {formatTimeOnly(h.endTime)}
                     </td>
                     <td>{h.diagnosisResult || "N/A"}</td>
-                    <td>{h.serviceName || "Không có"}</td>
+                    <td>{h.services || "Không có"}</td>
                     <td>
                       <button
                         onClick={async () => {
@@ -191,8 +191,7 @@ export default function DoctorDiagnosisHistory() {
               </p>
 
               <p>
-                <strong>Dịch vụ:</strong>{" "}
-                {selectedItem.serviceName || "Không có"}
+                <strong>Dịch vụ:</strong> {selectedItem.services || "Không có"}
               </p>
 
               <p>

@@ -1,12 +1,13 @@
+const patientAccess = require("../access/patientAccess");
 const { getAll, getById } = require("../access/patientAccess");
 
 const patientService = {
   async getAllPatients() {
     const patients = await getAll();
-    return patients.map(p => ({
+    return patients.map((p) => ({
       ...p,
       createdAt: p.createdAt?.toISOString(),
-      updatedAt: p.updatedAt?.toISOString()
+      updatedAt: p.updatedAt?.toISOString(),
     }));
   },
 
@@ -16,9 +17,12 @@ const patientService = {
     return {
       ...patient,
       createdAt: patient.createdAt?.toISOString(),
-      updatedAt: patient.updatedAt?.toISOString()
+      updatedAt: patient.updatedAt?.toISOString(),
     };
-  }
+  },
+  async getPatientMedicalRecord(patientId) {
+    return await patientAccess.getPatientMedicalRecord(patientId);
+  },
 };
 
 module.exports = { patientService };

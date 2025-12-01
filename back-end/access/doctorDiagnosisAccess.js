@@ -198,20 +198,31 @@ module.exports = {
         d.symptoms,
         d.diagnosisResult,
         d.doctorNote,
-        s.serviceName
+
+        -- ⭐ Gộp nhiều dịch vụ thành một chuỗi
+        STUFF((
+            SELECT ', ' + s2.serviceName
+            FROM DiagnosisServices ds2
+            JOIN Services s2 ON s2.serviceId = ds2.serviceId
+            WHERE ds2.diagnosisId = d.diagnosisId
+            FOR XML PATH('')
+        ), 1, 2, '') AS services
       FROM Diagnoses d
       JOIN Appointments a ON d.appointmentId = a.appointmentId
       JOIN Users u ON a.patientId = u.userId
       JOIN Slots sl ON a.slotId = sl.slotId
       JOIN Schedules sch ON sl.scheduleId = sch.scheduleId
-      LEFT JOIN DiagnosisServices ds ON ds.diagnosisId = d.diagnosisId
-      LEFT JOIN Services s ON s.serviceId = ds.serviceId
       WHERE a.doctorId = @doctorId
     `;
 
     if (date) query += ` AND CAST(sch.workDate AS DATE) = CAST(@date AS DATE)`;
     if (patient) query += ` AND u.fullName LIKE '%' + @patient + '%'`;
-    if (serviceId) query += ` AND s.serviceId = @serviceId`;
+    if (serviceId)
+      query += ` AND EXISTS (
+          SELECT 1 FROM DiagnosisServices ds3 
+          WHERE ds3.diagnosisId = d.diagnosisId 
+          AND ds3.serviceId = @serviceId
+      )`;
 
     query += ` ORDER BY sch.workDate DESC, sl.startTime ASC`;
 

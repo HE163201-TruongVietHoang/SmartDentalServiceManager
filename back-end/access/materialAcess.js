@@ -274,9 +274,12 @@ module.exports = {
     LEFT JOIN Diagnoses d ON d.appointmentId = a.appointmentId
     LEFT JOIN DiagnosisServices ds ON ds.diagnosisId = d.diagnosisId
     LEFT JOIN Services srv ON srv.serviceId = ds.serviceId
-    WHERE sch.workDate = CAST(GETDATE() AS DATE)
+    WHERE 
+      sch.workDate = CAST(GETDATE() AS DATE)
+      AND a.status IN ('InProgress', 'DiagnosisCompleted')
     ORDER BY sl.startTime
   `);
+
     return result.recordset;
   },
 
