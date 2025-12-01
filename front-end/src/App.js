@@ -14,7 +14,7 @@ import DiagnosisPlan from "./components/doctor/DiagnosisPlan";
 import TreatmentProgress from "./components/doctor/TreatmentProgress";
 import ScheduleRequest from "./components/doctor/ScheduleRequest";
 
-import ProfilePage from "./pages/Profile/ProfileView";
+import ProfilePage from "./pages/profile/ProfileView";
 import ServicesPage from "./pages/Service/Service";
 
 import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
@@ -63,10 +63,7 @@ import DoctorPrescription from "./components/doctor/DoctorPrescription";
 import ReceptionistInvoiceListPage from "./pages/Receptionist/InvoiceListPage";
 import ReceptionistInvoiceDetailPage from "./pages/Receptionist/InvoiceDetailPage";
 
-import DoctorMedicinePage from "./pages/Doctor/DoctorMedicinePage";
 import MedicalRecordPage from "./pages/Patient/MedicalRecordPage";
-
-
 
 function App() {
   return (
@@ -307,7 +304,7 @@ function App() {
             </ReceptionistLayout>
           }
         />
-  <Route
+        <Route
           path="/receptionist/invoice"
           element={
             <ReceptionistLayout>
@@ -323,7 +320,7 @@ function App() {
             </ReceptionistLayout>
           }
         />
-          <Route
+        <Route
           path="/receptionist/chat"
           element={
             <ReceptionistLayout>
