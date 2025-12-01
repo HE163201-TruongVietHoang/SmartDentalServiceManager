@@ -47,7 +47,7 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore }
     <div
       ref={chatWindowRef}
       style={{
-        height: 'calc(100% - 0px)', // full height of parent
+        height: '375px',
         overflowY: 'auto',
         padding: '16px',
         background: '#f8f9fa',
