@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Header from "../../components/home/Header/Header";
 import Footer from "../../components/home/Footer/Footer";
@@ -9,6 +9,9 @@ function SignIn() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  const location = useLocation();
+  const redirectTo = location.state?.redirectTo || "/";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -34,7 +37,7 @@ function SignIn() {
         const roleName = data.user?.roleName;
         switch (roleName) {
           case "Patient":
-            navigate("/");
+            navigate(redirectTo);
             break;
           case "Doctor":
             navigate("/doctor/schedule");

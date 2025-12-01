@@ -14,8 +14,11 @@ import DiagnosisPlan from "./components/doctor/DiagnosisPlan";
 import TreatmentProgress from "./components/doctor/TreatmentProgress";
 import ScheduleRequest from "./components/doctor/ScheduleRequest";
 
-import ProfilePage from "./pages/Profile/ProfileView";
-import ServicesPage from "./pages/Service/Service";
+import ProfilePage from "./pages/profile/ProfileView";
+import ServicesPage from "./pages/Hone/Service";
+import ServiceDetail from "./pages/Hone/ServiceDeatil";
+import DoctorsPage from "./pages/Hone/DoctorsPage";
+import DoctorDetail from "./pages/Hone/DoctorDetatil";
 
 import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
 
@@ -35,7 +38,6 @@ import AppointmentReview from "./pages/Patient/AppointmentReview";
 
 import MaterialClinicPage from "./pages/ClinicManager/MaterialClinicPage";
 import Service from "./pages/ClinicManager/Services";
-import ServiceDetail from "./pages/Service/ServiceDeatil";
 import ClinicManagerProfile from "./pages/ClinicManager/ClinicManagerProfile";
 import ClinicManagerLayout from "./pages/ClinicManager/ClinicManagerLayout";
 
@@ -71,6 +73,8 @@ function App() {
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/service" element={<ServicesPage />} />
         <Route path="/service/:id" element={<ServiceDetail />} />
+        <Route path="/alldoctors" element={<DoctorsPage />} />
+        <Route path="/doctor/:id" element={<DoctorDetail />} />
 
         <Route path="/doctor/home" element={<HomeDoctor />} />
         {/* <Route path="/doctor/profile" element={<DoctorProfile />} /> */}
@@ -301,7 +305,7 @@ function App() {
             </ReceptionistLayout>
           }
         />
-  <Route
+        <Route
           path="/receptionist/invoice"
           element={
             <ReceptionistLayout>
@@ -317,7 +321,7 @@ function App() {
             </ReceptionistLayout>
           }
         />
-          <Route
+        <Route
           path="/receptionist/chat"
           element={
             <ReceptionistLayout>

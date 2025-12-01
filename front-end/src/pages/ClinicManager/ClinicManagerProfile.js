@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Card, Button, Spinner, Form, Modal } from "react-bootstrap";
 import axios from "axios";
+import { FaCamera } from "react-icons/fa";
 
 export default function ClinicManagerProfile() {
   const [user, setUser] = useState(null);
@@ -14,6 +15,10 @@ export default function ClinicManagerProfile() {
     confirmPassword: "",
   });
   const [passwordMessage, setPasswordMessage] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [preview, setPreview] = useState("");
+  const fileInputRef = useRef(null);
+
   const token = localStorage.getItem("token");
 
   // --- Fetch profile ---
@@ -24,6 +29,7 @@ export default function ClinicManagerProfile() {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(res.data);
+        setPreview(res.data.avatar || "");
         setForm({
           fullName: res.data.fullName || "",
           phone: res.data.phone || "",
@@ -40,18 +46,15 @@ export default function ClinicManagerProfile() {
   }, [token]);
 
   // --- Handle profile changes ---
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const handleSave = async () => {
     try {
       const res = await axios.put(
         "http://localhost:5000/api/auth/profile",
         form,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setUser(res.data.user || { ...user, ...form });
       setIsEditing(false);
@@ -62,7 +65,49 @@ export default function ClinicManagerProfile() {
     }
   };
 
-  // --- Handle password modal ---
+  // --- Avatar Upload ---
+  const handleAvatarClick = () => fileInputRef.current.click();
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
+      alert("Chỉ chấp nhận ảnh PNG/JPG/JPEG");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Ảnh không được vượt quá 10MB");
+      return;
+    }
+
+    setSelectedFile(file);
+    setPreview(URL.createObjectURL(file));
+
+    // Upload avatar
+    const formData = new FormData();
+    formData.append("avatar", file);
+    try {
+      const res = await axios.put(
+        "http://localhost:5000/api/auth/profile/avatar",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      setUser({ ...user, avatar: res.data.avatar });
+      alert("Cập nhật avatar thành công!");
+    } catch (err) {
+      console.error(err);
+      alert("Cập nhật avatar thất bại");
+    }
+  };
+
+  // --- Password Modal ---
   const handlePasswordChange = (e) => {
     setPasswordForm({ ...passwordForm, [e.target.name]: e.target.value });
   };
@@ -80,15 +125,10 @@ export default function ClinicManagerProfile() {
     }
 
     try {
-      const res = await axios.post(
+      await axios.post(
         "http://localhost:5000/api/auth/change-password",
-        {
-          oldPassword: currentPassword,
-          newPassword,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { oldPassword: currentPassword, newPassword },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setPasswordMessage("✅ Đổi mật khẩu thành công!");
       setPasswordForm({
@@ -115,17 +155,45 @@ export default function ClinicManagerProfile() {
     <div className="container py-4">
       <Card className="shadow-lg border-0">
         <Card.Body className="text-center p-4">
-          <img
-            src={
-              user.avatar ||
-              "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-            }
-            alt="avatar"
-            className="rounded-circle mb-3"
-            width="120"
-            height="120"
-          />
+          {/* Avatar */}
+          <div
+            className="position-relative d-inline-block"
+            onClick={handleAvatarClick}
+          >
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={handleAvatarChange}
+            />
+            <img
+              src={
+                preview ||
+                "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+              }
+              alt="avatar"
+              className="rounded-circle mb-3"
+              width="120"
+              height="120"
+              style={{ objectFit: "cover", cursor: "pointer" }}
+            />
+            <div
+              className="position-absolute top-0 start-0 w-100 h-100 rounded-circle d-flex justify-content-center align-items-center"
+              style={{
+                backgroundColor: "rgba(0,0,0,0.4)",
+                color: "white",
+                opacity: 0,
+                transition: "opacity 0.2s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = 0)}
+            >
+              <FaCamera size={24} />
+            </div>
+          </div>
 
+          {/* Name */}
           {isEditing ? (
             <Form.Control
               type="text"
@@ -138,11 +206,11 @@ export default function ClinicManagerProfile() {
           ) : (
             <h3 className="mb-0">{user.fullName}</h3>
           )}
-
           <p className="text-muted">{user.roleName}</p>
 
           <hr />
 
+          {/* Profile Info */}
           <div className="text-start px-5">
             <p>
               <strong>Email:</strong> {user.email}
@@ -176,6 +244,7 @@ export default function ClinicManagerProfile() {
             </p>
           </div>
 
+          {/* Action Buttons */}
           <div className="d-flex justify-content-center gap-3 mt-4">
             {!isEditing ? (
               <>
@@ -203,7 +272,7 @@ export default function ClinicManagerProfile() {
         </Card.Body>
       </Card>
 
-      {/* --- Password Modal --- */}
+      {/* Password Modal */}
       <Modal
         show={showPasswordModal}
         onHide={() => setShowPasswordModal(false)}

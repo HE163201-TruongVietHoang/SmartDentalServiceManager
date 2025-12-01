@@ -169,6 +169,17 @@ export default function Header() {
             <li className="nav-item">
               <a
                 className="nav-link"
+                href="/alldoctors"
+                style={{ color: "#333", fontWeight: 500 }}
+                onMouseEnter={(e) => (e.target.style.color = "#2ECCB6")}
+                onMouseLeave={(e) => (e.target.style.color = "#333")}
+              >
+                Đội ngũ bác sĩ
+              </a>
+            </li>
+            {/* <li className="nav-item">
+              <a
+                className="nav-link"
                 href="#"
                 style={{ color: "#333", fontWeight: 500 }}
                 onClick={(e) => {
@@ -180,7 +191,7 @@ export default function Header() {
               >
                 Liên hệ
               </a>
-            </li>
+            </li> */}
             {user && (
               <li className="nav-item">
                 <a

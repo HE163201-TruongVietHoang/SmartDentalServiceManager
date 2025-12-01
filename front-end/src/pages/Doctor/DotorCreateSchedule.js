@@ -50,9 +50,20 @@ export default function DoctorCreateSchedule() {
 
   const submitRequest = async () => {
     if (!token) return navigate("/signin");
-    if (!availability || availability.some((a) => !a.available)) {
-      alert("Vui lòng kiểm tra phòng trống và đảm bảo tất cả khung giờ rảnh.");
-      return;
+
+    const now = new Date();
+    for (const slot of slots) {
+      if (!slot.workDate || !slot.startTime || !slot.endTime) {
+        alert("Vui lòng điền đầy đủ thông tin khung giờ.");
+        return;
+      }
+      const slotDateTime = new Date(`${slot.workDate}T${slot.startTime}`);
+      if (slotDateTime < now) {
+        alert(
+          `Khung giờ ${slot.workDate} ${slot.startTime} đã qua. Vui lòng chọn giờ hợp lệ.`
+        );
+        return;
+      }
     }
 
     setSubmitting(true);
@@ -203,11 +214,7 @@ export default function DoctorCreateSchedule() {
               <button
                 className="btn btn-lg btn-outline-success px-4"
                 onClick={submitRequest}
-                disabled={
-                  submitting ||
-                  !availability ||
-                  availability.some((a) => !a.available)
-                }
+                disabled={submitting} // chỉ disable khi đang gửi
               >
                 {submitting ? "Đang gửi..." : "Gửi yêu cầu"}
               </button>
