@@ -46,8 +46,46 @@ async function checkConversationForUser(userId) {
     const pool = await getPool();
     const result = await pool.request()
         .input('userId', sql.Int, userId)
-        .query('SELECT participant1Id FROM Conversations WHERE participant2Id = @userId');
-    return result.recordset.length > 0 ? result.recordset[0].participant1Id : null; // Trả về participant1Id nếu có, ngược lại null
+        .query(`
+            SELECT c.*, u1.fullName as participant1Name, u2.fullName as participant2Name
+            FROM Conversations c
+            LEFT JOIN Users u1 ON c.participant1Id = u1.userId
+            LEFT JOIN Users u2 ON c.participant2Id = u2.userId
+            WHERE c.participant2Id = @userId
+        `);
+    if (result.recordset.length > 0) {
+        return result.recordset; // Trả về list conversations nếu có
+    } else {
+        // Nếu không có, tạo conversation mới với receptionist ngẫu nhiên
+        const receptionistResult = await pool.request().query(`
+            SELECT TOP 1 u.userId
+            FROM Users u
+            JOIN Roles r ON u.roleId = r.roleId
+            WHERE r.roleName = 'Receptionist'
+            ORDER BY NEWID()
+        `);
+        if (receptionistResult.recordset.length > 0) {
+            const receptionistId = receptionistResult.recordset[0].userId;
+            const insert = await pool.request()
+                .input('participant1Id', sql.Int, receptionistId)
+                .input('participant2Id', sql.Int, userId)
+                .query('INSERT INTO Conversations (participant1Id, participant2Id) OUTPUT INSERTED.* VALUES (@participant1Id, @participant2Id)');
+            // Trả về conversation mới với tên
+            const newConv = insert.recordset[0];
+            const fullResult = await pool.request()
+                .input('conversationId', sql.Int, newConv.conversationId)
+                .query(`
+                    SELECT c.*, u1.fullName as participant1Name, u2.fullName as participant2Name
+                    FROM Conversations c
+                    LEFT JOIN Users u1 ON c.participant1Id = u1.userId
+                    LEFT JOIN Users u2 ON c.participant2Id = u2.userId
+                    WHERE c.conversationId = @conversationId
+                `);
+            return fullResult.recordset;
+        } else {
+            return []; // Không có receptionist
+        }
+    }
 }
 
 // Chuyển cuộc trò chuyện sang lễ tân khác(participant1Id là lễ tân)

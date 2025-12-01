@@ -52,3 +52,9 @@ export const transferConversation = (conversationId, newReceptionistId) => {
     { headers: { ...getAuthHeader() } }
   );
 };
+
+export const checkConversation = (userId) => {
+  return axios.get(`${API_URL}/check-conversation/${userId}`, {
+    headers: { ...getAuthHeader() }
+  });
+};

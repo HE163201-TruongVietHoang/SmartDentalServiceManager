@@ -131,8 +131,10 @@ const ChatPage = () => {
       alert('Cuộc trò chuyện đã được chuyển sang lễ tân khác.');
       setShowTransferModal(false);
       setSelectedReceptionist(null);
-      // Reload conversations
+      // Reload conversations và reset selected conversation
       getConversations().then(res => setConversations(res.data));
+      setSelectedConversation(null);
+      setMessages([]);
     } catch (err) {
       console.error('Lỗi chuyển cuộc trò chuyện', err);
       alert('Lỗi chuyển cuộc trò chuyện. Vui lòng thử lại sau.');

@@ -7,7 +7,8 @@ import {
   getMessages,
   createOrGetConversation,
   sendMessage,
-  markMessagesRead
+  markMessagesRead,
+  checkConversation
 } from '../services/chatService';
 import { getReceptionist } from '../api/api';
 
@@ -15,24 +16,23 @@ const ChatPopup = ({ isOpen, onClose }) => {
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
-  const [receptionistId, setReceptionistId] = useState(null);
 
-  // Load receptionist và tạo conversation
+  // Load conversation cho bệnh nhân
   useEffect(() => {
     if (isOpen) {
-      getReceptionist().then(res => {
-        setReceptionistId(res.userId);
-        const currentUser = JSON.parse(localStorage.getItem('user'));
-        if (currentUser) {
-          createOrGetConversation(currentUser.userId, res.userId).then(convRes => {
-            setSelectedConversation(convRes.data);
-            getMessages(convRes.data.conversationId).then(msgRes => {
-              setMessages(msgRes.data);
-              markMessagesRead(convRes.data.conversationId);
+      const currentUser = JSON.parse(localStorage.getItem('user'));
+      if (currentUser) {
+        checkConversation(currentUser.userId).then(res => {
+          if (res.data.length > 0) {
+            const conv = res.data[0];
+            setSelectedConversation(conv);
+            getMessages(conv.conversationId).then(msgRes => {
+              setMessages(msgRes.data.reverse());
+              markMessagesRead(conv.conversationId);
             });
-          });
-        }
-      }).catch(err => console.error('Không tìm thấy lễ tân', err));
+          }
+        }).catch(err => console.error('Lỗi tải conversation', err));
+      }
     }
   }, [isOpen]);
 
