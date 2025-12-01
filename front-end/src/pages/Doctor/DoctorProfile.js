@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Card, Button, Spinner, Form, Modal } from "react-bootstrap";
 import axios from "axios";
+import { FaCamera } from "react-icons/fa";
 
 export default function DoctorProfile() {
   const [user, setUser] = useState(null);
@@ -14,6 +15,9 @@ export default function DoctorProfile() {
     confirmPassword: "",
   });
   const [passwordMessage, setPasswordMessage] = useState("");
+  const [preview, setPreview] = useState("");
+  const fileInputRef = useRef(null);
+
   const token = localStorage.getItem("token");
 
   // --- Fetch profile ---
@@ -24,6 +28,7 @@ export default function DoctorProfile() {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(res.data);
+        setPreview(res.data.avatar || "");
         setForm({
           fullName: res.data.fullName || "",
           phone: res.data.phone || "",
@@ -39,19 +44,15 @@ export default function DoctorProfile() {
     fetchProfile();
   }, [token]);
 
-  // --- Handle profile changes ---
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
   const handleSave = async () => {
     try {
       const res = await axios.put(
         "http://localhost:5000/api/auth/profile",
         form,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setUser(res.data.user || { ...user, ...form });
       setIsEditing(false);
@@ -62,7 +63,6 @@ export default function DoctorProfile() {
     }
   };
 
-  // --- Handle password modal ---
   const handlePasswordChange = (e) => {
     setPasswordForm({ ...passwordForm, [e.target.name]: e.target.value });
   };
@@ -80,15 +80,10 @@ export default function DoctorProfile() {
     }
 
     try {
-      const res = await axios.post(
+      await axios.post(
         "http://localhost:5000/api/auth/change-password",
-        {
-          oldPassword: currentPassword,
-          newPassword,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { oldPassword: currentPassword, newPassword },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       setPasswordMessage("✅ Đổi mật khẩu thành công!");
       setPasswordForm({
@@ -100,6 +95,15 @@ export default function DoctorProfile() {
       console.error(err);
       setPasswordMessage(`❌ ${err.response?.data?.message || err.message}`);
     }
+  };
+
+  const handleAvatarClick = () => fileInputRef.current.click();
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setPreview(URL.createObjectURL(file));
+    // Nếu muốn upload avatar, cần gọi API backend ở đây
   };
 
   if (loading)
@@ -115,16 +119,43 @@ export default function DoctorProfile() {
     <div className="container py-4">
       <Card className="shadow-lg border-0">
         <Card.Body className="text-center p-4">
-          <img
-            src={
-              user.avatar ||
-              "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-            }
-            alt="avatar"
-            className="rounded-circle mb-3"
-            width="120"
-            height="120"
-          />
+          {/* Avatar */}
+          <div
+            className="position-relative d-inline-block"
+            onClick={handleAvatarClick}
+          >
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              style={{ display: "none" }}
+              onChange={handleAvatarChange}
+            />
+            <img
+              src={
+                preview ||
+                "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+              }
+              alt="avatar"
+              className="rounded-circle mb-3"
+              width="120"
+              height="120"
+              style={{ objectFit: "cover", cursor: "pointer" }}
+            />
+            <div
+              className="position-absolute top-0 start-0 w-100 h-100 rounded-circle d-flex justify-content-center align-items-center"
+              style={{
+                backgroundColor: "rgba(0,0,0,0.4)",
+                color: "white",
+                opacity: 0,
+                transition: "opacity 0.2s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = 1)}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = 0)}
+            >
+              <FaCamera size={24} />
+            </div>
+          </div>
 
           {isEditing ? (
             <Form.Control
@@ -140,7 +171,6 @@ export default function DoctorProfile() {
           )}
 
           <p className="text-muted">{user.roleName}</p>
-
           <hr />
 
           <div className="text-start px-5">
@@ -203,7 +233,6 @@ export default function DoctorProfile() {
         </Card.Body>
       </Card>
 
-      {/* --- Password Modal --- */}
       <Modal
         show={showPasswordModal}
         onHide={() => setShowPasswordModal(false)}

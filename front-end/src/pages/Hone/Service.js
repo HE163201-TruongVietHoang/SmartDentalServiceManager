@@ -1,14 +1,16 @@
-// src/pages/Service/Service.jsx
 import React, { useEffect, useState } from "react";
 import Header from "../../components/home/Header/Header";
 import Footer from "../../components/home/Footer/Footer";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function ServicesPage() {
   const [services, setServices] = useState([]);
   const [visibleCount, setVisibleCount] = useState(9);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
 
   const API_URL = "http://localhost:5000/api/services";
 
@@ -95,9 +97,11 @@ export default function ServicesPage() {
                         className="card border-0 shadow-sm h-100 text-center p-4"
                         style={{
                           borderRadius: "15px",
+                          cursor: "pointer",
                           transition:
                             "transform 0.3s ease, box-shadow 0.3s ease",
                         }}
+                        onClick={() => navigate(`/service/${s.serviceId}`)}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.transform = "translateY(-5px)";
                           e.currentTarget.style.boxShadow =
