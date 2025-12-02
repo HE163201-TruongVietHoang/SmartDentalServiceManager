@@ -4,8 +4,10 @@ const appointmentController = {
   async makeAppointment(req, res) {
     try {
       const io = getIO(); // Lấy socket instance
+      const patientId = req.user.userId;  // user hiện tại
+      const { doctorId, slotId, reason, appointmentType } = req.body;
       const appointment = await appointmentService.makeAppointment(
-        req.body,
+        { patientId, doctorId, slotId, reason, appointmentType, workDate: req.body.workDate },
         io
       );
       res.json({ success: true, appointment });
