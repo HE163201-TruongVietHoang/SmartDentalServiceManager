@@ -1,86 +1,152 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 
 export default function Header() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notiOpen, setNotiOpen] = useState(false);
+  const [filterUnread, setFilterUnread] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [showAllNotis, setShowAllNotis] = useState(false);
 
   const token = localStorage.getItem("token");
-  const sessionId = localStorage.getItem("sessionId");
 
+  // Load user info
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
+
+  // Fetch initial notifications
+  useEffect(() => {
+    if (!user || !token) return;
+
+    const fetchNotifications = async () => {
+      try {
+        const res = await fetch(`http://localhost:5000/api/notifications`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success) {
+          setNotifications(data.notifications || []);
+          const unread = (data.notifications || []).filter((n) => !n.isRead).length;
+          setUnreadCount(unread);
+        }
+      } catch (err) {
+        console.error("Fetch notifications error:", err);
+      }
+    };
+
+    fetchNotifications();
+  }, [user, token]);
+
+  // Socket.IO realtime notifications
+  useEffect(() => {
+    if (!user) return;
+    const socket = io("http://localhost:5000");
+    socket.emit("join", user.userId);
+
+    socket.on("notification", (noti) => {
+      setNotifications((prev) => [noti, ...prev]);
+      setUnreadCount((prev) => prev + 1);
+    });
+
+    return () => socket.disconnect();
+  }, [user]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownOpen && !event.target.closest('.position-relative')) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownOpen]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("sessionId");
+    localStorage.removeItem("user");
+    window.location.href = "/signin";
+  };
 
   const handleScroll = (sectionId) => {
     const section = document.getElementById(sectionId);
     if (section) section.scrollIntoView({ behavior: "smooth" });
   };
 
-  // 🔹 Logout session hiện tại
-  const handleLogout = async () => {
-    const token = localStorage.getItem("token");
-    const sessionId = localStorage.getItem("sessionId"); // phải chắc chắn có sessionId
+  const toggleNoti = () => setNotiOpen(!notiOpen);
 
-    if (!token || !sessionId) {
-      localStorage.clear();
-      window.location.href = "/signin";
-      return;
-    }
-
+  const handleNotiClick = async (n) => {
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/auth/devices/${sessionId}/logout`,
-        {
+      if (!n.isRead && token) {
+        await fetch(`http://localhost:5000/api/notifications/${n.id}/read`, {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      if (!res.ok) {
-        const data = await res.json();
-        console.error(data.message || "Logout thất bại");
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setNotifications((prev) =>
+          prev.map((notif) =>
+            notif.id === n.id ? { ...notif, isRead: true } : notif
+          )
+        );
+        setUnreadCount((prev) => Math.max(prev - 1, 0));
       }
     } catch (err) {
-      console.error("Lỗi khi logout:", err);
-    } finally {
-      // Luôn clear token, sessionId và user sau logout
-      localStorage.removeItem("token");
-      localStorage.removeItem("sessionId");
-      localStorage.removeItem("user");
-      window.location.href = "/signin";
+      console.error("Mark notification as read error:", err);
     }
+
+    setNotiOpen(false);
+    if (n.type === "appointment") navigate("/appointment/me");
+    else if (n.type === "chat") navigate("/chat");
+    else navigate("/notifications");
   };
 
-  const renderDropdown = () => {
+  const displayedNotis = filterUnread
+    ? notifications.filter((n) => !n.isRead)
+    : notifications;
+
+  const notisToShow = showAllNotis ? displayedNotis : displayedNotis.slice(0, 5);
+
+  // User Dropdown JSX
+  const renderUserDropdown = () => {
     if (!user) return null;
 
     return (
-      <div className="dropdown ms-3">
+      <div className="dropdown ms-3 position-relative" style={{display: 'inline-block'}}>
         <button
           className="btn dropdown-toggle"
-          type="button"
-          id="dropdownMenuButton"
-          data-bs-toggle="dropdown"
-          aria-expanded="false"
           style={{
             borderRadius: "25px",
             backgroundColor: "#2ECCB6",
             color: "#fff",
-            fontWeight: "500",
+            fontWeight: 500,
             border: "none",
             padding: "8px 16px",
           }}
+          onClick={() => setDropdownOpen(!dropdownOpen)}
+          aria-expanded={dropdownOpen}
         >
           Xin chào, {user.fullName}
         </button>
         <ul
-          className="dropdown-menu dropdown-menu-end shadow-sm"
+          className={`dropdown-menu dropdown-menu-end shadow-sm ${dropdownOpen ? 'show' : ''}`}
           aria-labelledby="dropdownMenuButton"
+          style={{
+            right: 0,
+            left: 'auto',
+            position: 'absolute',
+            minWidth: 200,
+            marginTop: 6,
+            zIndex: 1050
+          }}
         >
           {user.roleName === "Patient" && (
             <>
@@ -181,7 +247,7 @@ export default function Header() {
         </button>
 
         <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav ms-auto">
+          <ul className="navbar-nav ms-auto align-items-center">
             <li className="nav-item">
               <a
                 className="nav-link"
@@ -215,25 +281,122 @@ export default function Header() {
                 Liên hệ
               </a>
             </li> 
-          </ul>
+            {/* Notification */}
+            {user && (
+              <li className="nav-item position-relative ms-3">
+                <button className="btn position-relative" onClick={toggleNoti}>
+                  🔔
+                  {unreadCount > 0 && (
+                    <span
+                      className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                      style={{ fontSize: "0.7rem" }}
+                    >
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
 
-          {!user ? (
-            <button
-              className="btn ms-3 px-4"
-              style={{
-                borderRadius: "25px",
-                backgroundColor: "#2ECCB6",
-                borderColor: "#2ECCB6",
-                color: "#fff",
-                fontWeight: 500,
-              }}
-              onClick={() => navigate("/signin")}
-            >
-              Đăng nhập
-            </button>
-          ) : (
-            renderDropdown()
-          )}
+                {notiOpen && (
+                  <div
+                    className="shadow-lg"
+                    style={{
+                      position: "absolute",
+                      right: 0,
+                      top: "calc(100% + 5px)",
+                      width: "360px",
+                      maxHeight: "400px",
+                      overflow: "hidden",
+                      backgroundColor: "#fff",
+                      borderRadius: "12px",
+                      zIndex: 1000,
+                      border: "1px solid rgba(0,0,0,.15)",
+                    }}
+                  >
+                    {/* Filter Buttons */}
+                    <div className="d-flex justify-content-between align-items-center p-2 border-bottom">
+                      <span style={{ fontWeight: 600 }}>Thông báo</span>
+                      <div>
+                        <button
+                          className={`btn btn-sm ${filterUnread ? "btn-outline-secondary" : "btn-primary"} me-1`}
+                          onClick={() => setFilterUnread(false)}
+                        >
+                          Tất cả
+                        </button>
+                        <button
+                          className={`btn btn-sm ${filterUnread ? "btn-primary" : "btn-outline-secondary"}`}
+                          onClick={() => setFilterUnread(true)}
+                        >
+                          Chưa đọc
+                        </button>
+                      </div>
+                    </div>
+
+                    <div
+                      className="overflow-y-auto"
+                      style={{
+                        maxHeight: "300px",
+                        scrollbarWidth: "thin",
+                        scrollbarColor: "rgba(0,0,0,0.2) transparent",
+                      }}
+                    >
+                      {notisToShow.length === 0 && (
+                        <div className="p-3 text-center text-muted">
+                          Không có thông báo
+                        </div>
+                      )}
+
+                      {notisToShow.map((n) => (
+                        <div
+                          key={n.id}
+                          className="p-2 border-bottom cursor-pointer"
+                          style={{
+                            backgroundColor: n.isRead ? "#fff" : "#e0f7fa",
+                            fontWeight: n.isRead ? "400" : "600",
+                          }}
+                          onClick={() => handleNotiClick(n)}
+                        >
+                          <strong>{n.title}</strong>
+                          <div className="text-sm">{n.message}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {!showAllNotis && displayedNotis.length > 5 && (
+                      <div className="text-center p-2 border-top">
+                        <button
+                          className="btn btn-link"
+                          onClick={() => setShowAllNotis(true)}
+                        >
+                          Xem tất cả
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </li>
+            )}
+            {!user ? (
+              <li className="nav-item ms-3">
+                <button
+                  className="btn px-4"
+                  style={{
+                    borderRadius: "25px",
+                    backgroundColor: "#2ECCB6",
+                    borderColor: "#2ECCB6",
+                    color: "#fff",
+                    fontWeight: 500,
+                  }}
+                  onClick={() => navigate("/signin")}
+                >
+                  Đăng nhập
+                </button>
+              </li>
+            ) : (
+              <li className="nav-item ms-3">
+                {renderUserDropdown()}
+              </li>
+            )}
+          </ul>
         </div>
       </div>
     </nav>

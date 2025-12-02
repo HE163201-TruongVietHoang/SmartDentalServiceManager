@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import useChatSocket from '../api/useChatSocket';
-import ChatWindow from './ChatWindow';
+import ChatDock from './ChatDock';
 import MessageInput from './MessageInput';
 import {
   getConversations,
@@ -118,7 +118,7 @@ const ChatPopup = ({ isOpen, onClose }) => {
         </button>
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <ChatWindow
+        <ChatDock
           conversation={selectedConversation}
           messages={messages}
           loading={loadingMessages}
