@@ -83,7 +83,7 @@ const ChatDock = ({ conversation, messages, loading, onLoadMore, loadingMore, is
           const sortedMessages = [...messages].sort((a, b) => new Date(a.sentAt) - new Date(b.sentAt));
           return sortedMessages.map(msg => {
             const isMine = msg.senderId === currentUser?.userId;
-            const isRightSide = msg.senderRoleName === 'Patient';
+            const isRightSide = isMine || msg.senderRoleName === 'Patient';
             return (
               <div key={msg.messageId} style={{ marginBottom: '16px', display: 'flex', justifyContent: isRightSide ? 'flex-end' : 'flex-start' }}>
                 {!isRightSide && (
