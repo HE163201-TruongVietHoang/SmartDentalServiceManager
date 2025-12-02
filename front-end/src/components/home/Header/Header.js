@@ -32,7 +32,9 @@ export default function Header() {
         const data = await res.json();
         if (data.success) {
           setNotifications(data.notifications || []);
-          const unread = (data.notifications || []).filter((n) => !n.isRead).length;
+          const unread = (data.notifications || []).filter(
+            (n) => !n.isRead
+          ).length;
           setUnreadCount(unread);
         }
       } catch (err) {
@@ -60,14 +62,14 @@ export default function Header() {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownOpen && !event.target.closest('.position-relative')) {
+      if (dropdownOpen && !event.target.closest(".position-relative")) {
         setDropdownOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [dropdownOpen]);
 
@@ -113,14 +115,19 @@ export default function Header() {
     ? notifications.filter((n) => !n.isRead)
     : notifications;
 
-  const notisToShow = showAllNotis ? displayedNotis : displayedNotis.slice(0, 5);
+  const notisToShow = showAllNotis
+    ? displayedNotis
+    : displayedNotis.slice(0, 5);
 
   // User Dropdown JSX
   const renderUserDropdown = () => {
     if (!user) return null;
 
     return (
-      <div className="dropdown ms-3 position-relative" style={{display: 'inline-block'}}>
+      <div
+        className="dropdown ms-3 position-relative"
+        style={{ display: "inline-block" }}
+      >
         <button
           className="btn dropdown-toggle"
           style={{
@@ -137,15 +144,17 @@ export default function Header() {
           Xin chào, {user.fullName}
         </button>
         <ul
-          className={`dropdown-menu dropdown-menu-end shadow-sm ${dropdownOpen ? 'show' : ''}`}
+          className={`dropdown-menu dropdown-menu-end shadow-sm ${
+            dropdownOpen ? "show" : ""
+          }`}
           aria-labelledby="dropdownMenuButton"
           style={{
             right: 0,
-            left: 'auto',
-            position: 'absolute',
+            left: "auto",
+            position: "absolute",
             minWidth: 200,
             marginTop: 6,
-            zIndex: 1050
+            zIndex: 1050,
           }}
         >
           {user.roleName === "Patient" && (
@@ -169,7 +178,7 @@ export default function Header() {
               <li>
                 <hr className="dropdown-divider" />
               </li>
-                 <li>
+              <li>
                 <button
                   className="dropdown-item"
                   onClick={() => navigate("/invoice/me")}
@@ -280,7 +289,7 @@ export default function Header() {
               >
                 Liên hệ
               </a>
-            </li> 
+            </li>
             {/* Notification */}
             {user && (
               <li className="nav-item position-relative ms-3">
@@ -317,13 +326,21 @@ export default function Header() {
                       <span style={{ fontWeight: 600 }}>Thông báo</span>
                       <div>
                         <button
-                          className={`btn btn-sm ${filterUnread ? "btn-outline-secondary" : "btn-primary"} me-1`}
+                          className={`btn btn-sm ${
+                            filterUnread
+                              ? "btn-outline-secondary"
+                              : "btn-primary"
+                          } me-1`}
                           onClick={() => setFilterUnread(false)}
                         >
                           Tất cả
                         </button>
                         <button
-                          className={`btn btn-sm ${filterUnread ? "btn-primary" : "btn-outline-secondary"}`}
+                          className={`btn btn-sm ${
+                            filterUnread
+                              ? "btn-primary"
+                              : "btn-outline-secondary"
+                          }`}
                           onClick={() => setFilterUnread(true)}
                         >
                           Chưa đọc
@@ -392,9 +409,7 @@ export default function Header() {
                 </button>
               </li>
             ) : (
-              <li className="nav-item ms-3">
-                {renderUserDropdown()}
-              </li>
+              <li className="nav-item ms-3">{renderUserDropdown()}</li>
             )}
           </ul>
         </div>

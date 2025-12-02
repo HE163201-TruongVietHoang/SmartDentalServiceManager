@@ -16,7 +16,10 @@ import HomeDoctor from "./pages/HomeDoctor";
 // import ScheduleRequest from "./components/doctor/ScheduleRequest";
 
 import ProfilePage from "./pages/profile/ProfileView";
-
+import ServicesPage from "./pages/Hone/Service";
+import ServiceDetail from "./pages/Hone/ServiceDeatil";
+import DoctorsPage from "./pages/Hone/DoctorsPage";
+import DoctorDetail from "./pages/Hone/DoctorDetatil";
 
 import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
 
@@ -71,8 +74,6 @@ import InvoiceDetailPage from "./pages/Patient/InvoiceDetailPage";
 import StatisticsPage from "./pages/ClinicManager/StatisticsPage";
 import DashboardPage from "./pages/ClinicManager/DashboardPage";
 import MyInvoice from "./pages/Patient/MyInvoice";
-import ServicesPage from "./pages/Hone/Service";
-import ServiceDetail from "./pages/Hone/ServiceDeatil";
 import Contact from "./pages/Home/Contact";
 import PaymentList from "./pages/ClinicManager/PaymentList";
 import MyPayments from "./pages/Patient/MyPayments";
@@ -88,9 +89,9 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/doctor/home" element={<HomeDoctor />} />
         </Route>
-           {/* <Route path="/chat" element={<ChatPage />} /> */}
+        {/* <Route path="/chat" element={<ChatPage />} /> */}
         <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/contact" element={<Contact />} />
+        <Route path="/contact" element={<Contact />} />
         {/* Authentication routes */}
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
@@ -99,12 +100,15 @@ function App() {
         <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/admin/users" element={<UserManagement />} />
         <Route path="/appointment" element={<AppointmentPage />} />
-        <Route path="/appointment/:appointmentId/review" element={<AppointmentReview />} />
+        <Route
+          path="/appointment/:appointmentId/review"
+          element={<AppointmentReview />}
+        />
         <Route path="/appointment/me" element={<MyAppointmentsPage />} />
         <Route path="/medical-record" element={<MedicalRecordPage />} />
         <Route path="/invoice/me/:invoiceId" element={<InvoiceDetailPage />} />
         <Route path="/invoice/me" element={<MyInvoice />} />
-         <Route path="/invoice-pending/me" element={<InvoiceListPage />} />
+        <Route path="/invoice-pending/me" element={<InvoiceListPage />} />
         <Route path="/payments/me" element={<MyPayments />} />
         {/*clinic Manager*/}
 
@@ -299,7 +303,7 @@ function App() {
             </ReceptionistLayout>
           }
         />
-            <Route
+        <Route
           path="/receptionist/payments"
           element={
             <ReceptionistLayout>
@@ -341,14 +345,7 @@ function App() {
             </ReceptionistLayout>
           }
         />
-        <Route
-          path="/receptionist/chat"
-          element={
-            
-              <ChatPage />
-           
-          }
-        />
+        <Route path="/receptionist/chat" element={<ChatPage />} />
         {/* Route 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>
