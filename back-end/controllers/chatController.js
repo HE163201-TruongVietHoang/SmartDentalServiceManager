@@ -69,10 +69,35 @@ async function markMessagesRead(req, res) {
     }
 }
 
+// Kiểm tra cuộc trò chuyện cho user
+async function checkConversation(req, res) {
+    try {
+        const { userId } = req.params;
+        const conversation = await chatService.checkConversationForUserService(userId);
+        res.json(conversation || null);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+}
+
+// Chuyển cuộc trò chuyện sang lễ tân khác
+async function transferConversation(req, res) {
+    try {
+        const { conversationId, newReceptionistId } = req.body;
+        if (!conversationId || !newReceptionistId) return res.status(400).json({ message: 'Missing data' });
+        await chatService.transferConversationService(conversationId, newReceptionistId);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+}
+
 module.exports = {
     getOrCreateConversation,
     getUserConversations,
     sendMessage,
     getMessages,
-    markMessagesRead
+    markMessagesRead,
+    checkConversation,
+    transferConversation
 };

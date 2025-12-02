@@ -49,4 +49,32 @@ async function findById(paymentId) {
   return result.recordset[0];
 }
 
-module.exports = { create, findOneAndUpdate, findById };
+async function getAll() {
+  const pool = await getPool();
+  const result = await pool.request()
+    .query(`
+      SELECT p.*, i.patientId, u.fullName as patientName
+      FROM Payments p
+      LEFT JOIN Invoices i ON p.invoiceId = i.invoiceId
+      LEFT JOIN Users u ON i.patientId = u.userId
+      ORDER BY p.paymentDate DESC
+    `);
+  return result.recordset;
+}
+
+async function getByUserId(userId) {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input("userId", sql.Int, userId)
+    .query(`
+      SELECT p.*, i.patientId, u.fullName as patientName
+      FROM Payments p
+      JOIN Invoices i ON p.invoiceId = i.invoiceId
+      JOIN Users u ON i.patientId = u.userId
+      WHERE i.patientId = @userId
+      ORDER BY p.paymentDate DESC
+    `);
+  return result.recordset;
+}
+
+module.exports = { create, findOneAndUpdate, findById, getAll, getByUserId };

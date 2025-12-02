@@ -14,4 +14,10 @@ router.get('/messages/:conversationId', authMiddleware, chatController.getMessag
 // Đánh dấu tin nhắn đã đọc
 router.post('/messages/read', authMiddleware, chatController.markMessagesRead);
 
+// Kiểm tra cuộc trò chuyện cho user
+router.get('/check-conversation/:userId', chatController.checkConversation);
+
+// Chuyển cuộc trò chuyện sang lễ tân khác
+router.post('/transfer-conversation', chatController.transferConversation);
+
 module.exports = router;

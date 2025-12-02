@@ -30,12 +30,12 @@ async function getAll() {
         u.fullName as patientName,
         sch.workDate,
         s.slotId,
-        s.startTime,
-        s.endTime,
+        CONVERT(varchar(5), s.startTime, 108) AS startTime,
+        CONVERT(varchar(5), s.endTime, 108) AS endTime,
         pr.code as promotionCode
       FROM Invoices i
-      LEFT JOIN Users u ON i.patientId = u.userId
       LEFT JOIN Appointments a ON i.appointmentId = a.appointmentId
+      LEFT JOIN Users u ON a.patientId = u.userId
       LEFT JOIN Slots s ON a.slotId = s.slotId
       LEFT JOIN Schedules sch ON s.scheduleId = sch.scheduleId
       LEFT JOIN Promotions pr ON i.promotionId = pr.promotionId
@@ -54,12 +54,12 @@ async function getById(invoiceId) {
         u.fullName as patientName,
         sch.workDate,
         s.slotId,
-        s.startTime,
-        s.endTime,
+        CONVERT(varchar(5), s.startTime, 108) AS startTime,
+        CONVERT(varchar(5), s.endTime, 108) AS endTime,
         pr.code as promotionCode
       FROM Invoices i
-      LEFT JOIN Users u ON i.patientId = u.userId
       LEFT JOIN Appointments a ON i.appointmentId = a.appointmentId
+      LEFT JOIN Users u ON a.patientId = u.userId
       LEFT JOIN Slots s ON a.slotId = s.slotId
       LEFT JOIN Schedules sch ON s.scheduleId = sch.scheduleId
       LEFT JOIN Promotions pr ON i.promotionId = pr.promotionId
@@ -92,12 +92,12 @@ async function getByPatientId(patientId) {
         u.fullName as patientName,
         sch.workDate,
         s.slotId,
-        s.startTime,
-        s.endTime,
+        CONVERT(varchar(5), s.startTime, 108) AS startTime,
+        CONVERT(varchar(5), s.endTime, 108) AS endTime,
         pr.code as promotionCode
       FROM Invoices i
-      LEFT JOIN Users u ON i.patientId = u.userId
       LEFT JOIN Appointments a ON i.appointmentId = a.appointmentId
+      LEFT JOIN Users u ON a.patientId = u.userId
       LEFT JOIN Slots s ON a.slotId = s.slotId
       LEFT JOIN Schedules sch ON s.scheduleId = sch.scheduleId
       LEFT JOIN Promotions pr ON i.promotionId = pr.promotionId

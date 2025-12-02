@@ -10,6 +10,7 @@ import {
   FaCalendarPlus,
   FaFileInvoiceDollar,
   FaComments,
+  FaMoneyBillWave
 } from "react-icons/fa";
 
 function ReceptionistLayout({ children }) {
@@ -38,14 +39,14 @@ function ReceptionistLayout({ children }) {
       path: "/receptionist/invoice",
     },
     {
-      name: "Thanh toán hóa đơns",
-      icon: <FaFileInvoiceDollar />,
-      path: "/receptionist/invoices",
-    },
-    {
       name: "Chat",
       icon: <FaComments />,
-      path: "/chat",
+      path: "/receptionist/chat",
+    },
+    {
+      name: "Thanh toán",
+      icon: <FaMoneyBillWave />,
+      path: "/receptionist/payments",
     },
   ];
 
