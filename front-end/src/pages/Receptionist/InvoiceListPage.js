@@ -76,7 +76,7 @@ export default function InvoiceListPage() {
                   {i.startTime} - {i.endTime}
                 </td>
                 <td style={td}>
-                  <a href={`/receptionist/invoices/${i.invoiceId}`} style={btn}>
+                  <a href={`/invoice/me/${i.invoiceId}`} style={btn}>
                     Xem chi tiết
                   </a>
                 </td>

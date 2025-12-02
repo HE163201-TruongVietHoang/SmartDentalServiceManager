@@ -87,6 +87,11 @@ export const getReceptionist = async () => {
   return res.data;
 };
 
+export const getReceptionists = async () => {
+  const res = await axios.get(`${API_URL}/auth/receptionists`);
+  return res.data;
+};
+
 export const getInvoicesByPatient = async (patientId) => {
   const res = await axios.get(`${API_URL}/invoices/patient/${patientId}`);
   return res.data;
@@ -95,5 +100,23 @@ export const getInvoicesByPatient = async (patientId) => {
 // Payment APIs
 export const createPaymentUrl = async (paymentData) => {
   const res = await axios.post(`${API_URL}/payments/create-url`, paymentData);
+  return res.data;
+};
+
+export const getAllPayments = async () => {
+  const res = await axios.get(`${API_URL}/payments`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    }
+  });
+  return res.data;
+};
+
+export const getPaymentsByUserId = async (userId) => {
+  const res = await axios.get(`${API_URL}/payments/user/${userId}`, {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('token')}`
+    }
+  });
   return res.data;
 };

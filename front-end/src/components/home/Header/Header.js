@@ -147,6 +147,25 @@ export default function Header() {
               <li>
                 <hr className="dropdown-divider" />
               </li>
+                 <li>
+                <button
+                  className="dropdown-item"
+                  onClick={() => navigate("/invoice/me")}
+                >
+                  Hóa đơn của tôi
+                </button>
+              </li>
+              <li>
+                <hr className="dropdown-divider" />
+              </li>
+              <li>
+                <button
+                  className="dropdown-item"
+                  onClick={() => navigate("/payments/me")}
+                >
+                  Thanh toán của tôi
+                </button>
+              </li>
             </>
           )}
           <li>
@@ -222,17 +241,26 @@ export default function Header() {
             <li className="nav-item">
               <a
                 className="nav-link"
-                href="#"
+                href="/alldoctors"
                 style={{ color: "#333", fontWeight: 500 }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleScroll("contact");
-                }}
+                onMouseEnter={(e) => (e.target.style.color = "#2ECCB6")}
+                onMouseLeave={(e) => (e.target.style.color = "#333")}
+              >
+                Đội ngũ bác sĩ
+              </a>
+            </li>
+            <li className="nav-item">
+              <a
+                className="nav-link"
+                href="/contact"
+                style={{ color: "#333", fontWeight: 500 }}
                 onMouseEnter={(e) => (e.target.style.color = "#2ECCB6")}
                 onMouseLeave={(e) => (e.target.style.color = "#333")}
               >
                 Liên hệ
               </a>
+            </li> 
+          </ul>
             </li>
 
             {/* Notification */}
@@ -329,7 +357,6 @@ export default function Header() {
                 )}
               </li>
             )}
-
             {!user ? (
               <button
                 className="btn ms-3 px-4"

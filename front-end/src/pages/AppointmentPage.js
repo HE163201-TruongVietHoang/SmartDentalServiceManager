@@ -53,7 +53,7 @@ export default function AppointmentPage() {
 
   // 🔹 Hàm lấy slot trống
   const fetchSlots = async () => {
-    if (!token) return; // nếu chưa login thì không fetch
+    if (!token) return;
     setLoading(true);
     try {
       const res = await fetch(
@@ -65,7 +65,17 @@ export default function AppointmentPage() {
         }
       );
       if (!res.ok) throw new Error("Không thể tải khung giờ");
-      const data = await res.json();
+      let data = await res.json();
+
+      const now = new Date();
+      data = data.map((slot) => {
+        const slotDateTime = new Date(`${date}T${slot.startTime}`);
+        return {
+          ...slot,
+          isPast: slotDateTime < now,
+        };
+      });
+
       setSlots(data);
     } catch (err) {
       console.error("Lỗi khi lấy slot:", err);
@@ -194,13 +204,13 @@ export default function AppointmentPage() {
                         key={slot.slotId}
                         type="button"
                         className={`btn px-3 py-2 rounded-pill ${
-                          slot.isBooked
+                          slot.isBooked || slot.isPast
                             ? "btn-secondary"
                             : selectedSlot === slot.slotId
                             ? "btn-success"
                             : "btn-outline-success"
                         }`}
-                        disabled={slot.isBooked}
+                        disabled={slot.isBooked || slot.isPast}
                         onClick={() => setSelectedSlot(slot.slotId)}
                       >
                         {slot.startTime} - {slot.endTime}

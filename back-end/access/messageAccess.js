@@ -22,7 +22,15 @@ async function getMessagesByConversation(conversationId, limit = 50, offset = 0)
         .input('conversationId', sql.Int, conversationId)
         .input('offset', sql.Int, offset)
         .input('limit', sql.Int, limit)
-        .query(`SELECT * FROM Messages WHERE conversationId = @conversationId ORDER BY sentAt DESC OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY`);
+        .query(`
+            SELECT m.*, u.fullName AS senderName, u.email AS senderEmail, u.avatar AS senderAvatar, u.roleId AS senderRoleId, r.roleName AS senderRoleName
+            FROM Messages m
+            JOIN Users u ON m.senderId = u.userId
+            JOIN Roles r ON u.roleId = r.roleId
+            WHERE m.conversationId = @conversationId
+            ORDER BY m.sentAt DESC
+            OFFSET @offset ROWS FETCH NEXT @limit ROWS ONLY
+        `);
     return result.recordset;
 }
 

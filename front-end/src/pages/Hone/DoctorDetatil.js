@@ -1,25 +1,25 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../components/home/Header/Header";
 import Footer from "../../components/home/Footer/Footer";
 
-export default function ServiceDetail() {
+export default function DoctorDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [service, setService] = useState(null);
+  const [doctor, setDoctor] = useState(null);
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/services/${id}`)
+    fetch(`http://localhost:5000/api/auth/doctors/${id}`)
       .then((res) => res.json())
-      .then((data) => setService(data))
-      .catch((err) => console.error("Error loading service detail:", err));
+      .then((data) => setDoctor(data))
+      .catch((err) => console.error("Error loading doctor detail:", err));
   }, [id]);
 
-  if (!service) {
+  if (!doctor) {
     return (
       <div className="text-center py-5">
         <div className="spinner-border text-success"></div>
-        <p className="mt-3">Đang tải dữ liệu dịch vụ...</p>
+        <p className="mt-3">Đang tải dữ liệu bác sĩ...</p>
       </div>
     );
   }
@@ -28,7 +28,6 @@ export default function ServiceDetail() {
     <div>
       <Header />
       <div className="container py-5" style={{ maxWidth: "900px" }}>
-        {/* Back button */}
         <button
           className="btn btn-outline-success mb-4"
           onClick={() => navigate(-1)}
@@ -37,7 +36,6 @@ export default function ServiceDetail() {
           ← Quay lại
         </button>
 
-        {/* Card Detail */}
         <div
           className="p-4 shadow-sm"
           style={{
@@ -46,29 +44,25 @@ export default function ServiceDetail() {
             border: "1px solid #f0f0f0",
           }}
         >
-          {/* Icon */}
           <div className="text-center mb-4">
-            <i
-              className="fas fa-tooth"
-              style={{
-                fontSize: "70px",
-                color: "#2ECCB6",
-              }}
-            ></i>
+            <img
+              src={
+                doctor.avatar ||
+                "https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+              }
+              alt={doctor.fullName}
+              className="rounded-circle"
+              width="120"
+              height="120"
+            />
           </div>
 
-          {/* Title */}
-          <h2 className="fw-bold text-center mb-3" style={{ color: "#2ECCB6" }}>
-            {service.serviceName}
+          <h2 className="fw-bold text-center mb-2" style={{ color: "#2ECCB6" }}>
+            {doctor.fullName}
           </h2>
-
-          {/* Description */}
-          <p className="text-muted fs-5 text-center mb-4">
-            {service.description}
-          </p>
+          <p className="text-center text-muted mb-3">{doctor.specialty}</p>
 
           <div className="row mt-4">
-            {/* Price */}
             <div className="col-md-6 mb-3">
               <div
                 className="p-3 h-100 shadow-sm"
@@ -78,14 +72,11 @@ export default function ServiceDetail() {
                   border: "1px solid #e2f7f2",
                 }}
               >
-                <h6 className="text-success mb-1">Giá dịch vụ</h6>
-                <p className="fw-bold fs-5 mb-0">
-                  {service.price.toLocaleString()} đ
-                </p>
+                <h6 className="text-success mb-1">Kinh nghiệm</h6>
+                <p className="fw-bold fs-5 mb-0">{doctor.experience} năm</p>
               </div>
             </div>
 
-            {/* Duration */}
             <div className="col-md-6 mb-3">
               <div
                 className="p-3 h-100 shadow-sm"
@@ -95,22 +86,35 @@ export default function ServiceDetail() {
                   border: "1px solid #e2f7f2",
                 }}
               >
-                <h6 className="text-success mb-1">Thời gian</h6>
-                <p className="fw-bold fs-5 mb-0">{service.duration} ngày</p>
+                <h6 className="text-success mb-1">Địa chỉ phòng khám</h6>
+                <p className="fw-bold fs-5 mb-0">{doctor.clinicAddress}</p>
               </div>
             </div>
           </div>
 
-          {/* CTA */}
+          <div className="mt-4">
+            <h6 className="text-success mb-2">Giới thiệu</h6>
+            <p className="text-muted">{doctor.bio}</p>
+          </div>
+
           <div className="text-center mt-5">
             <button
-              className="px-5 py-2"
+              className="btn btn-lg px-4"
               style={{
-                borderRadius: "12px",
-                fontSize: "1.1rem",
                 backgroundColor: "#2ECCB6",
+                borderColor: "#2ECCB6",
+                color: "#fff",
               }}
-              onClick={() => navigate("/appointment")}
+              onClick={() => {
+                const token = localStorage.getItem("token");
+                if (!token) {
+                  navigate("/signin", {
+                    state: { redirectTo: "/appointment" },
+                  });
+                  return;
+                }
+                navigate("/appointment");
+              }}
             >
               Đặt lịch ngay
             </button>

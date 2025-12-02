@@ -20,7 +20,7 @@ const {
   verifyAccountOtp,
   uploadUserAvatar
 } = require("../services/authService");
-const { getFirstReceptionist } = require("../access/userAccess");
+const { getFirstReceptionist, getAllReceptionist } = require("../access/userAccess");
 
 async function loginController(req, res) {
   try {
@@ -288,7 +288,7 @@ async function updateAvatarController(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
-async function getReceptionistController(req, res) {
+async function getReceptionistRandomController(req, res) {
   try {
     const receptionist = await getFirstReceptionist();
     if (!receptionist) {
@@ -299,7 +299,17 @@ async function getReceptionistController(req, res) {
     res.status(500).json({ message: err.message });
   }
 }
-
+async function getAllReceptionistController(req, res) {
+  try {
+    const receptionist = await getAllReceptionist();
+    if (!receptionist) {
+      return res.status(404).json({ message: 'Không tìm thấy lễ tân' });
+    }
+    res.json(receptionist);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+}
 module.exports = {
   loginController,
   profileController,
@@ -320,5 +330,6 @@ module.exports = {
   logoutAllDevicesController,
   verifyOtp,
   updateAvatarController,
-  getReceptionistController,
+  getReceptionistRandomController,
+  getAllReceptionistController
 }

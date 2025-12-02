@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
-const ChatList = ({ conversations, selectedConversation, onSelectConversation, onStartConversation, unreadCounts, defaultUserId }) => {
+const ChatList = ({ conversations, selectedConversation, onSelectConversation, unreadCounts }) => {
   // Lấy userId từ localStorage user object
   let currentUserId = 0;
   try {
@@ -10,18 +10,6 @@ const ChatList = ({ conversations, selectedConversation, onSelectConversation, o
     currentUserId = 0;
   }
   console.log("Current User ID:", currentUserId);
-  console.log("Default User ID:", defaultUserId);
-  useEffect(() => {
-    if (defaultUserId && currentUserId && currentUserId !== defaultUserId) {
-      const existingConv = conversations.find(conv =>
-        (conv.participant1Id === currentUserId && conv.participant2Id === defaultUserId) ||
-        (conv.participant1Id === defaultUserId && conv.participant2Id === currentUserId)
-      );
-      if (!existingConv) {
-        onStartConversation(currentUserId, defaultUserId);
-      }
-    }
-  }, [defaultUserId, currentUserId, conversations, onStartConversation]);
   return (
     <div style={{ width: '350px', borderRight: '1px solid #e0e0e0', overflowY: 'auto', background: '#ffffff' }}>
       <div style={{ padding: '16px', borderBottom: '1px solid #e0e0e0', fontWeight: 'bold', fontSize: '18px', color: '#333', background: '#f0f0f0' }}>
@@ -98,21 +86,6 @@ const ChatList = ({ conversations, selectedConversation, onSelectConversation, o
           </div>
         );
       })}
-      {!defaultUserId && (
-        <div style={{ padding: '16px', borderTop: '1px solid #e0e0e0' }}>
-          <button
-            className="btn w-100"
-            style={{ background: '#2ECCB6', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px' }}
-            onClick={() => {
-              const otherId = prompt('Nhập userId muốn chat:');
-              if (otherId) onStartConversation(currentUserId, Number(otherId));
-            }}
-          >
-            <i className="fas fa-plus" style={{ marginRight: '8px' }}></i>
-            Bắt đầu trò chuyện mới
-          </button>
-        </div>
-      )}
     </div>
   );
 };

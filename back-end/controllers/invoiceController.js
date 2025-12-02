@@ -65,6 +65,17 @@ class InvoiceController {
         }
     }
 
+    async getInvoicesByUserId(req, res) {
+        try {
+            const { userId } = req.params;
+            const data = await invoiceAccess.getInvoicesByUserId(userId);
+            return res.json(data);
+        } catch (err) {
+            console.error("❌ INVOICE BY USER ERROR:", err);
+            return res.status(500).json({ error: err.message });
+        }
+    }
+
     async getInvoiceDetail(req, res) {
         try {
             const invoiceId = req.params.invoiceId;
@@ -89,6 +100,26 @@ class InvoiceController {
         } catch (err) {
             console.error("❌ INVOICE PAYMENT ERROR:", err);
             res.status(500).json({ error: err.message });
+        }
+    }
+      async checkPendingInvoicesByUserId(req, res) {
+        try {
+            const { userId } = req.params;
+            const hasPending = await invoiceAccess.checkPendingInvoicesByUserId(userId);
+            return res.json({ hasPending });
+        } catch (err) {
+            console.error("❌ CHECK PENDING INVOICES ERROR:", err);
+            return res.status(500).json({ error: err.message });
+        }
+    }
+      async getPendingInvoicesByUserId(req, res) {
+        try {
+            const { userId } = req.params;
+            const data = await invoiceAccess.getPendingInvoicesByUserId(userId);
+            return res.json(data);
+        } catch (err) {
+            console.error("❌ INVOICE PENDING BY USER ERROR:", err);
+            return res.status(500).json({ error: err.message });
         }
     }
 }

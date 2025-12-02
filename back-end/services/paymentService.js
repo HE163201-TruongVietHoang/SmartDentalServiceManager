@@ -3,7 +3,7 @@
 const crypto = require('crypto');
 const querystring = require('qs');
 const moment = require('moment');
-const { create: createPayment, findOneAndUpdate: updatePayment } = require('../access/paymentAccess');
+const { create: createPayment, findOneAndUpdate: updatePayment, getAll, getByUserId } = require('../access/paymentAccess');
 const { confirmPayment } = require('../access/invoiceAccess');
 
 class PaymentService {
@@ -115,6 +115,24 @@ class PaymentService {
             return responseData.vnp_ResponseCode === '00' ? 'Payment successful' : 'Payment failed';
         } catch (error) {
             console.error('Error updating payment:', error);
+            throw new Error('Internal Server Error');
+        }
+    }
+
+    async getAllPayments() {
+        try {
+            return await getAll();
+        } catch (error) {
+            console.error('Error getting all payments:', error);
+            throw new Error('Internal Server Error');
+        }
+    }
+
+    async getPaymentsByUserId(userId) {
+        try {
+            return await getByUserId(userId);
+        } catch (error) {
+            console.error('Error getting payments by user ID:', error);
             throw new Error('Internal Server Error');
         }
     }

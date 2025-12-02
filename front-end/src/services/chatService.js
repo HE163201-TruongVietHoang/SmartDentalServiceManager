@@ -44,3 +44,17 @@ export const markMessagesRead = (conversationId) => {
     { headers: { ...getAuthHeader() } }
   );
 };
+
+export const transferConversation = (conversationId, newReceptionistId) => {
+  return axios.post(
+    `${API_URL}/transfer-conversation`,
+    { conversationId, newReceptionistId },
+    { headers: { ...getAuthHeader() } }
+  );
+};
+
+export const checkConversation = (userId) => {
+  return axios.get(`${API_URL}/check-conversation/${userId}`, {
+    headers: { ...getAuthHeader() }
+  });
+};

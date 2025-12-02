@@ -22,6 +22,8 @@ const { getPool } = require("./config/db");
 const promotionRoutes = require('./routes/promotionRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const statisticsRoutes = require('./routes/statisticsRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
 const nurseRoutes = require("./routes/nurseRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 //const prescriptionRoutes = require("./routes/prescriptionRoutes");
@@ -41,6 +43,8 @@ app.use("/api/auth", authRoutes);
 app.use('/api/promotions', promotionRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/statistics', statisticsRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 app.use("/api/chat", chatRoutes);
 
 app.use("/api/materials", materialRoutes);

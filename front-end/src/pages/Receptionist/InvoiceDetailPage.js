@@ -143,7 +143,23 @@ export default function InvoiceDetailPage() {
             textAlign: "right",
           }}
         >
-          Tổng tiền: {totalServiceCost.toLocaleString()} đ
+          Tổng tiền dịch vụ: {totalServiceCost.toLocaleString()} đ
+        </h3>
+        <p style={{ textAlign: "right", fontSize: "18px", margin: "5px 0" }}>
+          Mã giảm giá: {header.promotionCode || "Không có"}
+        </p>
+        <p style={{ textAlign: "right", fontSize: "18px", margin: "5px 0" }}>
+          Giảm giá: {(header.discountAmount || 0).toLocaleString()} đ
+        </p>
+        <h3
+          style={{
+            color: "#E63946",
+            fontSize: "24px",
+            textAlign: "right",
+            fontWeight: "bold",
+          }}
+        >
+          Tổng thanh toán: {header.finalAmount.toLocaleString()} đ
         </h3>
 
         <button style={btnPay} onClick={confirmPayment}>
