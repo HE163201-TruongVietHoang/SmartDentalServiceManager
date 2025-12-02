@@ -260,9 +260,6 @@ export default function Header() {
                 Liên hệ
               </a>
             </li> 
-          </ul>
-            </li>
-
             {/* Notification */}
             {user && (
               <li className="nav-item position-relative ms-3">
@@ -358,21 +355,25 @@ export default function Header() {
               </li>
             )}
             {!user ? (
-              <button
-                className="btn ms-3 px-4"
-                style={{
-                  borderRadius: "25px",
-                  backgroundColor: "#2ECCB6",
-                  borderColor: "#2ECCB6",
-                  color: "#fff",
-                  fontWeight: 500,
-                }}
-                onClick={() => navigate("/signin")}
-              >
-                Đăng nhập
-              </button>
+              <li className="nav-item ms-3">
+                <button
+                  className="btn px-4"
+                  style={{
+                    borderRadius: "25px",
+                    backgroundColor: "#2ECCB6",
+                    borderColor: "#2ECCB6",
+                    color: "#fff",
+                    fontWeight: 500,
+                  }}
+                  onClick={() => navigate("/signin")}
+                >
+                  Đăng nhập
+                </button>
+              </li>
             ) : (
-              renderUserDropdown()
+              <li className="nav-item ms-3">
+                {renderUserDropdown()}
+              </li>
             )}
           </ul>
         </div>
