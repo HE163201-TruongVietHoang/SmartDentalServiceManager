@@ -18,7 +18,7 @@ const {
   logoutAllDevices,
   sendVerificationOtp,
   verifyAccountOtp,
-  uploadUserAvatar 
+  uploadUserAvatar
 } = require("../services/authService");
 const { getFirstReceptionist } = require("../access/userAccess");
 
@@ -30,6 +30,23 @@ async function loginController(req, res) {
 
     const result = await login({ identifier, password, ip, device });
 
+    // Set cookie accessToken
+    res.cookie("accessToken", result.jwtToken, {
+      httpOnly: true,   
+      secure: false,       
+      sameSite: "lax",     
+      maxAge: 15 * 60 * 1000,
+    });
+
+    // Set cookie refreshToken
+    res.cookie("refreshToken", result.refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 ngày
+    });
+
+    // Trả JSON response đồng bộ với cookie
     res.json({
       message: "Đăng nhập thành công",
       token: result.jwtToken,
@@ -174,17 +191,17 @@ const updateProfileController = async (req, res) => {
   try {
     const { fullName, phone, gender, dob, address, citizenIdNumber, occupation, ethnicity } = req.body;
 
-    // ✅ Validate phone
+
     if (phone) {
-      const phoneRegex = /^0\d{0,10}$/; // bắt đầu 0, tối đa 11 chữ số
+      const phoneRegex = /^0\d{0,10}$/;
       if (!phoneRegex.test(phone)) {
         return res.status(400).json({ message: "Số điện thoại không hợp lệ (bắt đầu bằng 0 và tối đa 11 số)" });
       }
     }
 
-    // ✅ Validate căn cước
+
     if (citizenIdNumber) {
-      const citizenRegex = /^\d{0,12}$/; // tối đa 12 chữ số
+      const citizenRegex = /^\d{0,12}$/;
       if (!citizenRegex.test(citizenIdNumber)) {
         return res.status(400).json({ message: "Số căn cước công dân không hợp lệ (tối đa 12 số)" });
       }
@@ -242,14 +259,14 @@ async function verifyOtp(req, res) {
   }
 }
 
-async function  updateAvatarController (req, res) {
+async function updateAvatarController(req, res) {
   try {
     if (!req.file) {
       return res.status(400).json({ message: "Invalid file or no file uploaded" });
     }
 
     const userId = req.user.userId;
-    const result = await uploadUserAvatar (userId, req.file);
+    const result = await uploadUserAvatar(userId, req.file);
 
     res.json({
       success: true,

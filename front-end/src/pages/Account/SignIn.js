@@ -23,7 +23,7 @@ function SignIn() {
       const data = await res.json();
 
       if (res.ok) {
-        console.log("✅ Đăng nhập thành công:", data);
+        console.log(" Đăng nhập thành công:", data);
 
         // Lưu token & thông tin người dùng
         localStorage.setItem("token", data.token || data.jwtToken);
