@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Table, Modal, Form, Alert } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Table, Modal, Form, Alert, Pagination, InputGroup, FormControl } from 'react-bootstrap';
 import { getAllPromotions, createPromotion, updatePromotion, deletePromotion } from '../../api/api';
 
 const Promotion = () => {
@@ -18,6 +18,15 @@ const Promotion = () => {
   const [errors, setErrors] = useState({});
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all'); // 'all', 'active', 'inactive'
+  const [filterType, setFilterType] = useState('all'); // 'all', 'percent', 'amount'
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const validateForm = () => {
     const newErrors = {};
@@ -80,6 +89,27 @@ const Promotion = () => {
       setError('Không thể tải danh sách khuyến mãi');
     }
   };
+
+  // Filtered promotions
+  const filteredPromotions = promotions.filter(promotion => {
+    const matchesSearch = promotion.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          promotion.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === 'all' ||
+                          (filterStatus === 'active' && promotion.isActive) ||
+                          (filterStatus === 'inactive' && !promotion.isActive);
+    const matchesType = filterType === 'all' || promotion.discountType === filterType;
+    return matchesSearch && matchesStatus && matchesType;
+  });
+
+  // Paginated promotions
+  const totalPages = Math.ceil(filteredPromotions.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedPromotions = filteredPromotions.slice(startIndex, startIndex + itemsPerPage);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterStatus, filterType]);
 
   const handleShowModal = (promotion = null) => {
     if (promotion) {
@@ -169,6 +199,22 @@ const Promotion = () => {
     }
   };
 
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleStatusFilterChange = (e) => {
+    setFilterStatus(e.target.value);
+  };
+
+  const handleTypeFilterChange = (e) => {
+    setFilterType(e.target.value);
+  };
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
+
   return (
     <Container fluid>
       <Row className="mb-4">
@@ -184,6 +230,33 @@ const Promotion = () => {
 
       {error && <Alert variant="danger">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
+
+      <Row className="mb-3">
+        <Col md={4}>
+          <InputGroup>
+            <InputGroup.Text>Tìm kiếm</InputGroup.Text>
+            <FormControl
+              placeholder="Tìm theo mã hoặc mô tả"
+              value={searchTerm}
+              onChange={handleSearchChange}
+            />
+          </InputGroup>
+        </Col>
+        <Col md={4}>
+          <Form.Select value={filterStatus} onChange={handleStatusFilterChange}>
+            <option value="all">Tất cả trạng thái</option>
+            <option value="active">Hoạt động</option>
+            <option value="inactive">Không hoạt động</option>
+          </Form.Select>
+        </Col>
+        <Col md={4}>
+          <Form.Select value={filterType} onChange={handleTypeFilterChange}>
+            <option value="all">Tất cả loại</option>
+            <option value="percent">Phần trăm</option>
+            <option value="amount">Cố định</option>
+          </Form.Select>
+        </Col>
+      </Row>
 
       <Card>
         <Card.Body>
@@ -201,7 +274,7 @@ const Promotion = () => {
               </tr>
             </thead>
             <tbody>
-              {promotions.map((promotion) => (
+              {paginatedPromotions.map((promotion) => (
                 <tr key={promotion.promotionId}>
                   <td>{promotion.code}</td>
                   <td>{promotion.description}</td>
@@ -233,6 +306,28 @@ const Promotion = () => {
           </Table>
         </Card.Body>
       </Card>
+
+      {totalPages > 1 && (
+        <Row className="mt-3">
+          <Col className="d-flex justify-content-center">
+            <Pagination>
+              <Pagination.First onClick={() => handlePageChange(1)} disabled={currentPage === 1} />
+              <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
+              {[...Array(totalPages)].map((_, index) => (
+                <Pagination.Item
+                  key={index + 1}
+                  active={index + 1 === currentPage}
+                  onClick={() => handlePageChange(index + 1)}
+                >
+                  {index + 1}
+                </Pagination.Item>
+              ))}
+              <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
+              <Pagination.Last onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages} />
+            </Pagination>
+          </Col>
+        </Row>
+      )}
 
       <Modal show={showModal} onHide={handleCloseModal} size="lg">
         <Modal.Header closeButton>

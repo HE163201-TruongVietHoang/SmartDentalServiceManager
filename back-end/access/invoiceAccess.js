@@ -80,6 +80,15 @@ async function update(invoiceId, { status, discountAmount, promotionId }) {
       SET status = @status, discountAmount = @discountAmount, promotionId = @promotionId
       WHERE invoiceId = @invoiceId
     `);
+  if (status === 'Paid') {
+    await pool.request().input("id", sql.Int, invoiceId).query(`
+      UPDATE Appointments
+      SET status = 'Completed'
+      WHERE appointmentId = (
+        SELECT appointmentId FROM Invoices WHERE invoiceId = @id
+      )
+    `);
+  }
 }
 
 async function getByPatientId(patientId) {

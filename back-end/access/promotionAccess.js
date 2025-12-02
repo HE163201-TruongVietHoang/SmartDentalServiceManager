@@ -67,4 +67,13 @@ async function getActivePromotions() {
   return result.recordset;
 }
 
-module.exports = { create, getAll, getById, update, deletePromotion, getActivePromotions };
+async function deactivateExpiredPromotions() {
+  const pool = await getPool();
+  await pool.request().query(`
+    UPDATE Promotions
+    SET isActive = 0
+    WHERE endDate < GETDATE() AND isActive = 1
+  `);
+}
+
+module.exports = { create, getAll, getById, update, deletePromotion, getActivePromotions, deactivateExpiredPromotions };

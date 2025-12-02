@@ -5,11 +5,16 @@ import ChatPopup from "../../components/ChatPopup";
 function PatientLayout() {
   const [showPendingPopup, setShowPendingPopup] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [isPatient, setIsPatient] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     const token = localStorage.getItem("token");
+    console.log("PatientLayout - user:", user);
+    if (user) {
+      setIsPatient(user.roleName === "Patient");
+    }
     if (user && token) {
       fetch(`http://localhost:5000/api/invoices/check-pending/user/${user.userId}`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -87,8 +92,8 @@ function PatientLayout() {
           </div>
         </div>
       )}
-      <ChatPopup isOpen={showChat} onClose={() => setShowChat(false)} />
-      <button
+      {isPatient && <ChatPopup isOpen={showChat} onClose={() => setShowChat(false)} />}
+      {isPatient && <button
         onClick={() => setShowChat(!showChat)}
         style={{
           position: 'fixed',
@@ -110,7 +115,7 @@ function PatientLayout() {
         }}
       >
         <i className="fas fa-comments"></i>
-      </button>
+      </button>}
       <Outlet />
     </>
   );
