@@ -57,6 +57,20 @@ export default function Header() {
     return () => socket.disconnect();
   }, [user]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownOpen && !event.target.closest('.position-relative')) {
+        setDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownOpen]);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("sessionId");
@@ -106,9 +120,9 @@ export default function Header() {
     if (!user) return null;
 
     return (
-      <div className="ms-3 position-relative">
+      <div className="dropdown ms-3 position-relative" style={{display: 'inline-block'}}>
         <button
-          className="btn"
+          className="btn dropdown-toggle"
           style={{
             borderRadius: "25px",
             backgroundColor: "#2ECCB6",
@@ -118,13 +132,21 @@ export default function Header() {
             padding: "8px 16px",
           }}
           onClick={() => setDropdownOpen(!dropdownOpen)}
+          aria-expanded={dropdownOpen}
         >
           Xin chào, {user.fullName}
         </button>
-        {dropdownOpen && (            
         <ul
-          className="dropdown-menu dropdown-menu-end shadow-sm"
+          className={`dropdown-menu dropdown-menu-end shadow-sm ${dropdownOpen ? 'show' : ''}`}
           aria-labelledby="dropdownMenuButton"
+          style={{
+            right: 0,
+            left: 'auto',
+            position: 'absolute',
+            minWidth: 200,
+            marginTop: 6,
+            zIndex: 1050
+          }}
         >
           {user.roleName === "Patient" && (
             <>
@@ -193,7 +215,6 @@ export default function Header() {
             </button>
           </li>
         </ul>
-        )}
       </div>
     );
   };

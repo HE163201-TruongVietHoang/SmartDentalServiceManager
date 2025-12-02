@@ -1,8 +1,8 @@
 import React, { useRef, useEffect } from 'react';
 
-const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore, isPopup = false }) => {
+const ChatDock = ({ conversation, messages, loading, onLoadMore, loadingMore, isPopup = false }) => {
   const bottomRef = useRef();
-  const chatWindowRef = useRef();
+  const ChatDockRef = useRef();
   const previousScrollHeight = useRef(0);
 
   useEffect(() => {
@@ -11,23 +11,23 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore, 
 
   useEffect(() => {
     if (loadingMore) {
-      previousScrollHeight.current = chatWindowRef.current.scrollHeight;
+      previousScrollHeight.current = ChatDockRef.current.scrollHeight;
     } else if (previousScrollHeight.current > 0) {
-      const newScrollHeight = chatWindowRef.current.scrollHeight;
-      chatWindowRef.current.scrollTop += newScrollHeight - previousScrollHeight.current;
+      const newScrollHeight = ChatDockRef.current.scrollHeight;
+      ChatDockRef.current.scrollTop += newScrollHeight - previousScrollHeight.current;
       previousScrollHeight.current = 0;
     }
   }, [loadingMore, messages.length]);
 
   useEffect(() => {
     const handleScroll = () => {
-      //console.log('Scroll top:', chatWindowRef.current.scrollTop);
-      if (chatWindowRef.current && chatWindowRef.current.scrollTop === 0 && onLoadMore && !loadingMore) {
+      //console.log('Scroll top:', ChatDockRef.current.scrollTop);
+      if (ChatDockRef.current && ChatDockRef.current.scrollTop === 0 && onLoadMore && !loadingMore) {
         console.log('Loading more messages');
         onLoadMore();
       }
     };
-    const element = chatWindowRef.current;
+    const element = ChatDockRef.current;
     if (element) {
       element.addEventListener('scroll', handleScroll);
       return () => element.removeEventListener('scroll', handleScroll);
@@ -42,7 +42,7 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore, 
       </div>
     </div>
   );
- const chatWindowStyle = isPopup
+ const ChatDockStyle = isPopup
     ? {
         height: '375px',
         overflowY: 'auto',
@@ -60,7 +60,7 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore, 
         flexDirection: 'column',
       };
   return (
-    <div ref={chatWindowRef} style={chatWindowStyle}>
+    <div ref={ChatDockRef} style={ChatDockStyle}>
       {loadingMore && (
         <div className="text-center" style={{ padding: '10px' }}>
           <div className="spinner-border" style={{ color: '#2ECCB6', width: '20px', height: '20px' }} role="status">
@@ -80,11 +80,10 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore, 
       <div style={{ paddingBottom: '16px' }}>
         {(() => {
           const currentUser = JSON.parse(localStorage.getItem('user'));
-           const sortedMessages = [...messages].sort((a, b) => new Date(a.sentAt) - new Date(b.sentAt));
+          const sortedMessages = [...messages].sort((a, b) => new Date(a.sentAt) - new Date(b.sentAt));
           return sortedMessages.map(msg => {
             const isMine = msg.senderId === currentUser?.userId;
-            const isReceptionistOther = msg.senderRoleName === 'Receptionist' && !isMine;
-            const isRightSide = isMine || isReceptionistOther;
+            const isRightSide = msg.senderRoleName === 'Patient';
             return (
               <div key={msg.messageId} style={{ marginBottom: '16px', display: 'flex', justifyContent: isRightSide ? 'flex-end' : 'flex-start' }}>
                 {!isRightSide && (
@@ -106,8 +105,8 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore, 
                 )}
                 <div style={{
                   maxWidth: '60%',
-                  background: isMine ? '#2ECCB6' : isReceptionistOther ? '#ffeaa7' : '#ffffff',
-                  color: isMine ? '#ffffff' : '#333',
+                  background: isRightSide ? '#2ECCB6' : '#ffffff',
+                  color: isRightSide ? '#ffffff' : '#333',
                   padding: '12px 16px',
                   borderRadius: isRightSide ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
                   boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
@@ -126,11 +125,11 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore, 
                     width: '36px',
                     height: '36px',
                     borderRadius: '50%',
-                    background: isMine ? '#2ECCB6' : '#ddd',
+                    background: '#2ECCB6',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: isMine ? '#fff' : '#666',
+                    color: '#fff',
                     fontSize: '16px',
                     marginLeft: '8px',
                     marginTop: 'auto'
@@ -153,4 +152,4 @@ const ChatWindow = ({ conversation, messages, loading, onLoadMore, loadingMore, 
   );
 };
 
-export default ChatWindow;
+export default ChatDock;
