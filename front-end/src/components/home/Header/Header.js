@@ -32,7 +32,9 @@ export default function Header() {
         const data = await res.json();
         if (data.success) {
           setNotifications(data.notifications || []);
-          const unread = (data.notifications || []).filter((n) => !n.isRead).length;
+          const unread = (data.notifications || []).filter(
+            (n) => !n.isRead
+          ).length;
           setUnreadCount(unread);
         }
       } catch (err) {
@@ -99,7 +101,9 @@ export default function Header() {
     ? notifications.filter((n) => !n.isRead)
     : notifications;
 
-  const notisToShow = showAllNotis ? displayedNotis : displayedNotis.slice(0, 5);
+  const notisToShow = showAllNotis
+    ? displayedNotis
+    : displayedNotis.slice(0, 5);
 
   // User Dropdown JSX
   const renderUserDropdown = () => {
@@ -121,78 +125,84 @@ export default function Header() {
         >
           Xin chào, {user.fullName}
         </button>
-        {dropdownOpen && (            
-        <ul
-          className="dropdown-menu dropdown-menu-end shadow-sm"
-          aria-labelledby="dropdownMenuButton"
-        >
-          {user.roleName === "Patient" && (
-            <>
-              <li>
-                <button
-                  className="dropdown-item"
-                  onClick={() => navigate("/appointment/me")}
-                >
-                  Lịch hẹn của tôi
-                </button>
-              </li>
-              <li>
-                <button
-                  className="dropdown-item"
-                  onClick={() => navigate("/medical-record")}
-                >
-                  Hồ sơ khám bệnh
-                </button>
-              </li>
-              <li>
-                <hr className="dropdown-divider" />
-              </li>
-              <li>
-                <button
-                  className="dropdown-item"
-                  onClick={() => navigate("/invoice/me")}
-                >
-                  Hóa đơn của tôi
-                </button>
-              </li>
-              <li>
-                <hr className="dropdown-divider" />
-              </li>
-              <li>
-                <button
-                  className="dropdown-item"
-                  onClick={() => navigate("/payments/me")}
-                >
-                  Thanh toán của tôi
-                </button>
-              </li>
-            </>
-          )}
-          <li>
-            <button
-              className="dropdown-item"
-              onClick={() => navigate("/profile")}
-            >
-              Hồ sơ cá nhân
-            </button>
-          </li>
-          <li>
-            <button
-              className="dropdown-item"
-              onClick={() => navigate("/change-password")}
-            >
-              Đổi mật khẩu
-            </button>
-          </li>
-          <li>
-            <button
-              className="dropdown-item text-danger"
-              onClick={handleLogout}
-            >
-              Đăng xuất
-            </button>
-          </li>
-        </ul>
+        {dropdownOpen && (
+          <ul
+            className="dropdown-menu shadow-sm"
+            style={{
+              display: "block", // bắt buộc hiện khi dropdownOpen === true
+              position: "absolute", // để không bị ẩn bởi parent
+              top: "100%", // hiện ngay dưới nút
+              right: 0, // canh phải
+              zIndex: 1000, // luôn nổi trên
+            }}
+          >
+            {user.roleName === "Patient" && (
+              <>
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => navigate("/appointment/me")}
+                  >
+                    Lịch hẹn của tôi
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => navigate("/medical-record")}
+                  >
+                    Hồ sơ khám bệnh
+                  </button>
+                </li>
+                <li>
+                  <hr className="dropdown-divider" />
+                </li>
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => navigate("/invoice/me")}
+                  >
+                    Hóa đơn của tôi
+                  </button>
+                </li>
+                <li>
+                  <hr className="dropdown-divider" />
+                </li>
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => navigate("/payments/me")}
+                  >
+                    Thanh toán của tôi
+                  </button>
+                </li>
+              </>
+            )}
+            <li>
+              <button
+                className="dropdown-item"
+                onClick={() => navigate("/profile")}
+              >
+                Hồ sơ cá nhân
+              </button>
+            </li>
+            <li>
+              <button
+                className="dropdown-item"
+                onClick={() => navigate("/change-password")}
+              >
+                Đổi mật khẩu
+              </button>
+            </li>
+            <li>
+              <button
+                className="dropdown-item text-danger"
+                onClick={handleLogout}
+              >
+                Đăng xuất
+              </button>
+            </li>
+          </ul>
         )}
       </div>
     );
@@ -259,122 +269,124 @@ export default function Header() {
               >
                 Liên hệ
               </a>
-            </li> 
-          </ul>
             </li>
+          </ul>
 
-            {/* Notification */}
-            {user && (
-              <li className="nav-item position-relative ms-3">
-                <button className="btn position-relative" onClick={toggleNoti}>
-                  🔔
-                  {unreadCount > 0 && (
-                    <span
-                      className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                      style={{ fontSize: "0.7rem" }}
-                    >
-                      {unreadCount}
-                    </span>
-                  )}
-                </button>
+          {/* Notification */}
+          {user && (
+            <li className="nav-item position-relative ms-3">
+              <button className="btn position-relative" onClick={toggleNoti}>
+                <i class="bi bi-bell"></i>
+                {unreadCount > 0 && (
+                  <span
+                    className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                    style={{ fontSize: "0.7rem" }}
+                  >
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
 
-                {notiOpen && (
+              {notiOpen && (
+                <div
+                  className="shadow-lg"
+                  style={{
+                    position: "absolute",
+                    right: 0,
+                    top: "calc(100% + 5px)",
+                    width: "360px",
+                    maxHeight: "400px",
+                    overflow: "hidden",
+                    backgroundColor: "#fff",
+                    borderRadius: "12px",
+                    zIndex: 1000,
+                    border: "1px solid rgba(0,0,0,.15)",
+                  }}
+                >
+                  {/* Filter Buttons */}
+                  <div className="d-flex justify-content-between align-items-center p-2 border-bottom">
+                    <span style={{ fontWeight: 600 }}>Thông báo</span>
+                    <div>
+                      <button
+                        className={`btn btn-sm ${
+                          filterUnread ? "btn-outline-secondary" : "btn-primary"
+                        } me-1`}
+                        onClick={() => setFilterUnread(false)}
+                      >
+                        Tất cả
+                      </button>
+                      <button
+                        className={`btn btn-sm ${
+                          filterUnread ? "btn-primary" : "btn-outline-secondary"
+                        }`}
+                        onClick={() => setFilterUnread(true)}
+                      >
+                        Chưa đọc
+                      </button>
+                    </div>
+                  </div>
+
                   <div
-                    className="shadow-lg"
+                    className="overflow-y-auto"
                     style={{
-                      position: "absolute",
-                      right: 0,
-                      top: "calc(100% + 5px)",
-                      width: "360px",
-                      maxHeight: "400px",
-                      overflow: "hidden",
-                      backgroundColor: "#fff",
-                      borderRadius: "12px",
-                      zIndex: 1000,
-                      border: "1px solid rgba(0,0,0,.15)",
+                      maxHeight: "300px",
+                      scrollbarWidth: "thin",
+                      scrollbarColor: "rgba(0,0,0,0.2) transparent",
                     }}
                   >
-                    {/* Filter Buttons */}
-                    <div className="d-flex justify-content-between align-items-center p-2 border-bottom">
-                      <span style={{ fontWeight: 600 }}>Thông báo</span>
-                      <div>
-                        <button
-                          className={`btn btn-sm ${filterUnread ? "btn-outline-secondary" : "btn-primary"} me-1`}
-                          onClick={() => setFilterUnread(false)}
-                        >
-                          Tất cả
-                        </button>
-                        <button
-                          className={`btn btn-sm ${filterUnread ? "btn-primary" : "btn-outline-secondary"}`}
-                          onClick={() => setFilterUnread(true)}
-                        >
-                          Chưa đọc
-                        </button>
-                      </div>
-                    </div>
-
-                    <div
-                      className="overflow-y-auto"
-                      style={{
-                        maxHeight: "300px",
-                        scrollbarWidth: "thin",
-                        scrollbarColor: "rgba(0,0,0,0.2) transparent",
-                      }}
-                    >
-                      {notisToShow.length === 0 && (
-                        <div className="p-3 text-center text-muted">
-                          Không có thông báo
-                        </div>
-                      )}
-
-                      {notisToShow.map((n) => (
-                        <div
-                          key={n.id}
-                          className="p-2 border-bottom cursor-pointer"
-                          style={{
-                            backgroundColor: n.isRead ? "#fff" : "#e0f7fa",
-                            fontWeight: n.isRead ? "400" : "600",
-                          }}
-                          onClick={() => handleNotiClick(n)}
-                        >
-                          <strong>{n.title}</strong>
-                          <div className="text-sm">{n.message}</div>
-                        </div>
-                      ))}
-                    </div>
-
-                    {!showAllNotis && displayedNotis.length > 5 && (
-                      <div className="text-center p-2 border-top">
-                        <button
-                          className="btn btn-link"
-                          onClick={() => setShowAllNotis(true)}
-                        >
-                          Xem tất cả
-                        </button>
+                    {notisToShow.length === 0 && (
+                      <div className="p-3 text-center text-muted">
+                        Không có thông báo
                       </div>
                     )}
+
+                    {notisToShow.map((n) => (
+                      <div
+                        key={n.id}
+                        className="p-2 border-bottom cursor-pointer"
+                        style={{
+                          backgroundColor: n.isRead ? "#fff" : "#e0f7fa",
+                          fontWeight: n.isRead ? "400" : "600",
+                        }}
+                        onClick={() => handleNotiClick(n)}
+                      >
+                        <strong>{n.title}</strong>
+                        <div className="text-sm">{n.message}</div>
+                      </div>
+                    ))}
                   </div>
-                )}
-              </li>
-            )}
-            {!user ? (
-              <button
-                className="btn ms-3 px-4"
-                style={{
-                  borderRadius: "25px",
-                  backgroundColor: "#2ECCB6",
-                  borderColor: "#2ECCB6",
-                  color: "#fff",
-                  fontWeight: 500,
-                }}
-                onClick={() => navigate("/signin")}
-              >
-                Đăng nhập
-              </button>
-            ) : (
-              renderUserDropdown()
-            )}
-          </ul>
+
+                  {!showAllNotis && displayedNotis.length > 5 && (
+                    <div className="text-center p-2 border-top">
+                      <button
+                        className="btn btn-link"
+                        onClick={() => setShowAllNotis(true)}
+                      >
+                        Xem tất cả
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </li>
+          )}
+          {!user ? (
+            <button
+              className="btn ms-3 px-4"
+              style={{
+                borderRadius: "25px",
+                backgroundColor: "#2ECCB6",
+                borderColor: "#2ECCB6",
+                color: "#fff",
+                fontWeight: 500,
+              }}
+              onClick={() => navigate("/signin")}
+            >
+              Đăng nhập
+            </button>
+          ) : (
+            renderUserDropdown()
+          )}
         </div>
       </div>
     </nav>

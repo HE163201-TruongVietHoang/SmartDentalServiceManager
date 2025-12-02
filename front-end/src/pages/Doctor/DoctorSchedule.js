@@ -147,9 +147,12 @@ export default function DoctorSchedule({ doctorId }) {
               key={calendarKey} // 🔹 dùng key
               plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
               initialView="timeGridWeek"
-              height={500}
+              height={650}
               contentHeight={450}
               aspectRatio={1.5}
+              allDaySlot={false} // 🔹 Ẩn all-day row hoàn toàn
+              slotMinTime="00:00:00" // bắt đầu từ 0h
+              slotMaxTime="24:00:00"
               headerToolbar={{
                 left: "prev,next today",
                 center: "title",
@@ -162,7 +165,8 @@ export default function DoctorSchedule({ doctorId }) {
                 day: "Ngày",
               }}
               locale="vi" // chuyển sang tiếng Việt
-              dayHeaderFormat={{ weekday: "short" }} // 🔹 rút gọn tên thứ
+              dayHeaderFormat={{ weekday: "long" }} //
+              titleFormat={{ year: "numeric", month: "long", day: "numeric" }}
               events={events}
               eventClick={handleEventClick}
               dayMaxEvents={2}

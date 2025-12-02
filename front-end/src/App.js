@@ -74,8 +74,6 @@ import InvoiceDetailPage from "./pages/Patient/InvoiceDetailPage";
 import StatisticsPage from "./pages/ClinicManager/StatisticsPage";
 import DashboardPage from "./pages/ClinicManager/DashboardPage";
 import MyInvoice from "./pages/Patient/MyInvoice";
-import ServicesPage from "./pages/Hone/Service";
-import ServiceDetail from "./pages/Hone/ServiceDeatil";
 import Contact from "./pages/Home/Contact";
 import PaymentList from "./pages/ClinicManager/PaymentList";
 import MyPayments from "./pages/Patient/MyPayments";
