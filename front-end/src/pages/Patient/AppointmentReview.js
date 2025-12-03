@@ -4,6 +4,7 @@ import Header from "../../components/home/Header/Header";
 import Footer from "../../components/home/Footer/Footer";
 import DoctorRating from "../../components/doctor/DoctorRating";
 import ServiceRating from "../../components/service/ServiceRating";
+import { toast } from "react-toastify";
 
 export default function AppointmentReview() {
   const { appointmentId } = useParams();
@@ -31,7 +32,7 @@ export default function AppointmentReview() {
         if (!res.ok) throw new Error("Không thể tải thông tin lịch hẹn");
 
         const data = await res.json();
-        
+
         // Xử lý response theo cấu trúc { success: true, appointment: {...} }
         if (data.success && data.appointment) {
           setAppointment(data.appointment);
@@ -41,7 +42,7 @@ export default function AppointmentReview() {
         }
       } catch (err) {
         console.error(err);
-        alert("Không thể tải thông tin lịch hẹn!");
+        toast.error("Không thể tải thông tin lịch hẹn!");
         navigate("/appointment/me");
       } finally {
         setLoading(false);
@@ -97,9 +98,7 @@ export default function AppointmentReview() {
           >
             {/* Header */}
             <div className="text-center mb-4">
-              <h2 className="text-primary fw-bold">
-                📋 Đánh giá cuộc hẹn
-              </h2>
+              <h2 className="text-primary fw-bold">📋 Đánh giá cuộc hẹn</h2>
               <p className="text-muted">
                 Chia sẻ trải nghiệm của bạn để giúp cải thiện chất lượng dịch vụ
               </p>
@@ -114,9 +113,7 @@ export default function AppointmentReview() {
                 border: "2px solid #2ECCB6",
               }}
             >
-              <h5 className="mb-3 text-primary">
-                🗓️ Thông tin cuộc hẹn
-              </h5>
+              <h5 className="mb-3 text-primary">🗓️ Thông tin cuộc hẹn</h5>
               <div className="row">
                 <div className="col-md-6 mb-2">
                   <p className="mb-2">
@@ -132,13 +129,13 @@ export default function AppointmentReview() {
                 </div>
                 <div className="col-md-6 mb-2">
                   <p className="mb-2">
-                    <strong>🕐 Khung giờ:</strong>{" "}
-                    {appointment.startTime} - {appointment.endTime}
+                    <strong>🕐 Khung giờ:</strong> {appointment.startTime} -{" "}
+                    {appointment.endTime}
                   </p>
                   <p className="mb-2">
                     <strong>💊 Dịch vụ:</strong>{" "}
-                    {services.length > 0 
-                      ? services.map(s => s.serviceName).join(", ") 
+                    {services.length > 0
+                      ? services.map((s) => s.serviceName).join(", ")
                       : "Không rõ"}
                   </p>
                 </div>
@@ -154,34 +151,40 @@ export default function AppointmentReview() {
                 border: "1px solid #dee2e6",
               }}
             >
-              <DoctorRating doctorId={doctorId} appointmentId={parseInt(appointmentId)} patientId={appointment.patientId} />
+              <DoctorRating
+                doctorId={doctorId}
+                appointmentId={parseInt(appointmentId)}
+                patientId={appointment.patientId}
+              />
             </div>
 
             {/* Đánh giá dịch vụ - hiển thị cho từng dịch vụ */}
-            {services.length > 0 && services.map((service, index) => (
-              <div
-                key={service.serviceId || index}
-                className="mb-4 p-4"
-                style={{
-                  backgroundColor: "#fff",
-                  borderRadius: "15px",
-                  border: "1px solid #dee2e6",
-                }}
-              >
-                <div className="mb-3">
-                  <h5 className="text-primary mb-2">
-                    💊 Đánh giá dịch vụ: <span className="fw-bold">{service.serviceName}</span>
-                  </h5>
-                  <p className="text-muted small mb-0">
-                    {service.serviceDescription}
-                  </p>
+            {services.length > 0 &&
+              services.map((service, index) => (
+                <div
+                  key={service.serviceId || index}
+                  className="mb-4 p-4"
+                  style={{
+                    backgroundColor: "#fff",
+                    borderRadius: "15px",
+                    border: "1px solid #dee2e6",
+                  }}
+                >
+                  <div className="mb-3">
+                    <h5 className="text-primary mb-2">
+                      💊 Đánh giá dịch vụ:{" "}
+                      <span className="fw-bold">{service.serviceName}</span>
+                    </h5>
+                    <p className="text-muted small mb-0">
+                      {service.serviceDescription}
+                    </p>
+                  </div>
+                  <ServiceRating
+                    serviceId={service.serviceId}
+                    appointmentId={parseInt(appointmentId)}
+                  />
                 </div>
-                <ServiceRating 
-                  serviceId={service.serviceId} 
-                  appointmentId={parseInt(appointmentId)} 
-                />
-              </div>
-            ))}
+              ))}
 
             {/* Nút quay lại */}
             <div className="text-center mt-4">
@@ -202,7 +205,8 @@ export default function AppointmentReview() {
             {/* Note nhỏ */}
             <div className="text-center mt-3">
               <small className="text-muted">
-                💡 Bạn có thể quay lại trang này bất cứ lúc nào để chỉnh sửa đánh giá
+                💡 Bạn có thể quay lại trang này bất cứ lúc nào để chỉnh sửa
+                đánh giá
               </small>
             </div>
           </div>

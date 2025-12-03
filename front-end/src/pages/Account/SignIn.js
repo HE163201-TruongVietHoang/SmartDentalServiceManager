@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Header from "../../components/home/Header/Header";
 import Footer from "../../components/home/Footer/Footer";
+import { toast } from "react-toastify";
 
 function SignIn() {
   const [identifier, setIdentifier] = useState(""); // email hoặc SĐT
@@ -58,11 +59,11 @@ function SignIn() {
             navigate("/");
         }
       } else {
-        alert(data.error || "Đăng nhập thất bại!");
+        toast.error(data.error || "Đăng nhập thất bại!");
       }
     } catch (error) {
       console.error("❌ Lỗi kết nối:", error);
-      alert("Không thể kết nối đến máy chủ!");
+      toast.error("Không thể kết nối đến máy chủ!");
     }
   };
 

@@ -9,6 +9,7 @@ import {
   FaCamera,
 } from "react-icons/fa";
 import Header from "../../components/home/Header/Header";
+import { toast } from "react-toastify";
 
 const API_BASE = "http://localhost:5000/api/auth";
 
@@ -47,7 +48,7 @@ export default function ProfileView() {
       });
     } catch (err) {
       console.error(err);
-      alert("Không thể tải hồ sơ");
+      toast.error("Không thể tải hồ sơ");
     }
   };
 
@@ -64,7 +65,7 @@ export default function ProfileView() {
       setDevices(updatedDevices);
     } catch (err) {
       console.error(err);
-      alert("Không thể tải danh sách thiết bị");
+      toast.error("Không thể tải danh sách thiết bị");
     } finally {
       setLoadingDevices(false);
     }
@@ -77,7 +78,7 @@ export default function ProfileView() {
         null,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert(
+      toast.warning(
         isCurrent
           ? "Đăng xuất khỏi thiết bị hiện tại"
           : "Đăng xuất thiết bị thành công"
@@ -88,7 +89,7 @@ export default function ProfileView() {
       } else fetchDevices();
     } catch (err) {
       console.error(err);
-      alert("Đăng xuất thất bại");
+      toast.error("Đăng xuất thất bại");
     }
   };
 
@@ -97,12 +98,12 @@ export default function ProfileView() {
       await axios.post(`${API_BASE}/devices/logout-all`, null, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      alert("Đăng xuất tất cả thiết bị thành công");
+      toast.success("Đăng xuất tất cả thiết bị thành công");
       localStorage.clear();
       window.location.href = "/signin";
     } catch (err) {
       console.error(err);
-      alert("Đăng xuất tất cả thất bại");
+      toast.error("Đăng xuất tất cả thất bại");
     }
   };
 
@@ -130,17 +131,17 @@ export default function ProfileView() {
 
   const handleSave = async () => {
     const error = validateForm();
-    if (error) return alert(error);
+    if (error) return toast.error(error);
     try {
       const res = await axios.put(`${API_BASE}/profile`, form, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(res.data.user || { ...user, ...form });
       setIsEditing(false);
-      alert("Cập nhật hồ sơ thành công!");
+      toast.success("Cập nhật hồ sơ thành công!");
     } catch (err) {
       console.error(err);
-      alert("Cập nhật thất bại");
+      toast.success("Cập nhật thất bại");
     }
   };
 
@@ -219,8 +220,9 @@ const AvatarSection = ({
     const file = e.target.files[0];
     if (!file) return;
     if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type))
-      return alert("Chỉ chấp nhận PNG/JPG/JPEG");
-    if (file.size > 10 * 1024 * 1024) return alert("Ảnh không vượt quá 10MB");
+      return toast.warning("Chỉ chấp nhận PNG/JPG/JPEG");
+    if (file.size > 10 * 1024 * 1024)
+      return toast.warning("Ảnh không vượt quá 10MB");
     setPreview(URL.createObjectURL(file));
     const formData = new FormData();
     formData.append("avatar", file);
@@ -234,7 +236,7 @@ const AvatarSection = ({
       setUser((prev) => ({ ...prev, avatar: res.data.avatar }));
     } catch (err) {
       console.error(err);
-      alert("Cập nhật avatar thất bại");
+      toast.error("Cập nhật avatar thất bại");
     }
   };
 

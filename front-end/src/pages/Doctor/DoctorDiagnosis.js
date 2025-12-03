@@ -1,5 +1,6 @@
 // src/components/doctor/DoctorDiagnosis.js
 import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 export default function DoctorDiagnosis() {
   const [appointments, setAppointments] = useState([]);
@@ -54,7 +55,7 @@ export default function DoctorDiagnosis() {
       const data = await fetchAPI(`/appointments`);
       setAppointments(Array.isArray(data) ? data : []);
     } catch (err) {
-      alert("Lỗi load ca khám: " + err.message);
+      toast.error("Lỗi load ca khám: " + err.message);
     }
   };
 
@@ -66,7 +67,7 @@ export default function DoctorDiagnosis() {
       const data = await res.json();
       setAllServices(data);
     } catch (err) {
-      alert("Không tải được danh sách dịch vụ!");
+      toast.error("Không tải được danh sách dịch vụ!");
     }
   };
 
@@ -78,7 +79,7 @@ export default function DoctorDiagnosis() {
       const data = await res.json();
       setMedicines(data);
     } catch (err) {
-      alert("Không tải được danh sách thuốc!");
+      toast.error("Không tải được danh sách thuốc!");
     }
   };
 
@@ -121,10 +122,10 @@ export default function DoctorDiagnosis() {
   // SUBMIT DIAGNOSIS
   // =============================
   const handleCreateDiagnosis = async () => {
-    if (!selectedAppointment) return alert("Vui lòng chọn ca khám.");
+    if (!selectedAppointment) return toast.warning("Vui lòng chọn ca khám.");
 
     if (!diagnosisResult.trim())
-      return alert("Vui lòng nhập kết luận chẩn đoán.");
+      return toast.info("Vui lòng nhập kết luận chẩn đoán.");
 
     const payload = {
       appointmentId: selectedAppointment.appointmentId,
@@ -156,10 +157,10 @@ export default function DoctorDiagnosis() {
         );
       }
 
-      alert("🎉 Hoàn tất chẩn đoán & kê đơn!");
+      toast.success("Hoàn tất chẩn đoán & kê đơn!");
       window.location.reload();
     } catch (err) {
-      alert("Lỗi: " + err.message);
+      toast.error("Lỗi: " + err.message);
     }
   };
 

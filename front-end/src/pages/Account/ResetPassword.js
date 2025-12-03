@@ -3,6 +3,7 @@ import Header from "../../components/home/Header/Header";
 import Footer from "../../components/home/Footer/Footer";
 import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 export default function ResetPassword() {
   const [step, setStep] = useState(1);
@@ -29,13 +30,13 @@ export default function ResetPassword() {
       );
       const data = await res.json();
       if (res.ok) {
-        alert("✅ Mã OTP đã được gửi đến email của bạn!");
+        toast.info("Mã OTP đã được gửi đến email của bạn!");
         setStep(2);
       } else {
-        alert("⚠️ " + (data.error || "Không thể gửi OTP, vui lòng thử lại!"));
+        toast.error(data.error || "Không thể gửi OTP, vui lòng thử lại!");
       }
     } catch {
-      alert("❌ Lỗi máy chủ hoặc không thể kết nối!");
+      toast.error("Lỗi máy chủ hoặc không thể kết nối!");
     } finally {
       setLoading(false);
     }
@@ -44,7 +45,7 @@ export default function ResetPassword() {
   const handleResetPassword = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      alert("❌ Mật khẩu xác nhận không khớp!");
+      toast.error("Mật khẩu xác nhận không khớp!");
       return;
     }
 
@@ -58,13 +59,13 @@ export default function ResetPassword() {
       const data = await res.json();
 
       if (res.ok) {
-        alert("✅ Đặt lại mật khẩu thành công!");
+        toast.success("Đặt lại mật khẩu thành công!");
         navigate("/signin");
       } else {
-        alert("⚠️ " + (data.error || "OTP sai hoặc đã hết hạn!"));
+        toast.warning(data.error || "OTP sai hoặc đã hết hạn!");
       }
     } catch {
-      alert("❌ Lỗi máy chủ hoặc không thể kết nối!");
+      toast.error("Lỗi máy chủ hoặc không thể kết nối!");
     } finally {
       setLoading(false);
     }

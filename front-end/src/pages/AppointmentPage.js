@@ -3,6 +3,8 @@ import { socket } from "../api/socket";
 import Header from "../components/home/Header/Header";
 import Footer from "../components/home/Footer/Footer";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function AppointmentPage() {
   const [doctors, setDoctors] = useState([]);
@@ -29,7 +31,7 @@ export default function AppointmentPage() {
         setDoctors(data);
       } catch (err) {
         console.error("Lỗi khi tải danh sách bác sĩ:", err);
-        alert("Không thể tải danh sách bác sĩ. Vui lòng thử lại sau!");
+        toast.error("Không thể tải danh sách bác sĩ. Vui lòng thử lại sau!");
       }
     };
     fetchDoctors();
@@ -51,23 +53,20 @@ export default function AppointmentPage() {
     return () => socket.off("slotBooked");
   }, [patientId]);
 
-  // 🔹 Hàm lấy slot trống
+  // 🔹 Hàm lấy slot
   const fetchSlots = async () => {
     if (!token) return;
     setLoading(true);
     try {
       const res = await fetch(
         `http://localhost:5000/api/appointments/slots?doctorId=${selectedDoctor}&date=${date}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       if (!res.ok) throw new Error("Không thể tải khung giờ");
-      let data = await res.json();
 
+      let data = await res.json();
       const now = new Date();
+
       data = data.map((slot) => {
         const slotDateTime = new Date(`${date}T${slot.startTime}`);
         return {
@@ -79,7 +78,7 @@ export default function AppointmentPage() {
       setSlots(data);
     } catch (err) {
       console.error("Lỗi khi lấy slot:", err);
-      alert("Không thể tải danh sách khung giờ. Vui lòng thử lại!");
+      toast.error("Không thể tải danh sách khung giờ. Vui lòng thử lại!");
     } finally {
       setLoading(false);
     }
@@ -88,12 +87,14 @@ export default function AppointmentPage() {
   // 🔹 Xử lý đặt lịch
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!patientId) {
-      alert("Bạn cần đăng nhập để đặt lịch!");
+      toast.warning("Bạn cần đăng nhập để đặt lịch!");
       return navigate("/signin");
     }
+
     if (!selectedSlot) {
-      alert("Vui lòng chọn khung giờ!");
+      toast.warning("Vui lòng chọn khung giờ!");
       return;
     }
 
@@ -122,18 +123,19 @@ export default function AppointmentPage() {
         throw { response: { status: res.status, data: errData } };
       }
 
-      alert("🎉 Đặt lịch thành công!");
+      toast.success("Đặt lịch thành công!");
       setReason("");
       setSelectedSlot(null);
-      fetchSlots(); // refresh slots
+      fetchSlots();
     } catch (err) {
       console.error(err);
+
       if (err.response?.status === 401) {
-        alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+        toast.warning("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
         localStorage.removeItem("token");
         navigate("/signin");
       } else {
-        alert(err.response?.data?.message || "Lỗi khi đặt lịch!");
+        toast.error(err.response?.data?.message || "Lỗi khi đặt lịch!");
       }
     } finally {
       setLoading(false);
@@ -143,6 +145,7 @@ export default function AppointmentPage() {
   return (
     <div>
       <Header />
+
       <section className="py-5" style={{ backgroundColor: "#f7fdfc" }}>
         <div className="container">
           <div
@@ -150,7 +153,7 @@ export default function AppointmentPage() {
             style={{ maxWidth: "700px", borderRadius: "20px" }}
           >
             <h4
-              className="fw-bold mb-4 text-center "
+              className="fw-bold mb-4 text-center"
               style={{ color: "#2ECCB6" }}
             >
               Đặt lịch khám
@@ -246,7 +249,7 @@ export default function AppointmentPage() {
                 </select>
               </div>
 
-              {/* Nút */}
+              {/* Nút submit */}
               <div className="text-center">
                 <button
                   type="submit"
@@ -261,6 +264,7 @@ export default function AppointmentPage() {
           </div>
         </div>
       </section>
+
       <Footer />
     </div>
   );

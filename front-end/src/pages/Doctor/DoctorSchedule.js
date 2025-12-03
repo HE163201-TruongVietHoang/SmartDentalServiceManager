@@ -5,6 +5,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { parse } from "date-fns";
 import "./doctor-schedule-calendar.css";
+import { toast } from "react-toastify";
 
 export default function DoctorSchedule({ doctorId }) {
   const [events, setEvents] = useState([]);
@@ -425,7 +426,7 @@ export default function DoctorSchedule({ doctorId }) {
 
                     const data = await response.json();
                     if (response.ok) {
-                      alert("✅ Đã hủy yêu cầu lịch thành công");
+                      toast.success("Đã hủy yêu cầu lịch thành công");
                       setShowCancelModal(false);
                       setPendingScheduleId(null);
 
@@ -439,11 +440,11 @@ export default function DoctorSchedule({ doctorId }) {
                       // 🔹 Force FullCalendar rerender
                       setCalendarKey((prev) => prev + 1);
                     } else {
-                      alert("❌ " + data.message);
+                      toast.error("" + data.message);
                     }
                   } catch (err) {
                     console.error("Lỗi hủy request:", err);
-                    alert("❌ Lỗi server khi hủy request");
+                    toast.error("Lỗi server khi hủy request");
                   }
                 }}
               >

@@ -1,8 +1,8 @@
-
 import React, { useEffect, useState } from "react";
 import Header from "../../components/home/Header/Header";
 import Footer from "../../components/home/Footer/Footer";
-import { createPaymentUrl } from '../../api/api';
+import { createPaymentUrl } from "../../api/api";
+import { toast } from "react-toastify";
 
 const formatDate = (d) => {
   if (!d) return "";
@@ -27,7 +27,6 @@ export default function InvoiceDetailPage() {
   useEffect(() => {
     load();
   }, []);
-
 
   if (!invoice)
     return (
@@ -57,7 +56,7 @@ export default function InvoiceDetailPage() {
       body: JSON.stringify({ invoiceId }),
     });
 
-    alert("Thanh toán thành công!");
+    toast.success("Thanh toán thành công!");
     window.location.href = "/invoice/me";
   };
 
@@ -67,42 +66,60 @@ export default function InvoiceDetailPage() {
         appointmentId: header.appointmentId,
         amount: header.finalAmount,
         invoiceId: header.invoiceId,
-        bankCode: ""
+        bankCode: "",
       };
       const response = await createPaymentUrl(payload);
       if (response.success) {
         window.location.href = response.data.vnpUrl;
       } else {
-        alert('Không thể tạo URL thanh toán');
+        toast.error("Không thể tạo URL thanh toán");
       }
     } catch (err) {
-      alert('Lỗi khi thanh toán');
+      toast.error("Lỗi khi thanh toán");
     }
   };
-
 
   return (
     <div style={{ background: "#f6fbff", minHeight: "100vh" }}>
       <Header />
       <div style={{ maxWidth: 900, margin: "32px auto 0 auto", padding: 0 }}>
-        <div style={{
-          background: "#fff",
-          borderRadius: 18,
-          boxShadow: "0 4px 16px rgba(30,144,255,0.07)",
-          border: "1px solid #e3eaf3",
-          padding: "32px 18px 24px 18px",
-        }}>
-          <h2 style={{ color: "#1AA3E8", fontWeight: 700, textAlign: "center", marginBottom: 18, fontSize: 26, letterSpacing: 1 }}>HÓA ĐƠN KHÁM BỆNH #{header.invoiceId}</h2>
+        <div
+          style={{
+            background: "#fff",
+            borderRadius: 18,
+            boxShadow: "0 4px 16px rgba(30,144,255,0.07)",
+            border: "1px solid #e3eaf3",
+            padding: "32px 18px 24px 18px",
+          }}
+        >
+          <h2
+            style={{
+              color: "#1AA3E8",
+              fontWeight: 700,
+              textAlign: "center",
+              marginBottom: 18,
+              fontSize: 26,
+              letterSpacing: 1,
+            }}
+          >
+            HÓA ĐƠN KHÁM BỆNH #{header.invoiceId}
+          </h2>
           <Section title="Thông tin bệnh nhân">
             <Field label="Tên bệnh nhân" value={header.patientName} />
             <Field label="Số điện thoại" value={header.patientPhone} />
             <Field label="Bác sĩ khám" value={header.doctorName} />
             <Field label="Ngày khám" value={formatDate(header.examDate)} />
-            <Field label="Giờ khám" value={`${header.startTime} - ${header.endTime}`} />
+            <Field
+              label="Giờ khám"
+              value={`${header.startTime} - ${header.endTime}`}
+            />
           </Section>
           <Section title="Thông tin chẩn đoán">
             <Field label="Triệu chứng" value={diagnosis?.symptoms} />
-            <Field label="Kết quả chẩn đoán" value={diagnosis?.diagnosisResult} />
+            <Field
+              label="Kết quả chẩn đoán"
+              value={diagnosis?.diagnosisResult}
+            />
             <Field label="Ghi chú bác sĩ" value={diagnosis?.doctorNote} />
           </Section>
           <Section title="Dịch vụ đã sử dụng">
@@ -145,20 +162,58 @@ export default function InvoiceDetailPage() {
               </tbody>
             </table>
           </Section>
-          <div style={{ marginTop: 30, borderTop: "1px dashed #e3eaf3", paddingTop: 18 }}>
+          <div
+            style={{
+              marginTop: 30,
+              borderTop: "1px dashed #e3eaf3",
+              paddingTop: 18,
+            }}
+          >
             <div style={{ textAlign: "right", fontSize: 16, color: "#444" }}>
-              <div style={{ marginBottom: 4 }}>Tổng tiền dịch vụ: <b style={{ color: "#1AA3E8" }}>{totalServiceCost.toLocaleString()} đ</b></div>
-              <div style={{ marginBottom: 4 }}>Mã giảm giá: <b>{header.promotionCode || "Không có"}</b></div>
-              <div style={{ marginBottom: 4 }}>Giảm giá: <b style={{ color: "#28a745" }}>{(header.discountAmount || 0).toLocaleString()} đ</b></div>
-              <div style={{ fontSize: 20, color: "#E63946", fontWeight: 700, marginTop: 8 }}>Tổng thanh toán: {header.finalAmount.toLocaleString()} đ</div>
+              <div style={{ marginBottom: 4 }}>
+                Tổng tiền dịch vụ:{" "}
+                <b style={{ color: "#1AA3E8" }}>
+                  {totalServiceCost.toLocaleString()} đ
+                </b>
+              </div>
+              <div style={{ marginBottom: 4 }}>
+                Mã giảm giá: <b>{header.promotionCode || "Không có"}</b>
+              </div>
+              <div style={{ marginBottom: 4 }}>
+                Giảm giá:{" "}
+                <b style={{ color: "#28a745" }}>
+                  {(header.discountAmount || 0).toLocaleString()} đ
+                </b>
+              </div>
+              <div
+                style={{
+                  fontSize: 20,
+                  color: "#E63946",
+                  fontWeight: 700,
+                  marginTop: 8,
+                }}
+              >
+                Tổng thanh toán: {header.finalAmount.toLocaleString()} đ
+              </div>
             </div>
-            {header.status === 'Paid' ? (
-              <div style={{ textAlign: 'center', padding: '20px', background: '#d4edda', color: '#155724', borderRadius: '10px', marginTop: 22 }}>
+            {header.status === "Paid" ? (
+              <div
+                style={{
+                  textAlign: "center",
+                  padding: "20px",
+                  background: "#d4edda",
+                  color: "#155724",
+                  borderRadius: "10px",
+                  marginTop: 22,
+                }}
+              >
                 <h4>Đã thanh toán</h4>
                 <p>Hóa đơn này đã được thanh toán thành công.</p>
               </div>
             ) : (
-              <button style={btnPay} onClick={handlePayment}>Thanh toán bằng VNPay</button>
+              <button style={btnPay} onClick={handlePayment}>
+                Thanh toán bằng VNPay
+              </button>
             )}
           </div>
         </div>
@@ -201,7 +256,6 @@ function Field({ label, value }) {
     </p>
   );
 }
-
 
 const table = {
   width: "100%",

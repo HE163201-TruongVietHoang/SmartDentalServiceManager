@@ -1,5 +1,6 @@
 // src/pages/Doctor/DoctorMedicinePage.js
 import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 export default function DoctorMedicinePage() {
   const [medicines, setMedicines] = useState([]);
@@ -102,7 +103,7 @@ export default function DoctorMedicinePage() {
 
       setMedicines((prev) => prev.filter((m) => m.medicineId !== id));
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     }
   };
 
