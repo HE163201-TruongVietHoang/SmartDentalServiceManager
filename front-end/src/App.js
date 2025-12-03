@@ -7,7 +7,6 @@ import Home from "./pages/Home";
 import PatientLayout from "./pages/Patient/PatientLayout";
 import ChatPage from "./pages/ChatPage";
 
-import HomeDoctor from "./pages/HomeDoctor";
 // import Appointments from "./components/doctor/Appointments";
 // import PatientRecords from "./components/doctor/PatientRecords";
 // import Schedule from "./components/doctor/Schedule";
@@ -18,10 +17,10 @@ import HomeDoctor from "./pages/HomeDoctor";
 // import ScheduleRequest from "./components/doctor/ScheduleRequest";
 
 import ProfilePage from "./pages/profile/ProfileView";
-import ServicesPage from "./pages/Hone/Service";
-import ServiceDetail from "./pages/Hone/ServiceDeatil";
-import DoctorsPage from "./pages/Hone/DoctorsPage";
-import DoctorDetail from "./pages/Hone/DoctorDetatil";
+import ServicesPage from "./pages/Home/Service";
+import ServiceDetail from "./pages/Home/ServiceDeatil";
+import DoctorsPage from "./pages/Home/DoctorsPage";
+import DoctorDetail from "./pages/Home/DoctorDetatil";
 
 import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
 
@@ -89,7 +88,8 @@ function App() {
           <Route path="/service" element={<ServicesPage />} />
           <Route path="/service/:id" element={<ServiceDetail />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/doctor/home" element={<HomeDoctor />} />
+          <Route path="/alldoctors" element={<DoctorsPage />} />
+          <Route path="/doctor/:id" element={<DoctorDetail />} />
         </Route>
         {/* <Route path="/chat" element={<ChatPage />} /> */}
         <Route path="/profile" element={<ProfilePage />} />
@@ -347,7 +347,14 @@ function App() {
             </ReceptionistLayout>
           }
         />
-        <Route path="/receptionist/chat" element={<ChatPage />} />
+        <Route
+          path="//receptionist/chat"
+          element={
+            <ReceptionistLayout>
+              <ChatPage />
+            </ReceptionistLayout>
+          }
+        />
         {/* Route 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>

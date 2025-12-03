@@ -9,6 +9,7 @@ import { useState } from "react";
 export default function Home() {
   const navigate = useNavigate();
   const [services, setServices] = useState([]);
+  const isLoggedIn = !!localStorage.getItem("token");
 
   useEffect(() => {
     fetch("http://localhost:5000/api/services") // đổi đúng port API của bạn
@@ -43,6 +44,13 @@ export default function Home() {
                     backgroundColor: "#2ECCB6",
                     borderColor: "#2ECCB6",
                     color: "#fff",
+                    transition: "0.3s",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "#43675bff"; // màu hover
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "#2ECCB6"; // màu gốc
                   }}
                   onClick={() => {
                     const token = localStorage.getItem("token");
@@ -60,15 +68,26 @@ export default function Home() {
                   Đặt lịch ngay
                 </button>
 
-                <button
-                  className="btn btn-outline-primary btn-lg px-4"
-                  style={{
-                    borderColor: "#2ECCB6",
-                    color: "#2ECCB6",
-                  }}
-                >
-                  Tìm hiểu thêm
-                </button>
+                {!isLoggedIn && (
+                  <button
+                    className="btn btn-lg px-4"
+                    style={{
+                      borderColor: "#2ECCB6",
+                      color: "#2ECCB6",
+                      backgroundColor: "transparent",
+                      transition: "0.3s",
+                    }}
+                    onClick={() => navigate("/signup")}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "#43675bff";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                    }}
+                  >
+                    Đăng ký ngay
+                  </button>
+                )}
               </div>
             </div>
             {/* Ảnh */}
@@ -131,7 +150,7 @@ export default function Home() {
           </div>
 
           <div className="row g-4">
-            {services.slice(5, 8).map((s, index) => (
+            {services.slice(5, 8).map((s) => (
               <div key={s.serviceId} className="col-md-6 col-lg-4">
                 <div
                   className="card border-0 shadow-sm h-100 text-center p-4"
@@ -152,18 +171,20 @@ export default function Home() {
                       "0 4px 12px rgba(0,0,0,0.05)";
                   }}
                 >
-                  {/* Icon */}
-                  <div className="icon mb-3">
-                    <i
-                      className={`fas ${
-                        index % 3 === 0
-                          ? "fa-tooth"
-                          : index % 3 === 1
-                          ? "fa-teeth-open"
-                          : "fa-teeth"
-                      }`}
-                      style={{ fontSize: "40px", color: "#2ECCB6" }}
-                    ></i>
+                  {/* IMAGE */}
+                  <div className="mb-3">
+                    <img
+                      src={s.imageUrl || "https://via.placeholder.com/80"} // fallback nếu chưa có ảnh
+                      alt={s.serviceName}
+                      className="img-fluid"
+                      style={{
+                        width: "80px",
+                        height: "80px",
+                        objectFit: "cover",
+                        borderRadius: "50%",
+                        margin: "0 auto",
+                      }}
+                    />
                   </div>
 
                   {/* Name */}
@@ -171,8 +192,8 @@ export default function Home() {
 
                   {/* Description */}
                   {/* <p className="text-muted small">
-                    {s.description?.slice(0, 80)}...
-                  </p> */}
+              {s.description?.slice(0, 80)}...
+            </p> */}
                 </div>
               </div>
             ))}

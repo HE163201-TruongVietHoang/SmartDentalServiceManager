@@ -168,7 +168,7 @@ const ChatPage = () => {
   };
 
   return (
-    <div style={{ display: "flex", height: "100vh", background: "#f8f9fa" }}>
+    <div style={{ display: "flex", height: "90vh", background: "#f8f9fa" }}>
       <ChatList
         conversations={conversations}
         selectedConversation={selectedConversation}

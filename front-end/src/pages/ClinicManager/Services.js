@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { FaPlus, FaEdit, FaTrash } from "react-icons/fa";
+import { FaPlus, FaEdit, FaTrash, FaCamera } from "react-icons/fa";
 
 export default function ManagerServices() {
   const [services, setServices] = useState([]);
@@ -8,10 +8,12 @@ export default function ManagerServices() {
     serviceName: "",
     description: "",
     price: "",
+    image: null,
   });
   const [editingService, setEditingService] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const fileInputRef = useRef(null);
 
-  // 🧾 Lấy danh sách dịch vụ
   const fetchServices = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/services");
@@ -25,34 +27,57 @@ export default function ManagerServices() {
     fetchServices();
   }, []);
 
-  // ➕ Thêm mới dịch vụ
+  // --- Thêm dịch vụ mới ---
   const handleAddService = async (e) => {
     e.preventDefault();
+    const formData = new FormData();
+    formData.append("serviceName", newService.serviceName);
+    formData.append("description", newService.description);
+    formData.append("price", newService.price);
+    if (newService.image) formData.append("image", newService.image);
+
     try {
-      await axios.post("http://localhost:5000/api/services", newService);
-      setNewService({ serviceName: "", description: "", price: "" });
+      await axios.post("http://localhost:5000/api/services", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setNewService({
+        serviceName: "",
+        description: "",
+        price: "",
+        image: null,
+      });
+      setPreview(null);
       fetchServices();
     } catch (err) {
       console.error("Lỗi khi thêm dịch vụ:", err);
     }
   };
 
-  // ✏️ Cập nhật dịch vụ
+  // --- Cập nhật dịch vụ ---
   const handleUpdateService = async (e) => {
     e.preventDefault();
+    const formData = new FormData();
+    formData.append("serviceName", editingService.serviceName);
+    formData.append("description", editingService.description);
+    formData.append("price", editingService.price);
+    if (editingService.image instanceof File) {
+      formData.append("image", editingService.image);
+    }
+
     try {
       await axios.put(
         `http://localhost:5000/api/services/${editingService.serviceId}`,
-        editingService
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
       );
       setEditingService(null);
       fetchServices();
     } catch (err) {
-      console.error("Lỗi khi cập nhật:", err);
+      console.error("Lỗi khi cập nhật dịch vụ:", err);
     }
   };
 
-  // 🗑️ Xóa dịch vụ
+  // --- Xóa dịch vụ ---
   const handleDeleteService = async (id) => {
     if (window.confirm("Bạn có chắc muốn xóa dịch vụ này không?")) {
       try {
@@ -62,6 +87,34 @@ export default function ManagerServices() {
         console.error("Lỗi khi xóa:", err);
       }
     }
+  };
+
+  // --- Chọn ảnh ---
+  const handleFileChange = (e, isEdit = false) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
+      alert("Chỉ chấp nhận ảnh PNG/JPG/JPEG");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Ảnh không được vượt quá 10MB");
+      return;
+    }
+
+    setPreview(URL.createObjectURL(file));
+
+    if (isEdit) {
+      setEditingService({ ...editingService, image: file });
+    } else {
+      setNewService({ ...newService, image: file });
+    }
+  };
+
+  const triggerFileInput = (isEdit = false) => {
+    fileInputRef.current.click();
   };
 
   return (
@@ -75,8 +128,8 @@ export default function ManagerServices() {
             <FaPlus className="me-2" />
             Thêm dịch vụ mới
           </h5>
-          <div className="row g-3">
-            <div className="col-md-4">
+          <div className="row g-3 align-items-center">
+            <div className="col-md-3">
               <input
                 type="text"
                 className="form-control"
@@ -88,7 +141,7 @@ export default function ManagerServices() {
                 required
               />
             </div>
-            <div className="col-md-5">
+            <div className="col-md-4">
               <input
                 type="text"
                 className="form-control"
@@ -111,17 +164,31 @@ export default function ManagerServices() {
                 required
               />
             </div>
-            <div className="col-md-1 d-flex justify-content-center">
+            <div className="col-md-2 d-flex align-items-center gap-2">
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                ref={fileInputRef}
+                onChange={(e) => handleFileChange(e)}
+              />
               <button
-                className="btn w-100 fw-semibold"
-                style={{
-                  backgroundColor: "#d1e7dd",
-                  color: "#0f5132",
-                  border: "1px solid #bcd0c7",
-                }}
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={() => triggerFileInput()}
               >
-                Thêm
+                <FaCamera /> Ảnh
               </button>
+              {preview && (
+                <img
+                  src={preview}
+                  alt="preview"
+                  style={{ width: "50px", height: "50px", objectFit: "cover" }}
+                />
+              )}
+            </div>
+            <div className="col-md-1 d-flex justify-content-center">
+              <button className="btn btn-success w-100">Thêm</button>
             </div>
           </div>
         </form>
@@ -134,8 +201,8 @@ export default function ManagerServices() {
             <FaEdit className="me-2" />
             Chỉnh sửa dịch vụ
           </h5>
-          <div className="row g-3">
-            <div className="col-md-4">
+          <div className="row g-3 align-items-center">
+            <div className="col-md-3">
               <input
                 type="text"
                 className="form-control"
@@ -148,7 +215,7 @@ export default function ManagerServices() {
                 }
               />
             </div>
-            <div className="col-md-5">
+            <div className="col-md-4">
               <input
                 type="text"
                 className="form-control"
@@ -174,11 +241,38 @@ export default function ManagerServices() {
                 }
               />
             </div>
-            <div className="col-md-1 d-flex justify-content-center align-items-center gap-2">
-              <button className="btn btn-sm btn-primary">Lưu</button>
+            <div className="col-md-2 d-flex align-items-center gap-2">
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                ref={fileInputRef}
+                onChange={(e) => handleFileChange(e, true)}
+              />
               <button
                 type="button"
-                className="btn btn-sm btn-secondary"
+                className="btn btn-outline-secondary"
+                onClick={() => triggerFileInput(true)}
+              >
+                <FaCamera /> Ảnh
+              </button>
+              {editingService.image && (
+                <img
+                  src={
+                    editingService.image instanceof File
+                      ? URL.createObjectURL(editingService.image)
+                      : editingService.image
+                  }
+                  alt="preview"
+                  style={{ width: "50px", height: "50px", objectFit: "cover" }}
+                />
+              )}
+            </div>
+            <div className="col-md-1 d-flex justify-content-center gap-1">
+              <button className="btn btn-primary">Lưu</button>
+              <button
+                type="button"
+                className="btn btn-secondary"
                 onClick={() => setEditingService(null)}
               >
                 Hủy
@@ -194,6 +288,7 @@ export default function ManagerServices() {
           <thead className="table-success">
             <tr>
               <th>ID</th>
+              <th>Ảnh</th>
               <th>Tên dịch vụ</th>
               <th>Mô tả</th>
               <th>Giá</th>
@@ -205,6 +300,19 @@ export default function ManagerServices() {
             {services.map((s) => (
               <tr key={s.serviceId}>
                 <td>{s.serviceId}</td>
+                <td>
+                  {s.image && (
+                    <img
+                      src={s.image}
+                      alt="service"
+                      style={{
+                        width: "50px",
+                        height: "50px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  )}
+                </td>
                 <td>{s.serviceName}</td>
                 <td>{s.description}</td>
                 <td>{Number(s.price).toLocaleString("vi-VN")} ₫</td>
