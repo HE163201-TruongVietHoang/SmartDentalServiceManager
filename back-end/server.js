@@ -5,6 +5,7 @@ const db = require("./config/db");
 const cookieParser = require("cookie-parser");
 const cron = require("node-cron");
 const { appointmentService } = require("./services/appointmentService");
+const promotionService = require("./services/promotionService");
 const authRoutes = require("./routes/authRoutes");
 const chatRoutes = require("./routes/chatRoutes");
 const ratingRoutes = require("./routes/ratingRoutes");
@@ -65,6 +66,10 @@ app.use("/api/notifications", notificationRoutes);
 cron.schedule("*/30 * * * *", async () => {
   console.log("Running auto-cancel job...");
   await appointmentService.autoCancelNoShow(initSocket);
+});
+cron.schedule("0 0 * * *", async () => {
+  console.log("Running deactivate expired promotions job...");
+  await promotionService.deactivateExpiredPromotions();
 });
 getPool();
 

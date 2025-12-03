@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-
-
+import { toast } from "react-toastify";
 
 export default function ServiceRating({ serviceId, appointmentId }) {
   const [rating, setRating] = useState(0);
@@ -24,7 +23,9 @@ export default function ServiceRating({ serviceId, appointmentId }) {
     async function fetchMyRating() {
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:5000/api/rating/service/${serviceId}/appointment/${appointmentId}`);
+        const res = await fetch(
+          `http://localhost:5000/api/rating/service/${serviceId}/appointment/${appointmentId}`
+        );
         if (res.ok) {
           const ratingData = await res.json();
           if (ratingData && ratingData.ratingId) {
@@ -33,13 +34,15 @@ export default function ServiceRating({ serviceId, appointmentId }) {
             setMyRatingId(ratingData.ratingId);
             setCreatedAt(ratingData.createdAt);
             setSubmitted(true);
-            
+
             // Kiểm tra xem đã quá 24 giờ chưa
             // Trừ 7 tiếng (25200000 milliseconds) để convert về múi giờ Việt Nam
-            const ratingTime = new Date(new Date(ratingData.createdAt).getTime() - 7 * 60 * 60 * 1000);
+            const ratingTime = new Date(
+              new Date(ratingData.createdAt).getTime() - 7 * 60 * 60 * 1000
+            );
             const currentTime = new Date();
             const hoursDiff = (currentTime - ratingTime) / (1000 * 60 * 60);
-            
+
             // Chỉ cho phép sửa nếu: đã qua thời gian đánh giá VÀ chưa quá 24 giờ
             setCanEdit(hoursDiff >= 0 && hoursDiff < 24);
           }
@@ -61,7 +64,7 @@ export default function ServiceRating({ serviceId, appointmentId }) {
     let token = localStorage.getItem("jwtToken");
     if (!token) token = localStorage.getItem("token");
     if (!token) {
-      alert("Bạn cần đăng nhập để đánh giá.");
+      toast.warning("Bạn cần đăng nhập để đánh giá.");
       return;
     }
     try {
@@ -79,7 +82,9 @@ export default function ServiceRating({ serviceId, appointmentId }) {
         // Lấy lại ratingId từ response nếu có
         const resData = await res.json();
         // Tải lại đánh giá
-        const getRes = await fetch(`http://localhost:5000/api/rating/service/${serviceId}/appointment/${appointmentId}`);
+        const getRes = await fetch(
+          `http://localhost:5000/api/rating/service/${serviceId}/appointment/${appointmentId}`
+        );
         if (getRes.ok) {
           const ratingData = await getRes.json();
           if (ratingData && ratingData.ratingId) {
@@ -88,10 +93,10 @@ export default function ServiceRating({ serviceId, appointmentId }) {
         }
       } else {
         const data = await res.json();
-        alert(data.error || "Lỗi gửi đánh giá");
+        toast.error(data.error || "Lỗi gửi đánh giá");
       }
     } catch (err) {
-      alert("Lỗi kết nối máy chủ");
+      toast.error("Lỗi kết nối máy chủ");
     }
   };
 
@@ -104,27 +109,30 @@ export default function ServiceRating({ serviceId, appointmentId }) {
     let token = localStorage.getItem("jwtToken");
     if (!token) token = localStorage.getItem("token");
     if (!token) {
-      alert("Bạn cần đăng nhập để sửa đánh giá.");
+      toast.warning("Bạn cần đăng nhập để sửa đánh giá.");
       return;
     }
     try {
-      const res = await fetch(`http://localhost:5000/api/rating/service/${serviceId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ rating, comment, appointmentId }),
-      });
+      const res = await fetch(
+        `http://localhost:5000/api/rating/service/${serviceId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ rating, comment, appointmentId }),
+        }
+      );
       if (res.ok) {
         setIsEditing(false);
         setSubmitted(true);
       } else {
         const data = await res.json();
-        alert(data.error || "Lỗi cập nhật đánh giá");
+        toast.error(data.error || "Lỗi cập nhật đánh giá");
       }
     } catch (err) {
-      alert("Lỗi kết nối máy chủ");
+      toast.error("Lỗi kết nối máy chủ");
     }
   };
 
@@ -133,14 +141,17 @@ export default function ServiceRating({ serviceId, appointmentId }) {
     let token = localStorage.getItem("jwtToken");
     if (!token) token = localStorage.getItem("token");
     if (!token) {
-      alert("Bạn cần đăng nhập để xóa đánh giá.");
+      toast.warning("Bạn cần đăng nhập để xóa đánh giá.");
       return;
     }
     try {
-      const res = await fetch(`http://localhost:5000/api/rating/service/${serviceId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `http://localhost:5000/api/rating/service/${serviceId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (res.ok) {
         setRating(0);
         setComment("");
@@ -148,10 +159,10 @@ export default function ServiceRating({ serviceId, appointmentId }) {
         setMyRatingId(null);
       } else {
         const data = await res.json();
-        alert(data.error || "Lỗi xóa đánh giá");
+        toast.error(data.error || "Lỗi xóa đánh giá");
       }
     } catch (err) {
-      alert("Lỗi kết nối máy chủ");
+      toast.error("Lỗi kết nối máy chủ");
     }
   };
 
@@ -186,8 +197,20 @@ export default function ServiceRating({ serviceId, appointmentId }) {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
             />
-            <button className="btn btn-primary" type="submit" disabled={rating === 0}>Lưu</button>
-            <button type="button" className="btn btn-secondary ms-2" onClick={() => setIsEditing(false)}>Hủy</button>
+            <button
+              className="btn btn-primary"
+              type="submit"
+              disabled={rating === 0}
+            >
+              Lưu
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary ms-2"
+              onClick={() => setIsEditing(false)}
+            >
+              Hủy
+            </button>
           </form>
         ) : (
           <div>
@@ -205,12 +228,16 @@ export default function ServiceRating({ serviceId, appointmentId }) {
               ))}
             </div>
             <div className="mb-2">{comment}</div>
-            <button className="btn btn-warning me-2" onClick={handleEdit}>Sửa</button>
-            <button className="btn btn-danger" onClick={handleDelete}>Xóa</button>
+            <button className="btn btn-warning me-2" onClick={handleEdit}>
+              Sửa
+            </button>
+            <button className="btn btn-danger" onClick={handleDelete}>
+              Xóa
+            </button>
           </div>
         )
       ) : submitted ? (
-        <div className="alert alert-success">Cảm ơn bạn đã đánh giá!</div>
+        <div>{toast.success("Cảm ơn bạn đã đánh giá!")}</div>
       ) : (
         <form onSubmit={handleSubmit}>
           <div style={{ fontSize: 24, marginBottom: 8 }}>

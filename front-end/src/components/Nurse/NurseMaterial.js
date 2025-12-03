@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Header from "../../components/home/Header/Header";
 import Footer from "../../components/home/Footer/Footer";
+import { toast } from "react-toastify";
 
 export default function NurseMaterialPage() {
   const [appointments, setAppointments] = useState([]);
@@ -55,7 +56,7 @@ export default function NurseMaterialPage() {
       setAllMaterials(data);
     } catch (err) {
       console.error("LỖI LOAD VẬT TƯ:", err);
-      alert("Không tải được vật tư! Mở F12 → Console để xem lỗi");
+      toast.error("Không tải được vật tư!");
       setAllMaterials([]);
     }
   };
@@ -66,7 +67,7 @@ export default function NurseMaterialPage() {
       const data = await fetchAPI("/appointments");
       setAppointments(Array.isArray(data) ? data : []);
     } catch (err) {
-      alert("Lỗi load ca khám: " + err.message);
+      toast.error("Lỗi load ca khám: " + err.message);
     }
   };
 
@@ -95,7 +96,7 @@ export default function NurseMaterialPage() {
   // =========================================
   const handleUse = async () => {
     if (!selectedAppointment || !materialId || !quantity) {
-      return alert("Chọn ca + vật tư + số lượng!");
+      return toast.info("Chọn ca + vật tư + số lượng!");
     }
     try {
       await fetchAPI("/use", "POST", {
@@ -106,17 +107,17 @@ export default function NurseMaterialPage() {
         note: note || "Lấy thủ công",
       });
       ting();
-      alert("LẤY THÀNH CÔNG!");
+      toast.success("LẤY THÀNH CÔNG!");
       resetForm();
       loadAllMaterials(); // cập nhật tồn kho ngay
     } catch (err) {
-      alert("Lỗi: " + err.message);
+      toast.error("Lỗi: " + err.message);
     }
   };
 
   const handleReturn = async () => {
     if (!selectedAppointment || !materialId || !quantity)
-      return alert("Thiếu thông tin!");
+      return toast.warning("Thiếu thông tin!");
     try {
       await fetchAPI("/return", "POST", {
         materialId: +materialId,
@@ -126,17 +127,17 @@ export default function NurseMaterialPage() {
         note: note || "Hoàn thừa",
       });
       ting();
-      alert("HOÀN THÀNH CÔNG!");
+      toast.success("HOÀN THÀNH CÔNG!");
       resetForm();
       loadAllMaterials();
     } catch (err) {
-      alert("Lỗi: " + err.message);
+      toast.error("Lỗi: " + err.message);
     }
   };
 
   const handleUsed = async () => {
     if (!selectedAppointment || !materialId || !quantity)
-      return alert("Thiếu thông tin!");
+      return toast.warning("Thiếu thông tin!");
     try {
       await fetchAPI("/used", "POST", {
         appointmentId: selectedAppointment.appointmentId,
@@ -145,17 +146,17 @@ export default function NurseMaterialPage() {
         note: note || "Thực tế",
       });
       ting();
-      alert("GHI NHẬN THÀNH CÔNG!");
+      toast.success("GHI NHẬN THÀNH CÔNG!");
       resetForm();
     } catch (err) {
-      alert("Lỗi: " + err.message);
+      toast.error("Lỗi: " + err.message);
     }
   };
 
   // LẤY TẤT CẢ THEO ĐỊNH MỨC
   const handleUseAllByStandard = async () => {
-    if (!selectedAppointment) return alert("Chọn ca trước!");
-    if (!serviceMaterials.length) return alert("Chưa có định mức!");
+    if (!selectedAppointment) return toast.info("Chọn ca trước!");
+    if (!serviceMaterials.length) return toast.warning("Chưa có định mức!");
 
     const list = serviceMaterials
       .map((m) => `• ${m.materialName}: ${m.standardQuantity} ${m.unit}`)
@@ -179,7 +180,7 @@ export default function NurseMaterialPage() {
       }
     }
     ting();
-    alert(`HOÀN TẤT!\nThành công: ${ok}\nLỗi: ${err}`);
+    toast.success(`HOÀN TẤT!\nThành công: ${ok}\nLỗi: ${err}`);
     loadAllMaterials();
   };
 

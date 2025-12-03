@@ -4,6 +4,7 @@ import Footer from "../../components/home/Footer/Footer";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 export default function SignUp() {
   const navigate = useNavigate();
@@ -30,19 +31,19 @@ export default function SignUp() {
     e.preventDefault();
 
     if (!isConfirmed) {
-      alert("❌ Vui lòng xác nhận thông tin đầy đủ và chính xác!");
+      toast.warning("Vui lòng xác nhận thông tin đầy đủ và chính xác!");
       return;
     }
     if (!formData.gender) {
-      alert("❌ Vui lòng chọn giới tính!");
+      toast.warning("Vui lòng chọn giới tính!");
       return;
     }
     if (!formData.address.trim()) {
-      alert("❌ Vui lòng nhập địa chỉ!");
+      aletoast.warningrt("Vui lòng nhập địa chỉ!");
       return;
     }
     if (formData.password !== formData.confirmPassword) {
-      alert("❌ Mật khẩu và xác nhận mật khẩu không khớp!");
+      toast.warning("Mật khẩu và xác nhận mật khẩu không khớp!");
       return;
     }
 
@@ -72,9 +73,8 @@ export default function SignUp() {
       navigate("/verify-otp");
     } catch (err) {
       console.error(err);
-      alert(
-        "❌ Lỗi đăng ký: " +
-          (err.response?.data?.error || "Vui lòng thử lại sau.")
+      toast.error(
+        "Lỗi đăng ký: " + (err.response?.data?.error || "Vui lòng thử lại sau.")
       );
     } finally {
       setLoading(false);

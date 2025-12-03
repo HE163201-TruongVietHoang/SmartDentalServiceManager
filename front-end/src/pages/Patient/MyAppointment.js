@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Header from "../../components/home/Header/Header";
 import Footer from "../../components/home/Footer/Footer";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export default function MyAppointmentsPage() {
   const [appointments, setAppointments] = useState([]);
@@ -27,11 +28,11 @@ export default function MyAppointmentsPage() {
     } catch (err) {
       console.error("Lỗi khi tải lịch hẹn:", err);
       if (err.message.includes("401")) {
-        alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+        toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
         localStorage.removeItem("token");
         navigate("/signin");
       } else {
-        alert("Không thể tải lịch hẹn. Vui lòng thử lại sau!");
+        toast.error("Không thể tải lịch hẹn. Vui lòng thử lại sau!");
       }
     } finally {
       setLoading(false);
@@ -59,7 +60,7 @@ export default function MyAppointmentsPage() {
 
       // 🔹 TH1: Token hết hạn → backend trả 401
       if (res.status === 401) {
-        alert("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
+        toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
         localStorage.removeItem("token");
         navigate("/signin");
         return;
@@ -67,7 +68,7 @@ export default function MyAppointmentsPage() {
 
       // 🔹 TH2: Tài khoản bị khóa
       if (data.code === "ACCOUNT_LOCKED") {
-        alert(data.message);
+        toast.error(data.message);
         localStorage.removeItem("token");
         localStorage.removeItem("sessionId");
         localStorage.removeItem("user");
@@ -77,16 +78,16 @@ export default function MyAppointmentsPage() {
 
       // 🔹 TH3: Hủy không được vì lý do khác
       if (!res.ok || !data.success) {
-        alert(data.message || "Không thể hủy lịch hẹn!");
+        toast.error(data.message || "Không thể hủy lịch hẹn!");
         return;
       }
 
       // 🔹 Thành công
-      alert("Hủy lịch hẹn thành công!");
+      toast.success("Hủy lịch hẹn thành công!");
       fetchAppointments();
     } catch (err) {
       console.error(err);
-      alert("Không thể hủy lịch hẹn. Vui lòng thử lại!");
+      toast.error("Không thể hủy lịch hẹn. Vui lòng thử lại!");
     }
   };
 

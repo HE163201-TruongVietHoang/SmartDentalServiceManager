@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Card, Button, Spinner, Form, Modal } from "react-bootstrap";
 import axios from "axios";
 import { FaCamera } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 export default function UserProfile({ role }) {
   const [user, setUser] = useState(null);
@@ -34,7 +35,7 @@ export default function UserProfile({ role }) {
         });
       } catch (err) {
         console.error(err);
-        alert("Không thể tải hồ sơ!");
+        toast.error("Không thể tải hồ sơ!");
       } finally {
         setLoading(false);
       }
@@ -53,10 +54,10 @@ export default function UserProfile({ role }) {
       );
       setUser(res.data.user || { ...user, ...form });
       setIsEditing(false);
-      alert("Cập nhật hồ sơ thành công!");
+      toast.success("Cập nhật hồ sơ thành công!");
     } catch (err) {
       console.error(err);
-      alert("Cập nhật hồ sơ thất bại!");
+      toast.error("Cập nhật hồ sơ thất bại!");
     }
   };
 
@@ -80,7 +81,7 @@ export default function UserProfile({ role }) {
         { oldPassword: currentPassword, newPassword },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setPasswordMessage("✅ Đổi mật khẩu thành công!");
+      setPasswordMessage("Đổi mật khẩu thành công!");
       setPasswordForm({
         currentPassword: "",
         newPassword: "",
@@ -88,7 +89,7 @@ export default function UserProfile({ role }) {
       });
     } catch (err) {
       console.error(err);
-      setPasswordMessage(`❌ ${err.response?.data?.message || err.message}`);
+      setPasswordMessage(`${err.response?.data?.message || err.message}`);
     }
   };
 
@@ -263,7 +264,7 @@ export default function UserProfile({ role }) {
           {passwordMessage && (
             <div
               className={`alert ${
-                passwordMessage.startsWith("✅")
+                passwordMessage.startsWith("")
                   ? "alert-success"
                   : "alert-danger"
               }`}

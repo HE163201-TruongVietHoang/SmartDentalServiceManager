@@ -3,6 +3,7 @@ import StaffLayout from "../stafflayout";
 import axios from "axios";
 import { Modal, Button, Form } from "react-bootstrap";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 function Service() {
   const [services, setServices] = useState([]);
@@ -30,7 +31,7 @@ function Service() {
       setServices(res.data);
     } catch (err) {
       console.error(err);
-      alert("Lỗi khi tải danh sách dịch vụ");
+      toast.error("Lỗi khi tải danh sách dịch vụ");
     }
   };
 
@@ -71,16 +72,16 @@ function Service() {
     try {
       if (editingService) {
         await axios.put(`${API_URL}/${editingService.ServiceID}`, formData);
-        alert("Cập nhật dịch vụ thành công");
+        toast.success("Cập nhật dịch vụ thành công");
       } else {
         await axios.post(API_URL, formData);
-        alert("Thêm dịch vụ thành công");
+        toast.success("Thêm dịch vụ thành công");
       }
       fetchServices();
       closeModal();
     } catch (err) {
       console.error(err);
-      alert("Có lỗi xảy ra");
+      toast.error("Có lỗi xảy ra");
     }
   };
 
@@ -88,11 +89,11 @@ function Service() {
     if (!window.confirm("Bạn có chắc muốn xóa dịch vụ này?")) return;
     try {
       await axios.delete(`${API_URL}/${id}`);
-      alert("Xóa dịch vụ thành công");
+      toast.success("Xóa dịch vụ thành công");
       fetchServices();
     } catch (err) {
       console.error(err);
-      alert("Có lỗi xảy ra");
+      toast.error("Có lỗi xảy ra");
     }
   };
 

@@ -1,10 +1,11 @@
 import React, { useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function ChangePassword() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [message, setMessage] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -12,34 +13,37 @@ export default function ChangePassword() {
     e.preventDefault();
 
     if (!currentPassword || !newPassword || !confirmPassword)
-      return setMessage("Vui lòng nhập đầy đủ thông tin.");
+      return toast.warning("Vui lòng nhập đầy đủ thông tin.");
 
     if (newPassword !== confirmPassword)
-      return setMessage("Mật khẩu xác nhận không khớp.");
+      return toast.warning("Mật khẩu xác nhận không khớp.");
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/change-password", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          oldPassword: currentPassword,
-          newPassword,
-        }),
-      });
+      const res = await fetch(
+        "http://localhost:5000/api/auth/change-password",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            oldPassword: currentPassword,
+            newPassword,
+          }),
+        }
+      );
 
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.message || "Đổi mật khẩu thất bại");
 
-      setMessage("✅ Đổi mật khẩu thành công!");
+      toast.success("Đổi mật khẩu thành công!");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     } catch (err) {
-      setMessage(`❌ ${err.message}`);
+      toast.error(`${err.message}`);
     }
   };
 
@@ -81,16 +85,6 @@ export default function ChangePassword() {
             minLength={6}
           />
         </div>
-
-        {message && (
-          <div
-            className={`alert ${
-              message.startsWith("✅") ? "alert-success" : "alert-danger"
-            }`}
-          >
-            {message}
-          </div>
-        )}
 
         <button
           type="submit"

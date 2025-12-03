@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Card, Button, Spinner, Form, Modal } from "react-bootstrap";
 import axios from "axios";
 import { FaCamera } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 export default function NurseProfile() {
   const [user, setUser] = useState(null);
@@ -34,7 +35,7 @@ export default function NurseProfile() {
         });
       } catch (err) {
         console.error(err);
-        alert("Không thể tải hồ sơ!");
+        toast.error("Không thể tải hồ sơ!");
       } finally {
         setLoading(false);
       }
@@ -54,10 +55,10 @@ export default function NurseProfile() {
       );
       setUser(res.data.user || { ...user, ...form });
       setIsEditing(false);
-      alert("Cập nhật hồ sơ thành công!");
+      toast.success("Cập nhật hồ sơ thành công!");
     } catch (err) {
       console.error(err);
-      alert("Cập nhật hồ sơ thất bại!");
+      toast.error("Cập nhật hồ sơ thất bại!");
     }
   };
 

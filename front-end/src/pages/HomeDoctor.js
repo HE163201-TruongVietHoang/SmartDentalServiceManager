@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 function HomeDoctor() {
   const navigate = useNavigate();
@@ -19,7 +20,7 @@ function HomeDoctor() {
   const handleLogout = () => {
     // Xóa dữ liệu người dùng nếu có (localStorage hoặc sessionStorage)
     localStorage.removeItem("user");
-    alert("Đăng xuất thành công!");
+    toast.success("Đăng xuất thành công!");
     navigate("/signin");
   };
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Header from "../../components/home/Header/Header";
 import Footer from "../../components/home/Footer/Footer";
+import { toast } from "react-toastify";
 
 export default function MedicalRecordPage() {
   const [records, setRecords] = useState([]);
@@ -22,7 +23,7 @@ export default function MedicalRecordPage() {
         setRecords(data.medicalRecord || []);
       } catch (err) {
         console.error("Lỗi API:", err);
-        alert("Không thể tải hồ sơ khám bệnh.");
+        toast.error("Không thể tải hồ sơ khám bệnh.");
       } finally {
         setLoading(false);
       }

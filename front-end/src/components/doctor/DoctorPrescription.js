@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 export default function DoctorPrescription() {
   const [appointments, setAppointments] = useState([]);
@@ -41,7 +42,7 @@ export default function DoctorPrescription() {
       // Bạn cần tạo API này để lấy các appointment có status = WaitingForPrescription
       setAppointments(data);
     } catch (err) {
-      alert("Lỗi load appointment: " + err.message);
+      toast.error("Lỗi load appointment: " + err.message);
     }
   };
 
@@ -54,7 +55,7 @@ export default function DoctorPrescription() {
       const data = await res.json();
       setMedicines(data);
     } catch (err) {
-      alert("Lỗi load medicines: " + err.message);
+      toast.error("Lỗi load medicines: " + err.message);
     }
   };
 
@@ -96,8 +97,8 @@ export default function DoctorPrescription() {
   // SUBMIT PRESCRIPTION
   // ======================================
   const submitPrescription = async () => {
-    if (!selectedAppointment) return alert("Chưa chọn ca khám!");
-    if (items.length === 0) return alert("Chưa thêm thuốc!");
+    if (!selectedAppointment) return toast.warning("Chưa chọn ca khám!");
+    if (items.length === 0) return toast.warning("Chưa thêm thuốc!");
 
     try {
       await fetchAPI("/prescriptions/create", "POST", {
@@ -106,12 +107,12 @@ export default function DoctorPrescription() {
         medicines: items,
       });
 
-      alert("Kê đơn thành công!");
+      toast.success("Kê đơn thành công!");
       loadAppointments();
       setSelectedAppointment(null);
       setItems([]);
     } catch (err) {
-      alert("Lỗi kê đơn: " + err.message);
+      toast.error("Lỗi kê đơn: " + err.message);
     }
   };
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Card, Button, Spinner, Form, Modal } from "react-bootstrap";
 import axios from "axios";
 import { FaCamera } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 export default function ClinicManagerProfile() {
   const [user, setUser] = useState(null);
@@ -37,7 +38,7 @@ export default function ClinicManagerProfile() {
         });
       } catch (err) {
         console.error(err);
-        alert("Không thể tải hồ sơ!");
+        toast.error("Không thể tải hồ sơ!");
       } finally {
         setLoading(false);
       }
@@ -58,10 +59,10 @@ export default function ClinicManagerProfile() {
       );
       setUser(res.data.user || { ...user, ...form });
       setIsEditing(false);
-      alert("Cập nhật hồ sơ thành công!");
+      toast.success("Cập nhật hồ sơ thành công!");
     } catch (err) {
       console.error(err);
-      alert("Cập nhật hồ sơ thất bại!");
+      toast.error("Cập nhật hồ sơ thất bại!");
     }
   };
 
@@ -73,12 +74,12 @@ export default function ClinicManagerProfile() {
     if (!file) return;
 
     if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
-      alert("Chỉ chấp nhận ảnh PNG/JPG/JPEG");
+      toast.warning("Chỉ chấp nhận ảnh PNG/JPG/JPEG");
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      alert("Ảnh không được vượt quá 10MB");
+      toast.warning("Ảnh không được vượt quá 10MB");
       return;
     }
 
@@ -100,10 +101,10 @@ export default function ClinicManagerProfile() {
         }
       );
       setUser({ ...user, avatar: res.data.avatar });
-      alert("Cập nhật avatar thành công!");
+      toast.success("Cập nhật avatar thành công!");
     } catch (err) {
       console.error(err);
-      alert("Cập nhật avatar thất bại");
+      toast.error("Cập nhật avatar thất bại");
     }
   };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-
+import { toast } from "react-toastify";
 
 export default function DoctorRating({ doctorId, appointmentId, patientId }) {
   const [rating, setRating] = useState(0);
@@ -11,22 +11,23 @@ export default function DoctorRating({ doctorId, appointmentId, patientId }) {
   const [createdAt, setCreatedAt] = useState(null);
   const [canEdit, setCanEdit] = useState(true);
 
-if (!patientId) {
-  // Lấy patientId từ localStorage
-  let user = null;
-  try {
-    user = JSON.parse(localStorage.getItem("user"));
-  } catch {}
-  patientId = user?.userId;
-}
-
+  if (!patientId) {
+    // Lấy patientId từ localStorage
+    let user = null;
+    try {
+      user = JSON.parse(localStorage.getItem("user"));
+    } catch {}
+    patientId = user?.userId;
+  }
 
   // Lấy đánh giá của bác sĩ này theo appointmentId
   useEffect(() => {
     async function fetchMyRating() {
       setLoading(true);
       try {
-        const res = await fetch(`http://localhost:5000/api/rating/doctor/${doctorId}/appointment/${appointmentId}`);
+        const res = await fetch(
+          `http://localhost:5000/api/rating/doctor/${doctorId}/appointment/${appointmentId}`
+        );
         if (res.ok) {
           const ratingData = await res.json();
           if (ratingData && ratingData.ratingId) {
@@ -35,16 +36,21 @@ if (!patientId) {
             setMyRatingId(ratingData.ratingId);
             setCreatedAt(ratingData.createdAt);
             setSubmitted(true);
-        
-            const ratingTime = new Date(new Date(ratingData.createdAt).getTime() - 7 * 60 * 60 * 1000);
+
+            const ratingTime = new Date(
+              new Date(ratingData.createdAt).getTime() - 7 * 60 * 60 * 1000
+            );
             const currentTime = new Date();
             // const minutesDiff = (currentTime - ratingTime) / (1000 * 60);
             const hoursDiff = (currentTime - ratingTime) / (1000 * 60 * 60);
-            console.log('Rating Time (after -7h):', ratingTime.toLocaleString('vi-VN'));
-            console.log('Current Time:', currentTime.toLocaleString('vi-VN'));
+            console.log(
+              "Rating Time (after -7h):",
+              ratingTime.toLocaleString("vi-VN")
+            );
+            console.log("Current Time:", currentTime.toLocaleString("vi-VN"));
             // console.log('Minutes Diff:', minutesDiff);
             // console.log('Can Edit (>= 0 and < 5):', minutesDiff >= 0 && minutesDiff < 5);
-            
+
             // setCanEdit(minutesDiff >= 0 && minutesDiff < 5);
             setCanEdit(hoursDiff >= 0 && hoursDiff < 24);
           }
@@ -66,7 +72,7 @@ if (!patientId) {
     let token = localStorage.getItem("jwtToken");
     if (!token) token = localStorage.getItem("token");
     if (!token) {
-      alert("Bạn cần đăng nhập để đánh giá.");
+      toast.warning("Bạn cần đăng nhập để đánh giá.");
       return;
     }
     try {
@@ -82,7 +88,9 @@ if (!patientId) {
         setSubmitted(true);
         setIsEditing(false);
         // Tải lại đánh giá
-        const getRes = await fetch(`http://localhost:5000/api/rating/doctor/${doctorId}/appointment/${appointmentId}`);
+        const getRes = await fetch(
+          `http://localhost:5000/api/rating/doctor/${doctorId}/appointment/${appointmentId}`
+        );
         if (getRes.ok) {
           const ratingData = await getRes.json();
           if (ratingData && ratingData.ratingId) {
@@ -91,10 +99,10 @@ if (!patientId) {
         }
       } else {
         const data = await res.json();
-        alert(data.error || "Lỗi gửi đánh giá");
+        toast.error(data.error || "Lỗi gửi đánh giá");
       }
     } catch (err) {
-      alert("Lỗi kết nối máy chủ");
+      toast.error("Lỗi kết nối máy chủ");
     }
   };
 
@@ -107,27 +115,30 @@ if (!patientId) {
     let token = localStorage.getItem("jwtToken");
     if (!token) token = localStorage.getItem("token");
     if (!token) {
-      alert("Bạn cần đăng nhập để sửa đánh giá.");
+      toast.error("Bạn cần đăng nhập để sửa đánh giá.");
       return;
     }
     try {
-      const res = await fetch(`http://localhost:5000/api/rating/doctor/${doctorId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ rating, comment, appointmentId }),
-      });
+      const res = await fetch(
+        `http://localhost:5000/api/rating/doctor/${doctorId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ rating, comment, appointmentId }),
+        }
+      );
       if (res.ok) {
         setIsEditing(false);
         setSubmitted(true);
       } else {
         const data = await res.json();
-        alert(data.error || "Lỗi cập nhật đánh giá");
+        toast.error(data.error || "Lỗi cập nhật đánh giá");
       }
     } catch (err) {
-      alert("Lỗi kết nối máy chủ");
+      toast.error("Lỗi kết nối máy chủ");
     }
   };
 
@@ -136,14 +147,17 @@ if (!patientId) {
     let token = localStorage.getItem("jwtToken");
     if (!token) token = localStorage.getItem("token");
     if (!token) {
-      alert("Bạn cần đăng nhập để xóa đánh giá.");
+      toast.warning("Bạn cần đăng nhập để xóa đánh giá.");
       return;
     }
     try {
-      const res = await fetch(`http://localhost:5000/api/rating/doctor/${doctorId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `http://localhost:5000/api/rating/doctor/${doctorId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (res.ok) {
         setRating(0);
         setComment("");
@@ -151,13 +165,13 @@ if (!patientId) {
         setMyRatingId(null);
       } else {
         const data = await res.json();
-        alert(data.error || "Lỗi xóa đánh giá");
+        toast.warning(data.error || "Lỗi xóa đánh giá");
       }
     } catch (err) {
-      alert("Lỗi kết nối máy chủ");
+      toast.error("Lỗi kết nối máy chủ");
     }
   };
-  
+
   return (
     <div style={{ marginTop: 32, marginBottom: 32 }}>
       <h5 className="fw-bold mb-2">Đánh giá bác sĩ</h5>
@@ -189,8 +203,20 @@ if (!patientId) {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
             />
-            <button className="btn btn-primary" type="submit" disabled={rating === 0}>Lưu</button>
-            <button type="button" className="btn btn-secondary ms-2" onClick={() => setIsEditing(false)}>Hủy</button>
+            <button
+              className="btn btn-primary"
+              type="submit"
+              disabled={rating === 0}
+            >
+              Lưu
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary ms-2"
+              onClick={() => setIsEditing(false)}
+            >
+              Hủy
+            </button>
           </form>
         ) : (
           <div>
@@ -210,18 +236,23 @@ if (!patientId) {
             <div className="mb-2">{comment}</div>
             {canEdit ? (
               <>
-                <button className="btn btn-warning me-2" onClick={handleEdit}>Sửa</button>
-                <button className="btn btn-danger" onClick={handleDelete}>Xóa</button>
+                <button className="btn btn-warning me-2" onClick={handleEdit}>
+                  Sửa
+                </button>
+                <button className="btn btn-danger" onClick={handleDelete}>
+                  Xóa
+                </button>
               </>
             ) : (
               <small className="text-muted d-block mt-2">
-                ⏰ Bạn chỉ có thể sửa/xóa đánh giá trong vòng 24 giờ sau khi đăng
+                ⏰ Bạn chỉ có thể sửa/xóa đánh giá trong vòng 24 giờ sau khi
+                đăng
               </small>
             )}
           </div>
         )
       ) : submitted ? (
-        <div className="alert alert-success">Cảm ơn bạn đã đánh giá!</div>
+        <div>{toast.success("Cảm ơn bạn đã đánh giá!")}</div>
       ) : (
         <form onSubmit={handleSubmit}>
           <div style={{ fontSize: 24, marginBottom: 8 }}>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 // Format date
 const formatDate = (d) => {
@@ -42,7 +43,7 @@ export default function InvoiceDetailPage() {
       body: JSON.stringify({ invoiceId }),
     });
 
-    alert("Thanh toán thành công!");
+    toast.success("Thanh toán thành công!");
     window.location.href = "/receptionist/invoices";
   };
 

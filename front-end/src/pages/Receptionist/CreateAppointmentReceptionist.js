@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 
 export default function CreateAppointmentReceptionist() {
   const [doctors, setDoctors] = useState([]);
@@ -85,7 +86,7 @@ export default function CreateAppointmentReceptionist() {
     e.preventDefault();
 
     if (!selectedSlot) {
-      alert("Vui lòng chọn khung giờ!");
+      toast.warning("Vui lòng chọn khung giờ!");
       return;
     }
 
@@ -116,7 +117,7 @@ export default function CreateAppointmentReceptionist() {
         throw new Error(result.message || "Có lỗi xảy ra!");
       }
 
-      alert("✔️ Lễ tân đặt lịch thành công!");
+      toast.success("Lễ tân đặt lịch thành công!");
       setForm({
         email: "",
         phone: "",
@@ -130,7 +131,7 @@ export default function CreateAppointmentReceptionist() {
       setSelectedSlot(null);
       setSlots([]);
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }

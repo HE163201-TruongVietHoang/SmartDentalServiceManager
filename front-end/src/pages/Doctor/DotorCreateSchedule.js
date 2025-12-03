@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export default function DoctorCreateSchedule() {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ export default function DoctorCreateSchedule() {
       setAvailability(data.result || []);
     } catch (err) {
       console.error(err);
-      alert("Lỗi khi kiểm tra phòng trống");
+      toast.error("Lỗi khi kiểm tra phòng trống");
     } finally {
       setChecking(false);
     }
@@ -54,12 +55,12 @@ export default function DoctorCreateSchedule() {
     const now = new Date();
     for (const slot of slots) {
       if (!slot.workDate || !slot.startTime || !slot.endTime) {
-        alert("Vui lòng điền đầy đủ thông tin khung giờ.");
+        toast.warning("Vui lòng điền đầy đủ thông tin khung giờ.");
         return;
       }
       const slotDateTime = new Date(`${slot.workDate}T${slot.startTime}`);
       if (slotDateTime < now) {
-        alert(
+        toast.warning(
           `Khung giờ ${slot.workDate} ${slot.startTime} đã qua. Vui lòng chọn giờ hợp lệ.`
         );
         return;
@@ -82,19 +83,19 @@ export default function DoctorCreateSchedule() {
 
       const data = await res.json();
       if (res.status === 201) {
-        alert("Gửi yêu cầu tạo lịch thành công!");
+        toast.success("Gửi yêu cầu tạo lịch thành công!");
         navigate("/doctor/schedule");
       } else if (res.status === 207) {
-        alert("Một số khung giờ đã bị đầy, vui lòng điều chỉnh.");
+        toast.warning("Một số khung giờ đã bị đầy, vui lòng điều chỉnh.");
         setAvailability(
           data.unavailable?.map((u) => ({ ...u, available: false })) || []
         );
       } else {
-        alert(data.message || "Lỗi khi gửi yêu cầu");
+        toast.error(data.message || "Lỗi khi gửi yêu cầu");
       }
     } catch (err) {
       console.error(err);
-      alert("Lỗi server khi gửi yêu cầu");
+      toast.error("Lỗi server khi gửi yêu cầu");
     } finally {
       setSubmitting(false);
     }

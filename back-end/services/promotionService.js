@@ -1,4 +1,4 @@
-const { create, getAll, getById, update, deletePromotion, getActivePromotions } = require('../access/promotionAccess');
+const { create, getAll, getById, update, deletePromotion, getActivePromotions, deactivateExpiredPromotions } = require('../access/promotionAccess');
 
 class PromotionService {
     async createPromotion(data) {
@@ -24,6 +24,10 @@ class PromotionService {
 
     async getActivePromotions() {
         return await getActivePromotions();
+    }
+
+    async deactivateExpiredPromotions() {
+        await deactivateExpiredPromotions();
     }
 
     // Logic áp dụng promotion cho invoice

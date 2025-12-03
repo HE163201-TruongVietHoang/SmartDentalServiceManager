@@ -292,106 +292,111 @@ export default function Header() {
             </li>
             {/* Notification */}
             {user && (
-              <li className="nav-item position-relative ms-3">
-                <button className="btn position-relative" onClick={toggleNoti}>
-                  🔔
-                  {unreadCount > 0 && (
-                    <span
-                      className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                      style={{ fontSize: "0.7rem" }}
-                    >
-                      {unreadCount}
-                    </span>
-                  )}
-                </button>
+              <li className="nav-item ms-1" style={{ position: "relative" }}>
+                <div className="position-relative">
+                  <button className="btn p-0" onClick={toggleNoti}>
+                    <i className="bi bi-bell-fill fs-5"></i>
 
-                {notiOpen && (
-                  <div
-                    className="shadow-lg"
-                    style={{
-                      position: "absolute",
-                      right: 0,
-                      top: "calc(100% + 5px)",
-                      width: "360px",
-                      maxHeight: "400px",
-                      overflow: "hidden",
-                      backgroundColor: "#fff",
-                      borderRadius: "12px",
-                      zIndex: 1000,
-                      border: "1px solid rgba(0,0,0,.15)",
-                    }}
-                  >
-                    {/* Filter Buttons */}
-                    <div className="d-flex justify-content-between align-items-center p-2 border-bottom">
-                      <span style={{ fontWeight: 600 }}>Thông báo</span>
-                      <div>
-                        <button
-                          className={`btn btn-sm ${
-                            filterUnread
-                              ? "btn-outline-secondary"
-                              : "btn-primary"
-                          } me-1`}
-                          onClick={() => setFilterUnread(false)}
-                        >
-                          Tất cả
-                        </button>
-                        <button
-                          className={`btn btn-sm ${
-                            filterUnread
-                              ? "btn-primary"
-                              : "btn-outline-secondary"
-                          }`}
-                          onClick={() => setFilterUnread(true)}
-                        >
-                          Chưa đọc
-                        </button>
-                      </div>
-                    </div>
+                    {unreadCount > 0 && (
+                      <span
+                        className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                        style={{ fontSize: "0.7rem" }}
+                      >
+                        {unreadCount}
+                      </span>
+                    )}
+                  </button>
 
+                  {/* <<< MOVE DROPDOWN HERE  */}
+                  {notiOpen && (
                     <div
-                      className="overflow-y-auto"
+                      className="shadow-lg"
                       style={{
-                        maxHeight: "300px",
-                        scrollbarWidth: "thin",
-                        scrollbarColor: "rgba(0,0,0,0.2) transparent",
+                        position: "absolute",
+                        right: 0,
+                        top: "120%",
+                        width: "360px",
+                        maxHeight: "400px",
+                        overflow: "hidden",
+                        backgroundColor: "#fff",
+                        borderRadius: "12px",
+                        zIndex: 1000,
+                        border: "1px solid rgba(0,0,0,.15)",
                       }}
                     >
-                      {notisToShow.length === 0 && (
-                        <div className="p-3 text-center text-muted">
-                          Không có thông báo
+                      {/* Filter Buttons */}
+                      <div className="d-flex justify-content-between align-items-center p-2 border-bottom">
+                        <span style={{ fontWeight: 600 }}>Thông báo</span>
+                        <div>
+                          <button
+                            className={`btn btn-sm ${
+                              filterUnread
+                                ? "btn-outline-secondary"
+                                : "btn-primary"
+                            } me-1`}
+                            onClick={() => setFilterUnread(false)}
+                          >
+                            Tất cả
+                          </button>
+                          <button
+                            className={`btn btn-sm ${
+                              filterUnread
+                                ? "btn-primary"
+                                : "btn-outline-secondary"
+                            }`}
+                            onClick={() => setFilterUnread(true)}
+                          >
+                            Chưa đọc
+                          </button>
+                        </div>
+                      </div>
+
+                      <div
+                        className="overflow-y-auto"
+                        style={{
+                          maxHeight: "300px",
+                          scrollbarWidth: "thin",
+                          scrollbarColor: "rgba(0,0,0,0.2) transparent",
+                        }}
+                      >
+                        {notisToShow.length === 0 && (
+                          <div className="p-3 text-center text-muted">
+                            Không có thông báo
+                          </div>
+                        )}
+
+                        {notisToShow.map((n) => (
+                          <div
+                            key={n.id}
+                            className="p-2 border-bottom cursor-pointer"
+                            style={{
+                              backgroundColor: n.isRead ? "#fff" : "#e0f7fa",
+                              fontWeight: n.isRead ? "400" : "600",
+                            }}
+                            onClick={() => handleNotiClick(n)}
+                          >
+                            <strong>{n.title}</strong>
+                            <div className="text-sm">{n.message}</div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {!showAllNotis && displayedNotis.length > 5 && (
+                        <div className="text-center p-2 border-top">
+                          <button
+                            className="btn btn-link"
+                            onClick={() => setShowAllNotis(true)}
+                          >
+                            Xem tất cả
+                          </button>
                         </div>
                       )}
-
-                      {notisToShow.map((n) => (
-                        <div
-                          key={n.id}
-                          className="p-2 border-bottom cursor-pointer"
-                          style={{
-                            backgroundColor: n.isRead ? "#fff" : "#e0f7fa",
-                            fontWeight: n.isRead ? "400" : "600",
-                          }}
-                          onClick={() => handleNotiClick(n)}
-                        >
-                          <strong>{n.title}</strong>
-                          <div className="text-sm">{n.message}</div>
-                        </div>
-                      ))}
                     </div>
-
-                    {!showAllNotis && displayedNotis.length > 5 && (
-                      <div className="text-center p-2 border-top">
-                        <button
-                          className="btn btn-link"
-                          onClick={() => setShowAllNotis(true)}
-                        >
-                          Xem tất cả
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
+                  )}
+                </div>
               </li>
             )}
+
             {!user ? (
               <li className="nav-item ms-3">
                 <button

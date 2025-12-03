@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FaEye, FaCheck, FaTimes } from "react-icons/fa";
 import { Modal, Button, Table, Spinner } from "react-bootstrap";
+import { toast } from "react-toastify";
 
 export default function ScheduleRequests() {
   const [requests, setRequests] = useState([]);
@@ -50,7 +51,7 @@ export default function ScheduleRequests() {
       }
     } catch (err) {
       console.error("Lỗi khi tải chi tiết yêu cầu:", err);
-      alert("Không thể tải chi tiết yêu cầu.");
+      toast.error("Không thể tải chi tiết yêu cầu.");
     } finally {
       setModalLoading(false);
     }
@@ -66,12 +67,12 @@ export default function ScheduleRequests() {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert("✅ Đã duyệt yêu cầu!");
+      toast.success("Đã duyệt yêu cầu!");
       setSelectedRequest(null);
       fetchRequests();
     } catch (err) {
       console.error("Lỗi khi duyệt:", err);
-      alert("Không thể duyệt yêu cầu.");
+      toast.error("Không thể duyệt yêu cầu.");
     }
   };
 
@@ -87,12 +88,12 @@ export default function ScheduleRequests() {
         { reason },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      alert("❌ Đã từ chối yêu cầu!");
+      toast.success("Đã từ chối yêu cầu!");
       setSelectedRequest(null);
       fetchRequests();
     } catch (err) {
       console.error("Lỗi khi từ chối:", err);
-      alert("Không thể từ chối yêu cầu.");
+      toast.error("Không thể từ chối yêu cầu.");
     }
   };
 

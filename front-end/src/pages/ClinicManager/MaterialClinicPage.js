@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 export default function ClinicManagerMaterialPage() {
   const [materials, setMaterials] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [usageReport, setUsageReport] = useState([]);
-  const [activeTab, setActiveTab] = useState("transactions"); // Mở luôn giao dịch để bạn thấy ngay
+  const [activeTab, setActiveTab] = useState("transactions");
 
   const token = localStorage.getItem("token");
   const userId = JSON.parse(localStorage.getItem("user") || "{}").userId;
@@ -53,7 +54,7 @@ export default function ClinicManagerMaterialPage() {
     try {
       setMaterials(await fetchAPI("/"));
     } catch (err) {
-      alert("Lỗi load vật tư: " + err.message);
+      altoast.error("Lỗi load vật tư: " + err.message);
     }
   };
 
@@ -96,7 +97,7 @@ export default function ClinicManagerMaterialPage() {
   const [note, setNote] = useState("");
 
   const handleImport = async () => {
-    if (!selId || !qty) return alert("Chọn vật tư + số lượng!");
+    if (!selId || !qty) return toast.warning("Chọn vật tư + số lượng!");
     try {
       await fetchAPI("/import", "POST", {
         materialId: +selId,
@@ -104,14 +105,14 @@ export default function ClinicManagerMaterialPage() {
         quantity: +qty,
         note: note || "Nhập kho",
       });
-      alert("NHẬP KHO THÀNH CÔNG!");
+      toast.success("NHẬP KHO THÀNH CÔNG!");
       setSelId("");
       setQty(1);
       setNote("");
       loadMaterials();
       loadTransactions();
     } catch (err) {
-      alert("Lỗi: " + err.message);
+      toast.error("Lỗi: " + err.message);
     }
   };
 
@@ -119,7 +120,7 @@ export default function ClinicManagerMaterialPage() {
   const [newMat, setNewMat] = useState({ name: "", unit: "", price: "" });
   const handleAddNew = async () => {
     if (!newMat.name || !newMat.unit || !newMat.price)
-      return alert("Nhập đủ thông tin!");
+      return toast.warning("Nhập đủ thông tin!");
     try {
       await fetchAPI("/add", "POST", {
         materialName: newMat.name,
@@ -127,17 +128,17 @@ export default function ClinicManagerMaterialPage() {
         unitPrice: +newMat.price,
         stockQuantity: 0,
       });
-      alert("THÊM MỚI THÀNH CÔNG!");
+      toast.success("THÊM MỚI THÀNH CÔNG!");
       setNewMat({ name: "", unit: "", price: "" });
       loadMaterials();
     } catch (err) {
-      alert("Lỗi: " + err.message);
+      toast.error("Lỗi: " + err.message);
     }
   };
 
   // ==================== ĐỊNH MỨC DỊCH VỤ – HÀM XỬ LÝ ====================
   const handleUpdateStandard = async (id, qty) => {
-    if (qty < 0) return alert("Số lượng không hợp lệ");
+    if (qty < 0) return toast.warning("Số lượng không hợp lệ");
     try {
       const sm = serviceMaterials.find((s) => s.id === id);
       await fetchAPI(
@@ -147,28 +148,28 @@ export default function ClinicManagerMaterialPage() {
           standardQuantity: +qty,
         }
       );
-      alert("Cập nhật thành công!");
+      toast.success("Cập nhật thành công!");
       loadServiceMaterials();
     } catch (err) {
-      alert("Lỗi: " + err.message);
+      toast.error("Lỗi: " + err.message);
     }
   };
 
   const handleAddToService = async () => {
     if (!newMaterialId || !newStandardQty)
-      return alert("Chọn vật tư + số lượng");
+      return toast.warning("Chọn vật tư + số lượng");
     try {
       await fetchAPI(`/service/${selectedService}/material`, "POST", {
         materialId: +newMaterialId,
         standardQuantity: +newStandardQty,
       });
-      alert("Thêm thành công!");
+      toast.success("Thêm thành công!");
       setShowAddModal(false);
       setNewMaterialId("");
       setNewStandardQty("");
       loadServiceMaterials();
     } catch (err) {
-      alert("Lỗi: " + err.message);
+      toast.error("Lỗi: " + err.message);
     }
   };
 
@@ -180,10 +181,10 @@ export default function ClinicManagerMaterialPage() {
         `/service/${selectedService}/material/${sm.materialId}`,
         "DELETE"
       );
-      alert("Xóa thành công!");
+      toast.success("Xóa thành công!");
       loadServiceMaterials();
     } catch (err) {
-      alert("Lỗi: " + err.message);
+      toast.error("Lỗi: " + err.message);
     }
   };
 
