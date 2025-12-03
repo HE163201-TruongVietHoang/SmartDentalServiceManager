@@ -14,13 +14,11 @@ import HomeDoctor from "./pages/HomeDoctor";
 // import DiagnosisPlan from "./components/doctor/DiagnosisPlan";
 // import TreatmentProgress from "./components/doctor/TreatmentProgress";
 // import ScheduleRequest from "./components/doctor/ScheduleRequest";
-
-import ProfilePage from "./pages/profile/ProfileView";
 import ServicesPage from "./pages/Hone/Service";
 import ServiceDetail from "./pages/Hone/ServiceDeatil";
 import DoctorsPage from "./pages/Hone/DoctorsPage";
 import DoctorDetail from "./pages/Hone/DoctorDetatil";
-
+import ProfilePage from "./pages/Profile/ProfileView";
 import ClinicManagerScheduleRequests from "./pages/ClinicManager/DoctorScheduleManager";
 
 import SignIn from "./pages/Account/SignIn";
