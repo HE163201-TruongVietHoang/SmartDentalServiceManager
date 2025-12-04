@@ -97,11 +97,56 @@ export default function ScheduleRequests() {
     }
   };
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // normalize có/dấu
+  const normalizeText = (str, removeTone = true) => {
+    if (!str) return "";
+    let text = str.toLowerCase();
+    return removeTone
+      ? text
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/đ/g, "d")
+      : text;
+  };
+
+  // lọc theo tên dịch vụ (có dấu + không dấu)
+  const filtered = requests.filter((s) => {
+    const name = s.doctorName || "";
+    return (
+      normalizeText(name).includes(normalizeText(searchTerm)) ||
+      normalizeText(name, false).includes(normalizeText(searchTerm, false))
+    );
+  });
+
+  // pagination
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const current = filtered.slice(indexOfFirst, indexOfLast);
+
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+
   return (
     <div className="container mt-4">
       <h3 className="mb-4 fw-bold text-uppercase">
         Quản lý Yêu cầu Lịch làm việc
       </h3>
+      <div className="d-flex justify-content-end mb-3">
+        <input
+          type="text"
+          className="form-control"
+          placeholder="Tìm kiếm dịch vụ..."
+          style={{ maxWidth: "300px" }}
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1); // về trang 1 sau khi search
+          }}
+        />
+      </div>
 
       {/* Bảng danh sách yêu cầu */}
       <div className="table-responsive card shadow-sm p-3 mb-4">
@@ -120,11 +165,11 @@ export default function ScheduleRequests() {
             {loading ? (
               <tr>
                 <td colSpan="6" className="text-center text-muted py-4">
-                  ⏳ Đang tải dữ liệu...
+                  Đang tải dữ liệu...
                 </td>
               </tr>
             ) : (
-              requests.map((r) => (
+              current.map((r) => (
                 <tr key={r.requestId}>
                   <td>{r.requestId}</td>
                   <td>{r.doctorName}</td>
@@ -161,6 +206,39 @@ export default function ScheduleRequests() {
             )}
           </tbody>
         </Table>
+        {totalPages > 1 && (
+          <div className="d-flex justify-content-center mt-3 gap-2">
+            <button
+              className="btn btn-outline-secondary"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
+            >
+              ←
+            </button>
+
+            {[...Array(totalPages)].map((_, i) => (
+              <button
+                key={i}
+                className={`btn ${
+                  currentPage === i + 1
+                    ? "btn-success"
+                    : "btn-outline-secondary"
+                }`}
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+
+            <button
+              className="btn btn-outline-secondary"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              →
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Modal chi tiết yêu cầu */}

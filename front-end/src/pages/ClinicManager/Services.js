@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { FaPlus, FaEdit, FaTrash, FaCamera } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 export default function ManagerServices() {
   const [services, setServices] = useState([]);
@@ -95,12 +96,12 @@ export default function ManagerServices() {
     if (!file) return;
 
     if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
-      alert("Chỉ chấp nhận ảnh PNG/JPG/JPEG");
+      toast.warning("Chỉ chấp nhận ảnh PNG/JPG/JPEG");
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
-      alert("Ảnh không được vượt quá 10MB");
+      toast.warning("Ảnh không được vượt quá 10MB");
       return;
     }
 
@@ -116,6 +117,38 @@ export default function ManagerServices() {
   const triggerFileInput = (isEdit = false) => {
     fileInputRef.current.click();
   };
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // normalize có/dấu
+  const normalizeText = (str, removeTone = true) => {
+    if (!str) return "";
+    let text = str.toLowerCase();
+    return removeTone
+      ? text
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/đ/g, "d")
+      : text;
+  };
+
+  // lọc theo tên dịch vụ (có dấu + không dấu)
+  const filteredServices = services.filter((s) => {
+    const name = s.serviceName || "";
+    return (
+      normalizeText(name).includes(normalizeText(searchTerm)) ||
+      normalizeText(name, false).includes(normalizeText(searchTerm, false))
+    );
+  });
+
+  // pagination
+  const indexOfLast = currentPage * itemsPerPage;
+  const indexOfFirst = indexOfLast - itemsPerPage;
+  const currentServices = filteredServices.slice(indexOfFirst, indexOfLast);
+
+  const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
 
   return (
     <div className="container">
@@ -281,6 +314,19 @@ export default function ManagerServices() {
           </div>
         </form>
       )}
+      <div className="d-flex justify-content-end mb-3">
+        <input
+          type="text"
+          className="form-control"
+          placeholder="Tìm kiếm dịch vụ..."
+          style={{ maxWidth: "300px" }}
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1);
+          }}
+        />
+      </div>
 
       {/* Bảng dịch vụ */}
       <div className="table-responsive card shadow-sm p-3">
@@ -297,13 +343,13 @@ export default function ManagerServices() {
             </tr>
           </thead>
           <tbody>
-            {services.map((s) => (
+            {currentServices.map((s) => (
               <tr key={s.serviceId}>
                 <td>{s.serviceId}</td>
                 <td>
-                  {s.image && (
+                  {s.imageUrl && (
                     <img
-                      src={s.image}
+                      src={s.imageUrl}
                       alt="service"
                       style={{
                         width: "50px",
@@ -335,6 +381,39 @@ export default function ManagerServices() {
             ))}
           </tbody>
         </table>
+        {totalPages > 1 && (
+          <div className="d-flex justify-content-center mt-3 gap-2">
+            <button
+              className="btn btn-outline-secondary"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(currentPage - 1)}
+            >
+              ←
+            </button>
+
+            {[...Array(totalPages)].map((_, i) => (
+              <button
+                key={i}
+                className={`btn ${
+                  currentPage === i + 1
+                    ? "btn-success"
+                    : "btn-outline-secondary"
+                }`}
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+
+            <button
+              className="btn btn-outline-secondary"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(currentPage + 1)}
+            >
+              →
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

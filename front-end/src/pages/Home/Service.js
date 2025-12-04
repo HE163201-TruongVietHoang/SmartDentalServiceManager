@@ -32,6 +32,45 @@ export default function ServicesPage() {
     }
   };
 
+  const normalizeText = (str) => {
+    return str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "D")
+      .toLowerCase();
+  };
+  const filterByPrice = (price) => {
+    if (priceFilter === "all") return true;
+
+    const value = Number(price);
+
+    switch (priceFilter) {
+      case "0-500":
+        return value <= 500000;
+      case "500-2000":
+        return value >= 500000 && value <= 2000000;
+      case "2000-5000":
+        return value >= 2000000 && value <= 5000000;
+      case "5000-20000":
+        return value >= 5000000 && value <= 20000000;
+      case "20000+":
+        return value >= 20000000;
+      default:
+        return true;
+    }
+  };
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const [priceFilter, setPriceFilter] = useState("all");
+
+  // Filter theo tên dịch vụ
+  const filteredServices = services
+    .filter((s) =>
+      normalizeText(s.serviceName).includes(normalizeText(searchTerm))
+    )
+    .filter((s) => filterByPrice(s.price));
+
   useEffect(() => {
     fetchServices();
   }, []);
@@ -49,9 +88,10 @@ export default function ServicesPage() {
   return (
     <div>
       <Header />
+
       <section className="py-5" style={{ backgroundColor: "#fff" }}>
         <div className="container-lg">
-          <div className="text-center mb-5">
+          <div className="text-center mb-3">
             <h2 className="fw-bold mb-3" style={{ color: "#2ECCB6" }}>
               Các dịch vụ tại phòng khám
             </h2>
@@ -59,6 +99,32 @@ export default function ServicesPage() {
               Chúng tôi cung cấp đầy đủ các dịch vụ nha khoa hiện đại, an toàn
               và tận tâm cho bạn và gia đình.
             </p>
+          </div>
+          <div className="mb-3 d-flex justify-content-end gap-2">
+            {/* Tìm kiếm */}
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Tìm kiếm dịch vụ..."
+              style={{ maxWidth: "300px" }}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+
+            {/* Lọc theo giá */}
+            <select
+              className="form-select"
+              style={{ maxWidth: "200px" }}
+              value={priceFilter}
+              onChange={(e) => setPriceFilter(e.target.value)}
+            >
+              <option value="all">Tất cả giá</option>
+              <option value="0-500">0 - 500k</option>
+              <option value="500-2000">500k - 2 triệu</option>
+              <option value="2000-5000">2 triệu - 5 triệu</option>
+              <option value="5000-20000">5 triệu - 20 triệu</option>
+              <option value="20000+">Trên 20 triệu</option>
+            </select>
           </div>
 
           {loading && (
@@ -84,7 +150,7 @@ export default function ServicesPage() {
                 </div>
               ) : (
                 <div className="row g-4">
-                  {services.slice(0, visibleCount).map((s) => (
+                  {filteredServices.slice(0, visibleCount).map((s) => (
                     <div key={s.serviceId} className="col-md-6 col-lg-4">
                       <div
                         className="card border-0 shadow-sm h-100 text-center p-4"
@@ -144,7 +210,7 @@ export default function ServicesPage() {
           )}
 
           {/* Load More / Collapse */}
-          {!loading && !error && services.length > 9 && (
+          {!loading && !error && filteredServices.length > 9 && (
             <div className="d-flex justify-content-center align-items-center mt-4 gap-2">
               {visibleCount < services.length && (
                 <button

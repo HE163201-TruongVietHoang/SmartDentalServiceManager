@@ -31,22 +31,68 @@ export default function DoctorsPage() {
     fetchDoctors();
   }, []);
 
+  const removeAccent = (str) =>
+    str
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/Đ/g, "D")
+      .toLowerCase();
+
+  const smartMatch = (search, text) => {
+    const rawSearch = search.trim().toLowerCase();
+    const rawText = text.toLowerCase();
+
+    if (!rawSearch) return true;
+
+    const hasAccent =
+      /[áàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵđ]/i.test(
+        rawSearch
+      );
+
+    if (hasAccent) return rawText.includes(rawSearch);
+
+    return removeAccent(rawText).includes(removeAccent(rawSearch));
+  };
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const filteredDoctors = doctors.filter((d) =>
+    smartMatch(searchTerm, d.fullName)
+  );
+
+  // PHÂN TRANG (Load More / Collapse)
   const handleLoadMore = () =>
-    setVisibleCount((prev) => Math.min(prev + 9, doctors.length));
-  const handleCollapse = () => setVisibleCount((prev) => Math.max(prev - 9, 9));
+    setVisibleCount((prev) => Math.min(prev + 9, filteredDoctors.length));
+
+  const handleCollapse = () => setVisibleCount(9);
 
   return (
     <div>
       <Header />
       <section className="py-5" style={{ backgroundColor: "#fff" }}>
         <div className="container-lg">
-          <div className="text-center mb-5">
+          <div className="text-center mb-3">
             <h2 className="fw-bold mb-3" style={{ color: "#2ECCB6" }}>
               Danh sách bác sĩ
             </h2>
             <p className="text-muted lead">
               Chọn bác sĩ phù hợp để đặt lịch khám nha khoa.
             </p>
+          </div>
+
+          <div className="mb-3 d-flex justify-content-end">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Tìm kiếm bác sĩ..."
+              style={{ maxWidth: "400px" }}
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setVisibleCount(9); // reset phân trang khi search
+              }}
+            />
           </div>
 
           {loading && (
@@ -62,13 +108,13 @@ export default function DoctorsPage() {
 
           {!loading && !error && (
             <>
-              {doctors.length === 0 ? (
+              {filteredDoctors.length === 0 ? (
                 <div className="text-center text-muted">
                   <p>Không có bác sĩ nào để hiển thị.</p>
                 </div>
               ) : (
                 <div className="row g-4">
-                  {doctors.slice(0, visibleCount).map((d) => (
+                  {filteredDoctors.slice(0, visibleCount).map((d) => (
                     <div key={d.doctorId} className="col-md-6 col-lg-4">
                       <div
                         className="card border-0 shadow-sm h-100 text-center p-4"
@@ -113,9 +159,10 @@ export default function DoctorsPage() {
             </>
           )}
 
-          {!loading && !error && doctors.length > 9 && (
+          {/* PHẦN NÚT PHÂN TRANG */}
+          {!loading && !error && filteredDoctors.length > 9 && (
             <div className="d-flex justify-content-center align-items-center mt-4 gap-2">
-              {visibleCount < doctors.length && (
+              {visibleCount < filteredDoctors.length && (
                 <button
                   className="btn btn-outline-secondary"
                   onClick={handleLoadMore}
