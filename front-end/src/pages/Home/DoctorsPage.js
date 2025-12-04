@@ -78,7 +78,7 @@ export default function DoctorsPage() {
                           transition:
                             "transform 0.3s ease, box-shadow 0.3s ease",
                         }}
-                        onClick={() => navigate(`/doctor/${d.doctorId}`)}
+                        onClick={() => navigate(`/doctor/${d.userId}`)}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.transform = "translateY(-5px)";
                           e.currentTarget.style.boxShadow =

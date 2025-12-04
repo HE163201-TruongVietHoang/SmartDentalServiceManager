@@ -11,7 +11,6 @@ export default function ServicesPage() {
   const [error, setError] = useState(null);
 
   const navigate = useNavigate();
-
   const API_URL = "http://localhost:5000/api/services";
 
   // --- Lấy dữ liệu từ backend ---
@@ -37,13 +36,10 @@ export default function ServicesPage() {
     fetchServices();
   }, []);
 
-  // --- Load More / Thu gọn ---
   const handleLoadMore = () =>
     setVisibleCount((prev) => Math.min(prev + 9, services.length));
-
   const handleCollapse = () => setVisibleCount((prev) => Math.max(prev - 9, 9));
 
-  // --- Format giá VND ---
   const formatPrice = (price) =>
     Number(price).toLocaleString("vi-VN", {
       style: "currency",
@@ -65,7 +61,6 @@ export default function ServicesPage() {
             </p>
           </div>
 
-          {/* Hiển thị khi đang tải */}
           {loading && (
             <div className="text-center my-5">
               <div className="spinner-border text-success" role="status">
@@ -75,14 +70,12 @@ export default function ServicesPage() {
             </div>
           )}
 
-          {/* Hiển thị khi lỗi */}
           {error && (
             <div className="alert alert-danger text-center" role="alert">
               {error}
             </div>
           )}
 
-          {/* Hiển thị danh sách */}
           {!loading && !error && (
             <>
               {services.length === 0 ? (
@@ -113,23 +106,32 @@ export default function ServicesPage() {
                             "0 4px 12px rgba(0,0,0,0.05)";
                         }}
                       >
-                        <div
-                          className="d-flex align-items-center justify-content-center mb-3"
-                          style={{
-                            width: "70px",
-                            height: "70px",
-                            margin: "0 auto",
-                            borderRadius: "50%",
-                            backgroundColor: "#E8FAF6",
-                          }}
-                        >
-                          <i
-                            className="fa-solid fa-tooth"
-                            style={{ color: "#2ECCB6", fontSize: "2rem" }}
-                          ></i>
+                        {/* IMAGE */}
+                        <div className="mb-3">
+                          <img
+                            src={
+                              s.imageUrl ||
+                              "https://via.placeholder.com/120?text=Service"
+                            }
+                            alt={s.serviceName}
+                            className="img-fluid"
+                            style={{
+                              width: "120px",
+                              height: "120px",
+                              objectFit: "cover",
+                              borderRadius: "15px",
+                              margin: "0 auto",
+                            }}
+                          />
                         </div>
+
+                        {/* Name */}
                         <h5 className="fw-bold mb-2">{s.serviceName}</h5>
+
+                        {/* Description */}
                         <p className="text-muted small">{s.description}</p>
+
+                        {/* Price */}
                         {s.price && (
                           <p className="fw-semibold">{formatPrice(s.price)}</p>
                         )}
@@ -141,7 +143,7 @@ export default function ServicesPage() {
             </>
           )}
 
-          {/* Nút tải thêm / thu gọn */}
+          {/* Load More / Collapse */}
           {!loading && !error && services.length > 9 && (
             <div className="d-flex justify-content-center align-items-center mt-4 gap-2">
               {visibleCount < services.length && (

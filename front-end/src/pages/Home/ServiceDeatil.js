@@ -46,15 +46,22 @@ export default function ServiceDetail() {
             border: "1px solid #f0f0f0",
           }}
         >
-          {/* Icon */}
+          {/* IMAGE */}
           <div className="text-center mb-4">
-            <i
-              className="fas fa-tooth"
+            <img
+              src={
+                service.imageUrl ||
+                "https://via.placeholder.com/120?text=Service"
+              }
+              alt={service.serviceName}
+              className="img-fluid"
               style={{
-                fontSize: "70px",
-                color: "#2ECCB6",
+                width: "150px",
+                height: "150px",
+                objectFit: "cover",
+                borderRadius: "15px",
               }}
-            ></i>
+            />
           </div>
 
           {/* Title */}
@@ -80,7 +87,7 @@ export default function ServiceDetail() {
               >
                 <h6 className="text-success mb-1">Giá dịch vụ</h6>
                 <p className="fw-bold fs-5 mb-0">
-                  {service.price.toLocaleString()} đ
+                  {service.price?.toLocaleString()} đ
                 </p>
               </div>
             </div>
@@ -109,6 +116,12 @@ export default function ServiceDetail() {
                 backgroundColor: "#2ECCB6",
                 borderColor: "#2ECCB6",
                 color: "#fff",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "#27b59b";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "#2ECCB6";
               }}
               onClick={() => {
                 const token = localStorage.getItem("token");
