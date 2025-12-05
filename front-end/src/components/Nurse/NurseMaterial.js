@@ -82,7 +82,9 @@ export default function NurseMaterialPage() {
 
     if (appointment?.serviceId) {
       try {
-        const data = await fetchAPI(`/service/${appointment.serviceId}`);
+        const data = await fetchAPI(
+          `/appointment/${appointment.appointmentId}/materials`
+        );
         setServiceMaterials(data);
       } catch {
         setServiceMaterials([]);
@@ -171,7 +173,7 @@ export default function NurseMaterialPage() {
           userId,
           appointmentId: selectedAppointment.appointmentId,
           quantity: +m.standardQuantity,
-          note: `Định mức - ${selectedAppointment.serviceName || ""}`,
+          note: `Định mức - ${selectedAppointment.serviceNames || ""}`,
         });
         ok++;
       } catch {
@@ -253,7 +255,7 @@ export default function NurseMaterialPage() {
                 {appointments.map((a) => (
                   <option key={a.appointmentId} value={a.appointmentId}>
                     #{a.appointmentId} | {a.patientName} | {a.startTime}-
-                    {a.endTime} | BS: {a.doctorName} | DV: {a.serviceName}
+                    {a.endTime} | BS: {a.doctorName} | DV: {a.serviceNames}
                   </option>
                 ))}
               </select>
