@@ -75,7 +75,9 @@ exports.createService = async (req, res) => {
 
     // Kiểm tra dữ liệu trước khi insert
     if (!serviceName || !price) {
-      return res.status(400).json({ error: "serviceName and price are required" });
+      return res
+        .status(400)
+        .json({ error: "serviceName and price are required" });
     }
 
     await pool
@@ -135,7 +137,9 @@ exports.updateService = async (req, res) => {
 
     // Kiểm tra dữ liệu trước khi insert
     if (!serviceName || !price) {
-      return res.status(400).json({ error: "serviceName and price are required" });
+      return res
+        .status(400)
+        .json({ error: "serviceName and price are required" });
     }
     await pool
       .request()
@@ -166,10 +170,37 @@ exports.updateService = async (req, res) => {
 exports.deleteService = async (req, res) => {
   try {
     const pool = await getPool();
+    const serviceId = req.params.id;
+
+    // 🔥 1. Xóa bảng DiagnosisServices
     await pool
       .request()
-      .input("serviceId", sql.Int, req.params.id)
-      .query("DELETE FROM [Services] WHERE serviceId = @serviceId");
+      .input("serviceId", sql.Int, serviceId)
+      .query("DELETE FROM DiagnosisServices WHERE serviceId = @serviceId");
+
+    // 🔥 2. Xóa bảng ServiceMaterials
+    await pool
+      .request()
+      .input("serviceId", sql.Int, serviceId)
+      .query("DELETE FROM ServiceMaterials WHERE serviceId = @serviceId");
+
+    // 🔥 3. Xóa bảng ServiceRatings
+    await pool
+      .request()
+      .input("serviceId", sql.Int, serviceId)
+      .query("DELETE FROM ServiceRatings WHERE serviceId = @serviceId");
+
+    // 🔥 4. Xóa bảng AppointmentServices
+    await pool
+      .request()
+      .input("serviceId", sql.Int, serviceId)
+      .query("DELETE FROM AppointmentServices WHERE serviceId = @serviceId");
+
+    // 🔥 5. Cuối cùng xóa bảng Services
+    await pool
+      .request()
+      .input("serviceId", sql.Int, serviceId)
+      .query("DELETE FROM Services WHERE serviceId = @serviceId");
 
     res.json({ message: "Service deleted successfully" });
   } catch (err) {

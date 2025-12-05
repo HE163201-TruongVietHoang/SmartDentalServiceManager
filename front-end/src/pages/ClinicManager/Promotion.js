@@ -1,64 +1,81 @@
-import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Table, Modal, Form, Alert, Pagination, InputGroup, FormControl } from 'react-bootstrap';
-import { getAllPromotions, createPromotion, updatePromotion, deletePromotion } from '../../api/api';
+import React, { useState, useEffect } from "react";
+import {
+  Container,
+  Row,
+  Col,
+  Card,
+  Button,
+  Table,
+  Modal,
+  Form,
+  Alert,
+  InputGroup,
+  FormControl,
+} from "react-bootstrap";
+import {
+  getAllPromotions,
+  createPromotion,
+  updatePromotion,
+  deletePromotion,
+} from "../../api/api";
 
 const Promotion = () => {
   const [promotions, setPromotions] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState(null);
   const [formData, setFormData] = useState({
-    code: '',
-    description: '',
-    discountType: 'percent',
+    code: "",
+    description: "",
+    discountType: "percent",
     discountValue: 0,
-    startDate: '',
-    endDate: '',
-    isActive: true
+    startDate: "",
+    endDate: "",
+    isActive: true,
   });
   const [errors, setErrors] = useState({});
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   // Filter states
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all'); // 'all', 'active', 'inactive'
-  const [filterType, setFilterType] = useState('all'); // 'all', 'percent', 'amount'
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterType, setFilterType] = useState("all");
 
-  // Pagination states
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
   const validateForm = () => {
     const newErrors = {};
 
-    // Validate code
     if (!formData.code.trim()) {
-      newErrors.code = 'Mã khuyến mãi không được để trống';
+      newErrors.code = "Mã khuyến mãi không được để trống";
     } else if (formData.code.length < 3) {
-      newErrors.code = 'Mã khuyến mãi phải có ít nhất 3 ký tự';
+      newErrors.code = "Mã khuyến mãi phải có ít nhất 3 ký tự";
     }
 
-    // Validate description
     if (!formData.description.trim()) {
-      newErrors.description = 'Mô tả không được để trống';
+      newErrors.description = "Mô tả không được để trống";
     } else if (formData.description.length < 10) {
-      newErrors.description = 'Mô tả phải có ít nhất 10 ký tự';
+      newErrors.description = "Mô tả phải có ít nhất 10 ký tự";
     }
 
-    // Validate discountValue
     if (!formData.discountValue || formData.discountValue <= 0) {
-      newErrors.discountValue = 'Giá trị giảm giá phải lớn hơn 0';
-    } else if (formData.discountType === 'percent' && formData.discountValue > 100) {
-      newErrors.discountValue = 'Phần trăm giảm giá không được vượt quá 100%';
+      newErrors.discountValue = "Giá trị giảm giá phải lớn hơn 0";
+    } else if (
+      formData.discountType === "percent" &&
+      formData.discountValue > 100
+    ) {
+      newErrors.discountValue = "Phần trăm giảm giá không được vượt quá 100%";
     }
 
-    // Validate dates
     if (!formData.startDate) {
-      newErrors.startDate = 'Ngày bắt đầu không được để trống';
+      newErrors.startDate = "Ngày bắt đầu không được để trống";
     }
     if (!formData.endDate) {
-      newErrors.endDate = 'Ngày kết thúc không được để trống';
+      newErrors.endDate = "Ngày kết thúc không được để trống";
     }
+
     if (formData.startDate && formData.endDate) {
       const start = new Date(formData.startDate);
       const end = new Date(formData.endDate);
@@ -66,10 +83,10 @@ const Promotion = () => {
       today.setHours(0, 0, 0, 0);
 
       if (start < today) {
-        newErrors.startDate = 'Ngày bắt đầu không được nhỏ hơn ngày hiện tại';
+        newErrors.startDate = "Ngày bắt đầu không được nhỏ hơn ngày hiện tại";
       }
       if (end <= start) {
-        newErrors.endDate = 'Ngày kết thúc phải sau ngày bắt đầu';
+        newErrors.endDate = "Ngày kết thúc phải sau ngày bắt đầu";
       }
     }
 
@@ -86,27 +103,36 @@ const Promotion = () => {
       const data = await getAllPromotions();
       setPromotions(data);
     } catch (err) {
-      setError('Không thể tải danh sách khuyến mãi');
+      setError("Không thể tải danh sách khuyến mãi");
     }
   };
 
-  // Filtered promotions
-  const filteredPromotions = promotions.filter(promotion => {
-    const matchesSearch = promotion.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          promotion.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' ||
-                          (filterStatus === 'active' && promotion.isActive) ||
-                          (filterStatus === 'inactive' && !promotion.isActive);
-    const matchesType = filterType === 'all' || promotion.discountType === filterType;
+  // Filter promotions
+  const filteredPromotions = promotions.filter((promotion) => {
+    const matchesSearch =
+      promotion.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      promotion.description.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus =
+      filterStatus === "all" ||
+      (filterStatus === "active" && promotion.isActive) ||
+      (filterStatus === "inactive" && !promotion.isActive);
+
+    const matchesType =
+      filterType === "all" || promotion.discountType === filterType;
+
     return matchesSearch && matchesStatus && matchesType;
   });
 
-  // Paginated promotions
+  // Pagination logic
   const totalPages = Math.ceil(filteredPromotions.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedPromotions = filteredPromotions.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedPromotions = filteredPromotions.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
-  // Reset to page 1 when filters change
+  // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, filterStatus, filterType]);
@@ -119,25 +145,26 @@ const Promotion = () => {
         description: promotion.description,
         discountType: promotion.discountType,
         discountValue: promotion.discountValue,
-        startDate: promotion.startDate ? promotion.startDate.split('T')[0] : '',
-        endDate: promotion.endDate ? promotion.endDate.split('T')[0] : '',
-        isActive: promotion.isActive
+        startDate: promotion.startDate?.split("T")[0],
+        endDate: promotion.endDate?.split("T")[0],
+        isActive: promotion.isActive,
       });
     } else {
       setEditingPromotion(null);
       setFormData({
-        code: '',
-        description: '',
-        discountType: 'percent',
+        code: "",
+        description: "",
+        discountType: "percent",
         discountValue: 0,
-        startDate: '',
-        endDate: '',
-        isActive: true
+        startDate: "",
+        endDate: "",
+        isActive: true,
       });
     }
+
     setShowModal(true);
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
     setErrors({});
   };
 
@@ -150,69 +177,49 @@ const Promotion = () => {
     const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     });
 
-    // Clear error for this field when user starts typing
     if (errors[name]) {
-      setErrors({
-        ...errors,
-        [name]: ''
-      });
+      setErrors({ ...errors, [name]: "" });
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     if (!validateForm()) {
-      setError('Vui lòng kiểm tra lại các trường nhập liệu');
+      setError("Vui lòng kiểm tra lại các trường nhập liệu");
       return;
     }
 
     try {
       if (editingPromotion) {
         await updatePromotion(editingPromotion.promotionId, formData);
-        setSuccess('Cập nhật khuyến mãi thành công');
+        setSuccess("Cập nhật khuyến mãi thành công");
       } else {
         await createPromotion(formData);
-        setSuccess('Thêm khuyến mãi thành công');
+        setSuccess("Thêm khuyến mãi thành công");
       }
       loadPromotions();
       handleCloseModal();
     } catch (err) {
-      setError('Có lỗi xảy ra khi lưu khuyến mãi');
+      setError("Có lỗi xảy ra khi lưu khuyến mãi");
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Bạn có chắc muốn xóa khuyến mãi này?')) {
+    if (window.confirm("Bạn có chắc muốn xóa khuyến mãi này?")) {
       try {
         await deletePromotion(id);
-        setSuccess('Xóa khuyến mãi thành công');
+        setSuccess("Xóa khuyến mãi thành công");
         loadPromotions();
       } catch (err) {
-        setError('Có lỗi xảy ra khi xóa khuyến mãi');
+        setError("Có lỗi xảy ra khi xóa khuyến mãi");
       }
     }
-  };
-
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
-  const handleStatusFilterChange = (e) => {
-    setFilterStatus(e.target.value);
-  };
-
-  const handleTypeFilterChange = (e) => {
-    setFilterType(e.target.value);
-  };
-
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
   };
 
   return (
@@ -238,19 +245,25 @@ const Promotion = () => {
             <FormControl
               placeholder="Tìm theo mã hoặc mô tả"
               value={searchTerm}
-              onChange={handleSearchChange}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </InputGroup>
         </Col>
         <Col md={4}>
-          <Form.Select value={filterStatus} onChange={handleStatusFilterChange}>
+          <Form.Select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
             <option value="all">Tất cả trạng thái</option>
             <option value="active">Hoạt động</option>
             <option value="inactive">Không hoạt động</option>
           </Form.Select>
         </Col>
         <Col md={4}>
-          <Form.Select value={filterType} onChange={handleTypeFilterChange}>
+          <Form.Select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+          >
             <option value="all">Tất cả loại</option>
             <option value="percent">Phần trăm</option>
             <option value="amount">Cố định</option>
@@ -278,11 +291,24 @@ const Promotion = () => {
                 <tr key={promotion.promotionId}>
                   <td>{promotion.code}</td>
                   <td>{promotion.description}</td>
-                  <td>{promotion.discountType === 'percent' ? 'Phần trăm' : 'Cố định'}</td>
-                  <td>{promotion.discountValue}{promotion.discountType === 'percent' ? '%' : ' VND'}</td>
-                  <td>{new Date(promotion.startDate).toLocaleDateString('vi-VN')}</td>
-                  <td>{new Date(promotion.endDate).toLocaleDateString('vi-VN')}</td>
-                  <td>{promotion.isActive ? 'Hoạt động' : 'Không hoạt động'}</td>
+                  <td>
+                    {promotion.discountType === "percent"
+                      ? "Phần trăm"
+                      : "Cố định"}
+                  </td>
+                  <td>
+                    {promotion.discountValue}
+                    {promotion.discountType === "percent" ? "%" : " VND"}
+                  </td>
+                  <td>
+                    {new Date(promotion.startDate).toLocaleDateString("vi-VN")}
+                  </td>
+                  <td>
+                    {new Date(promotion.endDate).toLocaleDateString("vi-VN")}
+                  </td>
+                  <td>
+                    {promotion.isActive ? "Hoạt động" : "Không hoạt động"}
+                  </td>
                   <td>
                     <Button
                       variant="outline-primary"
@@ -302,41 +328,63 @@ const Promotion = () => {
                   </td>
                 </tr>
               ))}
+
+              {paginatedPromotions.length === 0 && (
+                <tr>
+                  <td colSpan="8" className="text-center text-muted py-3">
+                    Không có khuyến mãi nào
+                  </td>
+                </tr>
+              )}
             </tbody>
           </Table>
         </Card.Body>
       </Card>
 
+      {/* Pagination mới */}
       {totalPages > 1 && (
-        <Row className="mt-3">
-          <Col className="d-flex justify-content-center">
-            <Pagination>
-              <Pagination.First onClick={() => handlePageChange(1)} disabled={currentPage === 1} />
-              <Pagination.Prev onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} />
-              {[...Array(totalPages)].map((_, index) => (
-                <Pagination.Item
-                  key={index + 1}
-                  active={index + 1 === currentPage}
-                  onClick={() => handlePageChange(index + 1)}
-                >
-                  {index + 1}
-                </Pagination.Item>
-              ))}
-              <Pagination.Next onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} />
-              <Pagination.Last onClick={() => handlePageChange(totalPages)} disabled={currentPage === totalPages} />
-            </Pagination>
-          </Col>
-        </Row>
+        <div className="d-flex justify-content-center mt-3 gap-2">
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+          >
+            ←
+          </button>
+
+          {[...Array(totalPages)].map((_, i) => (
+            <button
+              key={i}
+              className={`btn ${
+                currentPage === i + 1 ? "btn-success" : "btn-outline-secondary"
+              }`}
+              onClick={() => setCurrentPage(i + 1)}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button
+            className="btn btn-outline-secondary"
+            disabled={currentPage === totalPages}
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+          >
+            →
+          </button>
+        </div>
       )}
 
+      {/* Modal */}
       <Modal show={showModal} onHide={handleCloseModal} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>
-            {editingPromotion ? 'Sửa Khuyến mãi' : 'Thêm Khuyến mãi'}
+            {editingPromotion ? "Sửa Khuyến mãi" : "Thêm Khuyến mãi"}
           </Modal.Title>
         </Modal.Header>
+
         <Form onSubmit={handleSubmit}>
           <Modal.Body>
+            {/* Form */}
             <Row>
               <Col md={6}>
                 <Form.Group className="mb-3">
@@ -354,6 +402,7 @@ const Promotion = () => {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
+
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Loại giảm giá</Form.Label>
@@ -394,19 +443,16 @@ const Promotion = () => {
                     name="discountValue"
                     value={formData.discountValue}
                     onChange={handleInputChange}
-                    min="0"
-                    step="0.01"
+                    min="1"
                     required
                     isInvalid={!!errors.discountValue}
                   />
                   <Form.Control.Feedback type="invalid">
                     {errors.discountValue}
                   </Form.Control.Feedback>
-                  <Form.Text className="text-muted">
-                    {formData.discountType === 'percent' ? 'Phần trăm (%)' : 'Số tiền (VND)'}
-                  </Form.Text>
                 </Form.Group>
               </Col>
+
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Trạng thái</Form.Label>
@@ -438,6 +484,7 @@ const Promotion = () => {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
+
               <Col md={6}>
                 <Form.Group className="mb-3">
                   <Form.Label>Ngày kết thúc</Form.Label>
@@ -456,12 +503,13 @@ const Promotion = () => {
               </Col>
             </Row>
           </Modal.Body>
+
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseModal}>
               Hủy
             </Button>
             <Button variant="primary" type="submit">
-              {editingPromotion ? 'Cập nhật' : 'Thêm'}
+              {editingPromotion ? "Cập nhật" : "Thêm"}
             </Button>
           </Modal.Footer>
         </Form>
