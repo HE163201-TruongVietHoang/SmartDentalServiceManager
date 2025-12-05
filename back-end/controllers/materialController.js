@@ -328,3 +328,21 @@ exports.addNewMaterial = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+exports.getMaterialsByAppointment = async (req, res) => {
+  try {
+    const { appointmentId } = req.params;
+
+    if (!appointmentId)
+      return res.status(400).json({ error: "appointmentId required" });
+
+    const data = await materialService.getMaterialsByAppointment(
+      parseInt(appointmentId, 10)
+    );
+
+    res.json(data);
+  } catch (err) {
+    console.error("getMaterialsByAppointment error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
