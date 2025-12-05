@@ -63,8 +63,7 @@ app.use("/api/medicines", require("./routes/medicineRoutes"));
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/nurses", nurseRoutes);
 app.use("/api/notifications", notificationRoutes);
-cron.schedule("*/30 * * * *", async () => {
-  console.log("Running auto-cancel job...");
+cron.schedule("* * * * *", async () => {
   await appointmentService.autoCancelNoShow(initSocket);
 });
 cron.schedule("0 0 * * *", async () => {
