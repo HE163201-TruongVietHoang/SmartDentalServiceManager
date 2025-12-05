@@ -16,8 +16,7 @@ import ChatPage from "./pages/ChatPage";
 // import TreatmentProgress from "./components/doctor/TreatmentProgress";
 // import ScheduleRequest from "./components/doctor/ScheduleRequest";
 
-
-import ProfilePage from "./pages/Profile/ProfileView";
+import ProfilePage from "./pages/profile/ProfileView";
 import ServicesPage from "./pages/Home/Service";
 import ServiceDetail from "./pages/Home/ServiceDeatil";
 import DoctorsPage from "./pages/Home/DoctorsPage";

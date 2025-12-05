@@ -19,7 +19,6 @@ const {
   sendVerificationOtp,
   verifyAccountOtp,
   uploadUserAvatar,
-  uploadUserAvatar,
 } = require("../services/authService");
 const {
   getFirstReceptionist,
@@ -207,23 +206,19 @@ const updateProfileController = async (req, res) => {
     if (phone) {
       const phoneRegex = /^0\d{0,10}$/;
       if (!phoneRegex.test(phone)) {
-        return res
-          .status(400)
-          .json({
-            message:
-              "Số điện thoại không hợp lệ (bắt đầu bằng 0 và tối đa 11 số)",
-          });
+        return res.status(400).json({
+          message:
+            "Số điện thoại không hợp lệ (bắt đầu bằng 0 và tối đa 11 số)",
+        });
       }
     }
 
     if (citizenIdNumber) {
       const citizenRegex = /^\d{0,12}$/;
       if (!citizenRegex.test(citizenIdNumber)) {
-        return res
-          .status(400)
-          .json({
-            message: "Số căn cước công dân không hợp lệ (tối đa 12 số)",
-          });
+        return res.status(400).json({
+          message: "Số căn cước công dân không hợp lệ (tối đa 12 số)",
+        });
       }
     }
 

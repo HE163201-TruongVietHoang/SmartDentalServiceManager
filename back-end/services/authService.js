@@ -113,7 +113,6 @@ async function changePassword({ userId, oldPassword, newPassword }) {
   return { message: "Đổi mật khẩu thành công." };
 }
 
-
 async function sendOtpEmail(email, otp) {
   const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -129,7 +128,6 @@ async function sendOtpEmail(email, otp) {
     subject: "🔐 Mã xác minh OTP Smart Dental Clinic",
     html: `
       <h2>Mã OTP</h2>
-      <p>Smart Dental Clinic đã nhận được yêu cầu sử dụng địa chỉ email này để giúp khôi phục Tài khoản</p>
       <p>Mã OTP của bạn là: <b style="font-size:22px">${otp}</b></p>
       <p>Mã này chỉ có hiệu lực trong <b>10 phút</b>. Không chia sẻ mã này với bất kỳ ai.</p>
       <br>
@@ -297,8 +295,10 @@ async function registerUser({
 
   // Gửi OTP qua email hoặc SMS
   await sendOtpEmailVerify(email, otpCode);
-  return { message: "Đăng ký thành công, vui lòng nhập OTP để xác minh tài khoản", userId: user.userId };
-
+  return {
+    message: "Đăng ký thành công, vui lòng nhập OTP để xác minh tài khoản",
+    userId: user.userId,
+  };
 }
 
 // ----- Account management services -----
@@ -366,18 +366,17 @@ const logoutAllDevices = async (userId) => {
   return await logoutAllSessions(userId);
 };
 
-const uploadUserAvatar  = async (userId, file) => {
+const uploadUserAvatar = async (userId, file) => {
   if (!file) throw new Error("No image uploaded");
 
   // Upload Cloudinary
   const uploaded = await new Promise((resolve, reject) => {
-    cloudinary.uploader.upload_stream(
-      { folder: "user_avatars" },
-      (err, result) => {
+    cloudinary.uploader
+      .upload_stream({ folder: "user_avatars" }, (err, result) => {
         if (err) return reject(err);
         resolve(result);
-      }
-    ).end(file.buffer);
+      })
+      .end(file.buffer);
   });
 
   const avatarUrl = uploaded.secure_url;
@@ -406,5 +405,5 @@ module.exports = {
   logoutDevice,
   logoutAllDevices,
   verifyAccountOtp,
-  uploadUserAvatar 
+  uploadUserAvatar,
 };
