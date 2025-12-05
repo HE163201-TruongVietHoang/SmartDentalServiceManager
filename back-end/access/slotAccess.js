@@ -54,7 +54,7 @@ async function checkSlot(slotId, transaction = null) {
   const result = await request
     .input("slotId", sql.Int, slotId)
     .query(`
-      SELECT s.slotId, s.isBooked, sch.doctorId, sch.workDate, sch.startTime, sch.endTime
+      SELECT s.slotId, s.isBooked, sch.doctorId, sch.workDate, s.startTime, s.endTime
       FROM Slots s
       JOIN Schedules sch ON s.scheduleId = sch.scheduleId
       WHERE s.slotId = @slotId

@@ -26,12 +26,33 @@ async function createScheduleRequestController(req, res) {
     const result = await createMultipleSchedules(doctorId, note, schedules);
 
     if (result.conflicts?.length > 0) {
+      const dbConflicts = result.conflicts.filter(c => c.type === "Database");
+      const internalConflicts = result.conflicts.filter(c => c.type === "Internal");
+
+      let message = "";
+
+      if (dbConflicts.length > 0) {
+        message += " Trùng với lịch có sẵn trong hệ thống:\n";
+        dbConflicts.forEach(c => {
+          message += `- Ngày ${c.workDate} từ ${c.startTime} đến ${c.endTime}. Lý do: ${c.message}\n`;
+        });
+      }
+
+      if (internalConflicts.length > 0) {
+        message += " Các khung giờ bạn chọn bị trùng nhau:\n";
+        internalConflicts.forEach(c => {
+          message += `- Ngày ${c.workDate}: ${c.message}\n`;
+        });
+      }
+
       return res.status(409).json({
-        message: "Có xung đột trong các khung giờ bạn chọn.",
         success: false,
-        conflicts: result.conflicts,
+        message: message.trim(),
+        databaseConflicts: dbConflicts,
+        internalConflicts: internalConflicts
       });
     }
+
 
     if (result.unavailable?.length > 0) {
       return res.status(207).json({

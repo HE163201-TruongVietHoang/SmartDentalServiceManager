@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const db = require("./config/db");
+const cookieParser = require("cookie-parser");
 const cron = require("node-cron");
 const { appointmentService } = require("./services/appointmentService");
 const promotionService = require("./services/promotionService");
@@ -31,8 +32,11 @@ const notificationRoutes = require("./routes/notificationRoutes");
 const app = express();
 const http = require("http");
 const { initSocket } = require("./utils/socket");
-
-app.use(cors());
+app.use(cookieParser());
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true   // QUAN TRỌNG: cho phép gửi cookie
+}));
 app.use(express.json());
 
 // Routes
@@ -68,6 +72,8 @@ cron.schedule("0 0 * * *", async () => {
   await promotionService.deactivateExpiredPromotions();
 });
 getPool();
+
+
 
 // Start server with Socket.IO
 const PORT = process.env.PORT || 5000;

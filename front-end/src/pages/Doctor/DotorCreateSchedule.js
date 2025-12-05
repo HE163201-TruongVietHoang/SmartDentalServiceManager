@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 export default function DoctorCreateSchedule() {
   const navigate = useNavigate();
   const [slots, setSlots] = useState([
-    { workDate: "", startTime: "08:00", endTime: "09:00" },
+    { workDate: "", startTime: "", endTime: "" },
   ]);
   const [note, setNote] = useState("");
   const [checking, setChecking] = useState(false);
@@ -17,15 +17,30 @@ export default function DoctorCreateSchedule() {
   const addSlot = () =>
     setSlots((s) => [
       ...s,
-      { workDate: "", startTime: "08:00", endTime: "09:00" },
+      { workDate: "", startTime: "", endTime: "" },
     ]);
 
   const removeSlot = (idx) => setSlots((s) => s.filter((_, i) => i !== idx));
 
-  const updateSlot = (idx, key, value) =>
-    setSlots((s) =>
-      s.map((it, i) => (i === idx ? { ...it, [key]: value } : it))
+  const updateSlot = (idx, key, value) => {
+    setSlots((prev) =>
+      prev.map((slot, i) => {
+        if (i !== idx) return slot;
+
+        const updated = { ...slot, [key]: value };
+
+        // Nếu đầy đủ start/end thì kiểm tra
+        if (updated.startTime && updated.endTime) {
+          if (updated.endTime <= updated.startTime) {
+            toast.warning("Giờ kết thúc phải lớn hơn giờ bắt đầu!");
+            updated.endTime = ""; // reset để tránh lỗi
+          }
+        }
+
+        return updated;
+      })
     );
+  };
 
   const checkAvailability = async () => {
     setChecking(true);
@@ -51,6 +66,14 @@ export default function DoctorCreateSchedule() {
 
   const submitRequest = async () => {
     if (!token) return navigate("/signin");
+    for (const slot of slots) {
+      if (slot.endTime <= slot.startTime) {
+        toast.error(
+          `Khung giờ ${slot.workDate}: giờ kết thúc phải lớn hơn giờ bắt đầu.`
+        );
+        return;
+      }
+    }
 
     const now = new Date();
     for (const slot of slots) {
