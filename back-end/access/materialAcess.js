@@ -255,29 +255,45 @@ module.exports = {
     const pool = await getPool();
     const result = await pool.request().query(`
     SELECT
-      a.appointmentId,
-      uPatient.userId AS patientId,
-      uPatient.fullName AS patientName,
-      uDoc.userId AS doctorId,
-      uDoc.fullName AS doctorName,
-      sch.workDate,
-      CONVERT(VARCHAR(5), sl.startTime, 108) AS startTime,
-      CONVERT(VARCHAR(5), sl.endTime, 108) AS endTime,
-      ds.serviceId,
-      srv.serviceName,
-      a.status
-    FROM Appointments a
-    LEFT JOIN Users uPatient ON a.patientId = uPatient.userId
-    LEFT JOIN Users uDoc ON a.doctorId = uDoc.userId
-    LEFT JOIN Slots sl ON a.slotId = sl.slotId
-    LEFT JOIN Schedules sch ON sl.scheduleId = sch.scheduleId
-    LEFT JOIN Diagnoses d ON d.appointmentId = a.appointmentId
-    LEFT JOIN DiagnosisServices ds ON ds.diagnosisId = d.diagnosisId
-    LEFT JOIN Services srv ON srv.serviceId = ds.serviceId
-    WHERE 
-      sch.workDate = CAST(GETDATE() AS DATE)
-      AND a.status IN ('InProgress', 'DiagnosisCompleted')
-    ORDER BY sl.startTime
+    a.appointmentId,
+    uPatient.userId AS patientId,
+    uPatient.fullName AS patientName,
+    uDoc.userId AS doctorId,
+    uDoc.fullName AS doctorName,
+    sch.workDate,
+    CONVERT(VARCHAR(5), sl.startTime, 108) AS startTime,
+    CONVERT(VARCHAR(5), sl.endTime, 108) AS endTime,
+
+    -- GỘP TẤT CẢ DỊCH VỤ THÀNH 1 CHUỖI
+    STRING_AGG(srv.serviceName, ', ') WITHIN GROUP (ORDER BY srv.serviceName) 
+        AS serviceNames,
+
+    -- Lấy 1 serviceId đầu tiên (nếu nurse cần để load vật tư)
+    MIN(ds.serviceId) AS serviceId,
+
+    a.status
+FROM Appointments a
+LEFT JOIN Users uPatient ON a.patientId = uPatient.userId
+LEFT JOIN Users uDoc ON a.doctorId = uDoc.userId
+LEFT JOIN Slots sl ON a.slotId = sl.slotId
+LEFT JOIN Schedules sch ON sl.scheduleId = sch.scheduleId
+LEFT JOIN Diagnoses d ON d.appointmentId = a.appointmentId
+LEFT JOIN DiagnosisServices ds ON ds.diagnosisId = d.diagnosisId
+LEFT JOIN Services srv ON srv.serviceId = ds.serviceId
+WHERE 
+    sch.workDate = CAST(GETDATE() AS DATE)
+    AND a.status IN ('InProgress', 'DiagnosisCompleted')
+GROUP BY 
+    a.appointmentId,
+    uPatient.userId,
+    uPatient.fullName,
+    uDoc.userId,
+    uDoc.fullName,
+    sch.workDate,
+    sl.startTime,
+    sl.endTime,
+    a.status
+ORDER BY sl.startTime;
   `);
 
     return result.recordset;
@@ -307,6 +323,76 @@ module.exports = {
     return result.recordset;
   },
 
+  /**
+   * getMaterialsByAppointment
+   * Lấy vật tư của TẤT CẢ dịch vụ trong 1 appointment
+   * Trả về: vật tư gộp (không trùng), standardQuantity được cộng dồn
+   */
+  async getMaterialsByAppointment(appointmentId) {
+    const pool = await getPool();
+
+    // 1. Lấy diagnosisId từ appointment
+    const diagRes = await pool
+      .request()
+      .input("appointmentId", sql.Int, appointmentId).query(`
+      SELECT diagnosisId 
+      FROM Diagnoses 
+      WHERE appointmentId = @appointmentId
+    `);
+
+    if (!diagRes.recordset.length) return []; // chưa có diagnosis → chưa có vật tư
+
+    const diagnosisId = diagRes.recordset[0].diagnosisId;
+
+    // 2. Lấy danh sách serviceId của appointment này
+    const dsRes = await pool
+      .request()
+      .input("diagnosisId", sql.Int, diagnosisId).query(`
+      SELECT serviceId
+      FROM DiagnosisServices
+      WHERE diagnosisId = @diagnosisId
+    `);
+
+    if (!dsRes.recordset.length) return [];
+
+    const serviceIds = dsRes.recordset.map((s) => s.serviceId);
+
+    // 3. Lấy vật tư của tất cả service trong 1 query
+    const smRes = await pool.request().query(`
+      SELECT 
+        sm.serviceId,
+        sm.materialId,
+        m.materialName,
+        m.unit,
+        sm.standardQuantity
+      FROM ServiceMaterials sm
+      JOIN Materials m ON sm.materialId = m.materialId
+      WHERE sm.serviceId IN (${serviceIds.join(",")})
+      ORDER BY sm.materialId
+    `);
+
+    const rows = smRes.recordset;
+
+    // 4. Gộp vật tư trùng (nếu nhiều dịch vụ dùng chung)
+    const map = {};
+
+    rows.forEach((r) => {
+      if (!map[r.materialId]) {
+        map[r.materialId] = {
+          materialId: r.materialId,
+          materialName: r.materialName,
+          unit: r.unit,
+          standardQuantity: r.standardQuantity,
+          serviceIds: [r.serviceId],
+        };
+      } else {
+        map[r.materialId].standardQuantity += r.standardQuantity;
+        map[r.materialId].serviceIds.push(r.serviceId);
+      }
+    });
+
+    return Object.values(map);
+  },
   /**
    * getMaterialUsageReport
    * Dành cho: Admin
