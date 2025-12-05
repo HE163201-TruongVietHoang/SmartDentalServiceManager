@@ -27,8 +27,7 @@ async function getById(patientId) {
 }
 async function getByIdPatient(patientId) {
   const pool = await getPool();
-  const result = await pool.request()
-    .input("patientId", sql.Int, patientId)
+  const result = await pool.request().input("patientId", sql.Int, patientId)
     .query(`
       SELECT u.userId, u.fullName, u.email, u.address, u.gender, u.dob, u.phone, u.isActive, u.createdAt, u.updatedAt
       FROM Users u
@@ -37,7 +36,6 @@ async function getByIdPatient(patientId) {
     `);
   return result.recordset[0];
 }
-
 
 async function getPatientMedicalRecord(patientId) {
   const pool = await getPool();
@@ -104,11 +102,14 @@ CONVERT(VARCHAR(5), sl.endTime, 108) AS endTime,
       LEFT JOIN Invoices inv ON inv.appointmentId = a.appointmentId
       LEFT JOIN Payments pay ON pay.invoiceId = inv.invoiceId
 
-      WHERE a.patientId = @patientId
+      WHERE 
+    a.patientId = @patientId
+    AND a.status IN ('Completed', 'Cancelled')
+
       ORDER BY a.appointmentId DESC, d.diagnosisId DESC
     `);
 
   return result.recordset;
 }
 
-module.exports = { getAll, getById, getPatientMedicalRecord ,getByIdPatient};
+module.exports = { getAll, getById, getPatientMedicalRecord, getByIdPatient };
