@@ -13,7 +13,7 @@ export default function AppointmentPage() {
   const [slots, setSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [reason, setReason] = useState("");
-  const [appointmentType, setAppointmentType] = useState("tái khám");
+  const [appointmentType, setAppointmentType] = useState("tai kham");
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();

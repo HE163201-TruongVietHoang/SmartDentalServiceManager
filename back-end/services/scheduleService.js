@@ -22,84 +22,89 @@ function normalizeTimeToHHMM(timeStr) {
   const [h, m] = timeStr.split(":").map(Number);
   return `${h.toString().padStart(2, "0")}:${(m || 0).toString().padStart(2, "0")}`;
 }
+
 function isOverlap(startA, endA, startB, endB) {
-  const sA = normalizeTimeToHHMM(startA);
-  const eA = normalizeTimeToHHMM(endA);
-  const sB = normalizeTimeToHHMM(startB);
-  const eB = normalizeTimeToHHMM(endB);
+  const today = "2025-01-01"; // chỉ cần ngày cố định để parse
+  const sA = new Date(`${today}T${normalizeTimeToHHMM(startA)}`);
+  let eA = new Date(`${today}T${normalizeTimeToHHMM(endA)}`);
+  const sB = new Date(`${today}T${normalizeTimeToHHMM(startB)}`);
+  let eB = new Date(`${today}T${normalizeTimeToHHMM(endB)}`);
 
-  // Tạo thời điểm Date (giả định cùng ngày)
-  const today = new Date();
-  const start1 = new Date(`${today}T${sA}`);
-  let end1 = new Date(`${today}T${eA}`);
-  if (end1 <= start1) end1.setDate(end1.getDate() + 1); // qua đêm
+  // xử lý qua đêm
+  if (eA <= sA) eA.setDate(eA.getDate() + 1);
+  if (eB <= sB) eB.setDate(eB.getDate() + 1);
 
-  const start2 = new Date(`${today}T${sB}`);
-  let end2 = new Date(`${today}T${eB}`);
-  if (end2 <= start2) end2.setDate(end2.getDate() + 1); // qua đêm
-
-  // overlap nếu khoảng giao nhau
-  return start1 < end2 && start2 < end1;
+  return sA < eB && sB < eA; 
 }
 
 async function createMultipleSchedules(doctorId, note, schedules) {
-  const unavailable = [];
+  const conflicts = [];
   const roomsForSlots = [];
-  const duplicates = [];
-  const internalConflicts = [];
+  const unavailable = [];
 
-  // --- Kiểm tra trùng với lịch đã có trong DB ---
-  for (const s of schedules) {
-    const { workDate, startTime, endTime } = s;
-    const existing = await hasOverlappingSchedule(doctorId, workDate, startTime, endTime);
-    if (existing) {
-      duplicates.push({
-        workDate,
-        startTime,
-        endTime,
-        type: "Database",
-        message: `Trùng với lịch đã có trong hệ thống (Phòng: ${existing.roomName})`,
-      });
-    }
-  }
-
-  // ---  Kiểm tra trùng giữa các slot mới ---
+  // ======================
+  // 1. KIỂM TRA TRÙNG NỘI BỘ
+  // ======================
   for (let i = 0; i < schedules.length; i++) {
-    const a = schedules[i];
     for (let j = i + 1; j < schedules.length; j++) {
-      const b = schedules[j];
-      if (a.workDate === b.workDate && isOverlap(a.startTime, a.endTime, b.startTime, b.endTime)) {
-        internalConflicts.push({
-          workDate: a.workDate,
-          startTime: a.startTime,
-          endTime: a.endTime,
+      const A = schedules[i];
+      const B = schedules[j];
+
+      if (A.workDate === B.workDate && isOverlap(A.startTime, A.endTime, B.startTime, B.endTime)) {
+        conflicts.push({
           type: "Internal",
-          message: `Hai khung giờ mới (${a.startTime}-${a.endTime}) và (${b.startTime}-${b.endTime}) bị trùng.`,
+          workDate: A.workDate,
+          startTime: A.startTime,
+          endTime: A.endTime,
+          conflictWith: {
+            startTime: B.startTime,
+            endTime: B.endTime,
+          },
+          message: `Trùng giữa (${A.startTime}–${A.endTime}) và (${B.startTime}–${B.endTime}) trong cùng ngày ${A.workDate}.`
         });
       }
     }
   }
 
-  // ---  Nếu có conflict thì trả về luôn ---
-  if (duplicates.length > 0 || internalConflicts.length > 0) {
+  // ======================
+  // 2. KIỂM TRA TRÙNG VỚI DATABASE
+  // ======================
+  for (const s of schedules) {
+    const exists = await hasOverlappingSchedule(doctorId, s.workDate, s.startTime, s.endTime);
+    if (exists) {
+      conflicts.push({
+        type: "Database",
+        workDate: s.workDate,
+        startTime: s.startTime,
+        endTime: s.endTime,
+        message: `(${s.startTime}–${s.endTime}) trùng với lịch đã tồn tại (Phòng: ${exists.roomName}).`
+      });
+    }
+  }
+
+  // Nếu có trùng → trả về ngay
+  if (conflicts.length > 0) {
     return {
       requestId: null,
-      conflicts: [...duplicates, ...internalConflicts],
+      conflicts,
     };
   }
 
-  // ---  Kiểm tra phòng trống ---
+  // ======================
+  // 3. KIỂM TRA PHÒNG TRỐNG
+  // ======================
   for (const s of schedules) {
-    const { workDate, startTime, endTime } = s;
-    const room = await findAvailableRoom(workDate, startTime, endTime);
+    const room = await findAvailableRoom(s.workDate, s.startTime, s.endTime);
+
     if (!room) {
       unavailable.push({
-        workDate,
-        startTime,
-        endTime,
-        message: "Không còn phòng trống",
+        workDate: s.workDate,
+        startTime: s.startTime,
+        endTime: s.endTime,
+        message: "Không còn phòng trống."
       });
     }
+
     roomsForSlots.push(room);
   }
 
@@ -107,7 +112,9 @@ async function createMultipleSchedules(doctorId, note, schedules) {
     return { requestId: null, unavailable };
   }
 
-  // --- Tạo yêu cầu lịch ---
+  // ======================
+  // 4. TẠO LỊCH
+  // ======================
   const requestId = await createScheduleRequest(doctorId, note);
   const results = [];
 
@@ -115,6 +122,7 @@ async function createMultipleSchedules(doctorId, note, schedules) {
     for (let i = 0; i < schedules.length; i++) {
       const s = schedules[i];
       const room = roomsForSlots[i];
+
       await createSchedule({
         requestId,
         doctorId,
@@ -129,11 +137,12 @@ async function createMultipleSchedules(doctorId, note, schedules) {
         startTime: s.startTime,
         endTime: s.endTime,
         status: "Success",
-        message: `Đã tạo lịch (Phòng: ${room.roomName})`,
+        message: `Đã tạo lịch (Phòng: ${room.roomName}).`
       });
     }
 
     return { requestId, results };
+
   } catch (err) {
     const pool = await getPool();
     await pool.request().query(`DELETE FROM Schedules WHERE requestId = ${requestId}`);
@@ -233,14 +242,14 @@ async function adminApproveRequest(requestId, adminId) {
     }
   }
   for (const schedule of schedules) {
-      await sendNotification({
-        receiverId: schedule.doctorId,
-        senderId: adminId,
-        title: "Yêu cầu lịch khám đã được duyệt",
-        message: "Yêu cầu lịch khám đã được duyệt",
-        type: "schedule_approval",
-      });
-    
+    await sendNotification({
+      receiverId: schedule.doctorId,
+      senderId: adminId,
+      title: "Yêu cầu lịch khám đã được duyệt",
+      message: "Yêu cầu lịch khám đã được duyệt",
+      type: "schedule_approval",
+    });
+
   }
   return {
     success: true,

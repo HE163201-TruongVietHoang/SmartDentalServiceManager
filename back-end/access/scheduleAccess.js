@@ -101,6 +101,7 @@ async function hasOverlappingSchedule(doctorId, workDate, startTime, endTime) {
     .query(`
       SELECT TOP 1 *
       FROM Schedules s
+      JOIN Rooms r ON s.roomId = r.roomId
       WHERE s.doctorId = @doctorId
         AND s.status IN ('Pending','Approved')
         AND (

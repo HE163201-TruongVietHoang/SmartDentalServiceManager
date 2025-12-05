@@ -2,7 +2,7 @@ const { getPool, sql } = require("../config/db");
 const { checkSlot, markAsBooked, unmarkAsBooked } = require("../access/slotAccess");
 const { sendNotificationToMany } = require("../access/notificationAccess");
 const { getByIdPatient } = require("../access/patientAccess");
-const { create, getByUser, getAll, getById, cancelAppointments, countUserCancellations, updateStatus, findUserByEmailOrPhone, createUser, addServiceToAppointment } = require("../access/appointmentAccess");
+const { create, getByUser, getAll, getById, cancelAppointments, countUserCancellations, updateStatus, findUserByEmailOrPhone, createUser, addServiceToAppointment, hasCompletedAppointment } = require("../access/appointmentAccess");
 const { normalizeTime, minutesToHHMM } = require("../utils/timeUtils");
 const { getIO } = require("../utils/socket");
 const appointmentService = {
@@ -17,6 +17,11 @@ const appointmentService = {
       slot = await checkSlot(slotId, transaction);
       if (!slot) throw new Error("Slot không tồn tại");
       if (slot.isBooked) throw new Error("Slot đã được đặt");
+      const hasCompleted = await hasCompletedAppointment(patientId, transaction);
+
+      if (!hasCompleted && appointmentType === "tai kham") {
+        throw new Error("Bệnh nhân chưa từng khám trước đây, không thể đặt tái khám.");
+      }
 
       await markAsBooked(slotId, transaction);
 
@@ -32,12 +37,17 @@ const appointmentService = {
     }
     // Realtime slot booked
     io.emit("slotBooked", { slotId });
-
+    slot = await checkSlot(slotId);
     // Chuẩn bị danh sách notification
     const notifyUsers = [];
-    const startTime = slot.startTime; // kiểu Date
-    const timeStr = startTime.toTimeString().slice(0, 5);
+    const timeStr = slot.startTime instanceof Date
+      ? slot.startTime.toISOString().substring(11, 16)  // an toàn
+      : slot.startTime;                                 // nếu đã là string
+
     const workDateStr = slot.workDate ? slot.workDate.toISOString().slice(0, 10) : null;
+    console.log("=== SLOT RAW VALUE ===");
+    console.log("startTime (raw):", timeStr);
+    console.log("workDate (raw):", workDateStr);
     // Bệnh nhân
     notifyUsers.push({
       receiverId: patientId,

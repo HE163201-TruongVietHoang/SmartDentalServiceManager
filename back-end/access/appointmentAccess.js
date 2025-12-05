@@ -251,6 +251,18 @@ async function addServiceToAppointment(appointmentId, serviceId) {
       VALUES (@appointmentId, @serviceId, @quantity, @actualPrice, @status, GETDATE(), GETDATE())
     `);
 }
+async function hasCompletedAppointment(patientId, transaction) {
+  const request = new sql.Request(transaction);
+
+  const result = await request.query(`
+    SELECT TOP 1 appointmentId
+    FROM Appointments
+    WHERE patientId = ${patientId}
+      AND status = 'Completed'
+  `);
+
+  return result.recordset.length > 0;
+}
 
 module.exports = {
   create,
@@ -263,4 +275,5 @@ module.exports = {
   findUserByEmailOrPhone,
   createUser,
   addServiceToAppointment,
+  hasCompletedAppointment
 };
