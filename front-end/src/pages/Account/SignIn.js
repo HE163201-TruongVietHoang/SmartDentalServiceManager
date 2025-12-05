@@ -59,6 +59,13 @@ function SignIn() {
             navigate("/");
         }
       } else {
+        if (data.error === "Tài khoản chưa xác minh") {
+          toast.error(data.error);
+
+          return setTimeout(() => {
+            navigate("/verify-otp", { state: { identifier } });
+          }, 1500); // Delay 1.5s
+        }
         toast.error(data.error || "Đăng nhập thất bại!");
       }
     } catch (error) {

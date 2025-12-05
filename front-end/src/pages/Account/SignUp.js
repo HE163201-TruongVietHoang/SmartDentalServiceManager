@@ -39,7 +39,7 @@ export default function SignUp() {
       return;
     }
     if (!formData.address.trim()) {
-      aletoast.warningrt("Vui lòng nhập địa chỉ!");
+      toast.warningrt("Vui lòng nhập địa chỉ!");
       return;
     }
     if (formData.password !== formData.confirmPassword) {

@@ -18,9 +18,12 @@ const {
   logoutAllDevices,
   sendVerificationOtp,
   verifyAccountOtp,
-  uploadUserAvatar 
+  uploadUserAvatar,
 } = require("../services/authService");
-const { getFirstReceptionist, getAllReceptionist } = require("../access/userAccess");
+const {
+  getFirstReceptionist,
+  getAllReceptionist,
+} = require("../access/userAccess");
 
 async function loginController(req, res) {
   try {
@@ -172,13 +175,27 @@ async function deleteUserController(req, res) {
 }
 const updateProfileController = async (req, res) => {
   try {
-    const { fullName, phone, gender, dob, address, citizenIdNumber, occupation, ethnicity } = req.body;
+    const {
+      fullName,
+      phone,
+      gender,
+      dob,
+      address,
+      citizenIdNumber,
+      occupation,
+      ethnicity,
+    } = req.body;
 
     // ✅ Validate phone
     if (phone) {
       const phoneRegex = /^0\d{0,10}$/; // bắt đầu 0, tối đa 11 chữ số
       if (!phoneRegex.test(phone)) {
-        return res.status(400).json({ message: "Số điện thoại không hợp lệ (bắt đầu bằng 0 và tối đa 11 số)" });
+        return res
+          .status(400)
+          .json({
+            message:
+              "Số điện thoại không hợp lệ (bắt đầu bằng 0 và tối đa 11 số)",
+          });
       }
     }
 
@@ -186,7 +203,11 @@ const updateProfileController = async (req, res) => {
     if (citizenIdNumber) {
       const citizenRegex = /^\d{0,12}$/; // tối đa 12 chữ số
       if (!citizenRegex.test(citizenIdNumber)) {
-        return res.status(400).json({ message: "Số căn cước công dân không hợp lệ (tối đa 12 số)" });
+        return res
+          .status(400)
+          .json({
+            message: "Số căn cước công dân không hợp lệ (tối đa 12 số)",
+          });
       }
     }
 
@@ -197,7 +218,6 @@ const updateProfileController = async (req, res) => {
     res.status(500).json({ message: "Lỗi server" });
   }
 };
-
 
 async function getDevicesController(req, res) {
   try {
@@ -242,21 +262,22 @@ async function verifyOtp(req, res) {
   }
 }
 
-async function  updateAvatarController (req, res) {
+async function updateAvatarController(req, res) {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: "Invalid file or no file uploaded" });
+      return res
+        .status(400)
+        .json({ message: "Invalid file or no file uploaded" });
     }
 
     const userId = req.user.userId;
-    const result = await uploadUserAvatar (userId, req.file);
+    const result = await uploadUserAvatar(userId, req.file);
 
     res.json({
       success: true,
       avatar: result.avatarUrl,
-      message: "Avatar updated successfully"
+      message: "Avatar updated successfully",
     });
-
   } catch (err) {
     console.error("Error:", err);
 
@@ -275,7 +296,7 @@ async function getReceptionistRandomController(req, res) {
   try {
     const receptionist = await getFirstReceptionist();
     if (!receptionist) {
-      return res.status(404).json({ message: 'Không tìm thấy lễ tân' });
+      return res.status(404).json({ message: "Không tìm thấy lễ tân" });
     }
     res.json(receptionist);
   } catch (err) {
@@ -286,7 +307,7 @@ async function getAllReceptionistController(req, res) {
   try {
     const receptionist = await getAllReceptionist();
     if (!receptionist) {
-      return res.status(404).json({ message: 'Không tìm thấy lễ tân' });
+      return res.status(404).json({ message: "Không tìm thấy lễ tân" });
     }
     res.json(receptionist);
   } catch (err) {
@@ -314,5 +335,5 @@ module.exports = {
   verifyOtp,
   updateAvatarController,
   getReceptionistRandomController,
-  getAllReceptionistController
-}
+  getAllReceptionistController,
+};

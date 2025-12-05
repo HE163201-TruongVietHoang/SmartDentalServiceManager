@@ -234,6 +234,7 @@ const AvatarSection = ({
         },
       });
       setUser((prev) => ({ ...prev, avatar: res.data.avatar }));
+      toast.success("Cập nhật avatar thành công");
     } catch (err) {
       console.error(err);
       toast.error("Cập nhật avatar thất bại");

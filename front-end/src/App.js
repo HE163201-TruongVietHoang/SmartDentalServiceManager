@@ -93,7 +93,7 @@ function App() {
         </Route>
         {/* <Route path="/chat" element={<ChatPage />} /> */}
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/contact" element={<Contact />} />
+        {/* <Route path="/contact" element={<Contact />} /> */}
         {/* Authentication routes */}
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
