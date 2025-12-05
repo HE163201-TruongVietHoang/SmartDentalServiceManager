@@ -101,4 +101,10 @@ router.get(
   authorizeRoles("Nurse"),
   controller.getMaterialsByService
 );
+router.get(
+  "/appointment/:appointmentId/materials",
+  authMiddleware,
+  authorizeRoles("Nurse"),
+  controller.getMaterialsByAppointment
+);
 module.exports = router;
