@@ -35,6 +35,8 @@ export default function AdminProfile() {
           fullName: res.data.fullName || "",
           phone: res.data.phone || "",
           address: res.data.address || "",
+          gender: res.data.gender || "",
+          dob: res.data.dob || "",
         });
       } catch (err) {
         console.error(err);
@@ -241,6 +243,38 @@ export default function AdminProfile() {
                 />
               ) : (
                 user.address
+              )}
+            </p>
+            <p>
+              <strong>Giới tính:</strong>{" "}
+              {isEditing ? (
+                <Form.Select
+                  name="gender"
+                  value={form.gender}
+                  onChange={handleChange}
+                  style={{ maxWidth: "200px" }}
+                >
+                  <option value="">-- Chọn giới tính --</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </Form.Select>
+              ) : (
+                user.gender
+              )}
+            </p>
+
+            <p>
+              <strong>Ngày sinh:</strong>{" "}
+              {isEditing ? (
+                <Form.Control
+                  type="date"
+                  name="dob"
+                  value={form.dob}
+                  onChange={handleChange}
+                />
+              ) : (
+                user.dob
               )}
             </p>
           </div>

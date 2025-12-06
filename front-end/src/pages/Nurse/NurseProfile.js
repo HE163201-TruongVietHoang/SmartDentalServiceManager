@@ -32,6 +32,8 @@ export default function NurseProfile() {
           fullName: res.data.fullName || "",
           phone: res.data.phone || "",
           address: res.data.address || "",
+          gender: res.data.gender || "",
+          dob: res.data.dob || "",
         });
       } catch (err) {
         console.error(err);
@@ -42,6 +44,14 @@ export default function NurseProfile() {
     };
     fetchProfile();
   }, [token]);
+  const formatDate = (isoDate) => {
+    if (!isoDate) return "";
+    const date = new Date(isoDate);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -235,6 +245,37 @@ export default function NurseProfile() {
                 />
               ) : (
                 user.address
+              )}
+            </p>
+            <p>
+              <strong>Giới tính:</strong>{" "}
+              {isEditing ? (
+                <Form.Select
+                  name="gender"
+                  value={form.gender}
+                  onChange={handleChange}
+                  style={{ maxWidth: "200px" }}
+                >
+                  <option value="">-- Chọn giới tính --</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Other">Other</option>
+                </Form.Select>
+              ) : (
+                user.gender
+              )}
+            </p>
+            <p>
+              <strong>Ngày sinh:</strong>{" "}
+              {isEditing ? (
+                <Form.Control
+                  type="date"
+                  name="dob"
+                  value={form.dob}
+                  onChange={handleChange}
+                />
+              ) : (
+                formatDate(user.dob)
               )}
             </p>
           </div>
