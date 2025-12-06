@@ -25,6 +25,25 @@ function SignIn() {
       });
 
       const data = await res.json();
+      if (data.error === "Tài khoản chưa xác minh") {
+        toast.error(data.error);
+
+        // Lưu email & userId để Verify OTP
+        localStorage.setItem(
+          "signupUser",
+          JSON.stringify({
+            email: identifier, // dùng identifier vì bạn login bằng email/sđt
+            userId: data?.user?.id || null,
+          })
+        );
+
+        // Chuyển sang trang Verify OTP
+        setTimeout(() => {
+          navigate("/verify-otp");
+        }, 1500);
+
+        return; // DỪNG luồng login ở đây
+      }
 
       if (res.ok) {
         console.log(" Đăng nhập thành công:", data);
@@ -53,7 +72,7 @@ function SignIn() {
             navigate("/receptionist/patient/appointment");
             break;
           case "Admin":
-            navigate("/admin/settings");
+            navigate("/admin/acounts");
             break;
           default:
             navigate("/");

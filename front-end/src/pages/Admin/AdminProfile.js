@@ -4,7 +4,7 @@ import axios from "axios";
 import { FaCamera } from "react-icons/fa";
 import { toast } from "react-toastify";
 
-export default function NurseProfile() {
+export default function AdminProfile() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -16,10 +16,13 @@ export default function NurseProfile() {
     confirmPassword: "",
   });
   const [passwordMessage, setPasswordMessage] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
   const [preview, setPreview] = useState("");
   const fileInputRef = useRef(null);
+
   const token = localStorage.getItem("token");
 
+  // --- Fetch profile ---
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -43,6 +46,7 @@ export default function NurseProfile() {
     fetchProfile();
   }, [token]);
 
+  // --- Handle profile changes ---
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -62,12 +66,56 @@ export default function NurseProfile() {
     }
   };
 
+  // --- Avatar Upload ---
+  const handleAvatarClick = () => fileInputRef.current.click();
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
+      toast.warning("Chỉ chấp nhận ảnh PNG/JPG/JPEG");
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.warning("Ảnh không được vượt quá 10MB");
+      return;
+    }
+
+    setSelectedFile(file);
+    setPreview(URL.createObjectURL(file));
+
+    // Upload avatar
+    const formData = new FormData();
+    formData.append("avatar", file);
+    try {
+      const res = await axios.put(
+        "http://localhost:5000/api/auth/profile/avatar",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      setUser({ ...user, avatar: res.data.avatar });
+      toast.success("Cập nhật avatar thành công!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Cập nhật avatar thất bại");
+    }
+  };
+
+  // --- Password Modal ---
   const handlePasswordChange = (e) => {
     setPasswordForm({ ...passwordForm, [e.target.name]: e.target.value });
   };
 
   const submitPasswordChange = async () => {
     const { currentPassword, newPassword, confirmPassword } = passwordForm;
+
     if (!currentPassword || !newPassword || !confirmPassword) {
       setPasswordMessage("Vui lòng nhập đầy đủ thông tin.");
       return;
@@ -76,6 +124,7 @@ export default function NurseProfile() {
       setPasswordMessage("Mật khẩu xác nhận không khớp.");
       return;
     }
+
     try {
       await axios.post(
         "http://localhost:5000/api/auth/change-password",
@@ -91,51 +140,6 @@ export default function NurseProfile() {
     } catch (err) {
       console.error(err);
       setPasswordMessage(`❌ ${err.response?.data?.message || err.message}`);
-    }
-  };
-
-  const handleAvatarClick = () => fileInputRef.current.click();
-  const handleAvatarChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Validate
-    if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
-      return toast.warning("Chỉ chấp nhận PNG/JPG/JPEG");
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      return toast.warning("Ảnh không vượt quá 10MB");
-    }
-
-    // Preview ảnh trước
-    setPreview(URL.createObjectURL(file));
-
-    // Upload lên server
-    const formData = new FormData();
-    formData.append("avatar", file);
-
-    try {
-      const res = await axios.put(
-        "http://localhost:5000/api/auth/profile/avatar",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      // Cập nhật user.avatar sau khi backend trả về link mới
-      setUser((prev) => ({
-        ...prev,
-        avatar: res.data.avatar,
-      }));
-
-      toast.success("Cập nhật avatar thành công!");
-    } catch (err) {
-      console.error(err);
-      toast.error("Cập nhật avatar thất bại!");
     }
   };
 
@@ -190,6 +194,7 @@ export default function NurseProfile() {
             </div>
           </div>
 
+          {/* Name */}
           {isEditing ? (
             <Form.Control
               type="text"
@@ -202,10 +207,11 @@ export default function NurseProfile() {
           ) : (
             <h3 className="mb-0">{user.fullName}</h3>
           )}
-
           <p className="text-muted">{user.roleName}</p>
+
           <hr />
 
+          {/* Profile Info */}
           <div className="text-start px-5">
             <p>
               <strong>Email:</strong> {user.email}
@@ -239,6 +245,7 @@ export default function NurseProfile() {
             </p>
           </div>
 
+          {/* Action Buttons */}
           <div className="d-flex justify-content-center gap-3 mt-4">
             {!isEditing ? (
               <>
@@ -266,6 +273,7 @@ export default function NurseProfile() {
         </Card.Body>
       </Card>
 
+      {/* Password Modal */}
       <Modal
         show={showPasswordModal}
         onHide={() => setShowPasswordModal(false)}

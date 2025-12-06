@@ -29,7 +29,6 @@ import SignUp from "./pages/Account/SignUp";
 import VerifyOtp from "./pages/Account/VerifyOTP";
 import ResetPassword from "./pages/Account/ResetPassword";
 import ChangePassword from "./pages/Account/ChangePassword";
-import UserManagement from "./pages/Admin/UserManagement";
 
 import DoctorRatingTestPage from "./pages/Test/DoctorRatingTestPage";
 import ServiceRatingTestPage from "./pages/Test/ServiceRatingTestPage";
@@ -61,6 +60,12 @@ import CreateAppointmentReceptionist from "./pages/Receptionist/CreateAppointmen
 
 import NurseLayout from "./pages/Nurse/NurseLayout";
 import NurseProfile from "./pages/Nurse/NurseProfile";
+import NurseScheduleTable from "./pages/Nurse/NurseSchedule";
+
+import AdminLayout from "./pages/Admin/AdminLayout";
+import AdminProfile from "./pages/Admin/AdminProfile";
+import UserManagement from "./pages/Admin/UserManagement";
+
 import Promotion from "./pages/ClinicManager/Promotion";
 import Invoice from "./pages/ClinicManager/Invoice";
 import VnpayReturn from "./pages/VnpayReturn";
@@ -93,14 +98,13 @@ function App() {
         </Route>
         {/* <Route path="/chat" element={<ChatPage />} /> */}
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/contact" element={<Contact />} />
+        {/* <Route path="/contact" element={<Contact />} /> */}
         {/* Authentication routes */}
         <Route path="/signin" element={<SignIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/change-password" element={<ChangePassword />} />
-        <Route path="/admin/users" element={<UserManagement />} />
         <Route path="/appointment" element={<AppointmentPage />} />
         <Route
           path="/appointment/:appointmentId/review"
@@ -113,6 +117,24 @@ function App() {
         <Route path="/invoice-pending/me" element={<InvoiceListPage />} />
         <Route path="/payments/me" element={<MyPayments />} />
         {/*clinic Manager*/}
+
+        {/* Trang cho Admin */}
+        <Route
+          path="/admin/acounts"
+          element={
+            <AdminLayout>
+              <UserManagement />
+            </AdminLayout>
+          }
+        />
+        <Route
+          path="/admin/profile"
+          element={
+            <AdminLayout>
+              <AdminProfile />
+            </AdminLayout>
+          }
+        />
 
         {/* Trang cho Clinic Manager */}
         <Route
@@ -260,6 +282,14 @@ function App() {
           element={
             <NurseLayout>
               <NurseMaterialPage />
+            </NurseLayout>
+          }
+        />
+        <Route
+          path="/nurse/schedule"
+          element={
+            <NurseLayout>
+              <NurseScheduleTable />
             </NurseLayout>
           }
         />

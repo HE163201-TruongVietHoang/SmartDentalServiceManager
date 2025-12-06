@@ -1,8 +1,8 @@
 const { sql, getPool } = require("../config/db");
 
 async function getActiveNurses() {
-    const pool = await getPool();
-    const result = await pool.request().query(`
+  const pool = await getPool();
+  const result = await pool.request().query(`
     SELECT u.userId
     FROM Users u
     JOIN Roles r ON u.roleId = r.roleId
@@ -10,12 +10,12 @@ async function getActiveNurses() {
       AND u.isActive = '1'
   `);
 
-    return result.recordset;
+  return result.recordset;
 }
 
 async function getActiveNursesWithHours() {
-    const pool = await getPool();
-    const result = await pool.request().query(`
+  const pool = await getPool();
+  const result = await pool.request().query(`
     SELECT u.userId, ISNULL(SUM(DATEDIFF(MINUTE, s.startTime, s.endTime)),0) AS totalMinutes
     FROM Users u
     JOIN Roles r ON u.roleId = r.roleId
@@ -27,28 +27,27 @@ async function getActiveNursesWithHours() {
     ORDER BY totalMinutes ASC
   `);
 
-    // Kết quả sắp xếp từ ít giờ làm → nhiều giờ làm
-    return result.recordset;
+  // Kết quả sắp xếp từ ít giờ làm → nhiều giờ làm
+  return result.recordset;
 }
 
 async function createNurseShift({ scheduleId, nurseId, assignedBy }) {
-    const pool = await getPool();
-    await pool.request()
-        .input("scheduleId", sql.Int, scheduleId)
-        .input("nurseId", sql.Int, nurseId)
-        .input("assignedBy", sql.Int, assignedBy)
-        .query(`
+  const pool = await getPool();
+  await pool
+    .request()
+    .input("scheduleId", sql.Int, scheduleId)
+    .input("nurseId", sql.Int, nurseId)
+    .input("assignedBy", sql.Int, assignedBy).query(`
       INSERT INTO NurseShifts (scheduleId, nurseId, assignedBy)
       VALUES (@scheduleId, @nurseId, @assignedBy)
     `);
 }
 // nurseShiftsAccess.js
 async function getAllNurseSchedules(nurseId) {
-    const pool = await getPool();
-    const result = await pool.request()
-        .input("nurseId", sql.Int, nurseId)
-        .query(`
+  const pool = await getPool();
+  const result = await pool.request().input("nurseId", sql.Int, nurseId).query(`
             SELECT 
+            ns.shiftId,
             s.workDate,
             s.startTime,
             s.endTime,
@@ -62,13 +61,11 @@ async function getAllNurseSchedules(nurseId) {
         ORDER BY s.workDate, s.startTime
     `);
 
-    return result.recordset;
+  return result.recordset;
 }
 async function getNurseScheduleDetail(shiftId) {
-    const pool = await getPool();
-    const result = await pool.request()
-        .input("shiftId", sql.Int, shiftId)
-        .query(`
+  const pool = await getPool();
+  const result = await pool.request().input("shiftId", sql.Int, shiftId).query(`
             SELECT 
             ns.shiftId, 
             ns.status AS nurseShiftStatus, 
@@ -82,7 +79,7 @@ async function getNurseScheduleDetail(shiftId) {
             d.fullName AS doctorName,
             s.roomId, 
             r.roomName,
-            sr.requestId, 
+            sr.requestId 
         FROM NurseShifts ns
         JOIN Schedules s ON ns.scheduleId = s.scheduleId
         JOIN Users d ON s.doctorId = d.userId
@@ -91,14 +88,13 @@ async function getNurseScheduleDetail(shiftId) {
         WHERE ns.shiftId = @shiftId
     `);
 
-    return result.recordset;
+  return result.recordset;
 }
 
-
 module.exports = {
-    getActiveNurses,
-    createNurseShift,
-    getActiveNursesWithHours,
-    getAllNurseSchedules,
-    getNurseScheduleDetail
+  getActiveNurses,
+  createNurseShift,
+  getActiveNursesWithHours,
+  getAllNurseSchedules,
+  getNurseScheduleDetail,
 };

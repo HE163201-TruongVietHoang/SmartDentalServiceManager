@@ -18,9 +18,12 @@ const {
   logoutAllDevices,
   sendVerificationOtp,
   verifyAccountOtp,
-  uploadUserAvatar
+  uploadUserAvatar,
 } = require("../services/authService");
-const { getFirstReceptionist, getAllReceptionist } = require("../access/userAccess");
+const {
+  getFirstReceptionist,
+  getAllReceptionist,
+} = require("../access/userAccess");
 
 async function loginController(req, res) {
   try {
@@ -32,9 +35,9 @@ async function loginController(req, res) {
 
     // Set cookie accessToken
     res.cookie("accessToken", result.jwtToken, {
-      httpOnly: true,   
-      secure: false,       
-      sameSite: "lax",     
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
       maxAge: 15 * 60 * 1000,
     });
 
@@ -43,7 +46,7 @@ async function loginController(req, res) {
       httpOnly: true,
       secure: false,
       sameSite: "lax",
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 ngày
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 ngày
     });
 
     // Trả JSON response đồng bộ với cookie
@@ -189,21 +192,33 @@ async function deleteUserController(req, res) {
 }
 const updateProfileController = async (req, res) => {
   try {
-    const { fullName, phone, gender, dob, address, citizenIdNumber, occupation, ethnicity } = req.body;
-
+    const {
+      fullName,
+      phone,
+      gender,
+      dob,
+      address,
+      citizenIdNumber,
+      occupation,
+      ethnicity,
+    } = req.body;
 
     if (phone) {
       const phoneRegex = /^0\d{0,10}$/;
       if (!phoneRegex.test(phone)) {
-        return res.status(400).json({ message: "Số điện thoại không hợp lệ (bắt đầu bằng 0 và tối đa 11 số)" });
+        return res.status(400).json({
+          message:
+            "Số điện thoại không hợp lệ (bắt đầu bằng 0 và tối đa 11 số)",
+        });
       }
     }
-
 
     if (citizenIdNumber) {
       const citizenRegex = /^\d{0,12}$/;
       if (!citizenRegex.test(citizenIdNumber)) {
-        return res.status(400).json({ message: "Số căn cước công dân không hợp lệ (tối đa 12 số)" });
+        return res.status(400).json({
+          message: "Số căn cước công dân không hợp lệ (tối đa 12 số)",
+        });
       }
     }
 
@@ -214,7 +229,6 @@ const updateProfileController = async (req, res) => {
     res.status(500).json({ message: "Lỗi server" });
   }
 };
-
 
 async function getDevicesController(req, res) {
   try {
@@ -264,7 +278,9 @@ async function verifyOtp(req, res) {
 async function updateAvatarController(req, res) {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: "Invalid file or no file uploaded" });
+      return res
+        .status(400)
+        .json({ message: "Invalid file or no file uploaded" });
     }
 
     const userId = req.user.userId;
@@ -273,9 +289,8 @@ async function updateAvatarController(req, res) {
     res.json({
       success: true,
       avatar: result.avatarUrl,
-      message: "Avatar updated successfully"
+      message: "Avatar updated successfully",
     });
-
   } catch (err) {
     console.error("Error:", err);
 
@@ -294,7 +309,7 @@ async function getReceptionistRandomController(req, res) {
   try {
     const receptionist = await getFirstReceptionist();
     if (!receptionist) {
-      return res.status(404).json({ message: 'Không tìm thấy lễ tân' });
+      return res.status(404).json({ message: "Không tìm thấy lễ tân" });
     }
     res.json(receptionist);
   } catch (err) {
@@ -305,7 +320,7 @@ async function getAllReceptionistController(req, res) {
   try {
     const receptionist = await getAllReceptionist();
     if (!receptionist) {
-      return res.status(404).json({ message: 'Không tìm thấy lễ tân' });
+      return res.status(404).json({ message: "Không tìm thấy lễ tân" });
     }
     res.json(receptionist);
   } catch (err) {
@@ -333,5 +348,5 @@ module.exports = {
   verifyOtp,
   updateAvatarController,
   getReceptionistRandomController,
-  getAllReceptionistController
-}
+  getAllReceptionistController,
+};

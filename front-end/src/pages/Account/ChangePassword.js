@@ -1,11 +1,19 @@
 import React, { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Header from "../../components/home/Header/Header";
+import Footer from "../../components/home/Footer/Footer";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function ChangePassword() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // State để bật/tắt xem mật khẩu
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const token = localStorage.getItem("token");
 
@@ -48,52 +56,101 @@ export default function ChangePassword() {
   };
 
   return (
-    <div className="container py-5" style={{ maxWidth: "600px" }}>
-      <h3 className="mb-4 text-center text-primary">Đổi mật khẩu</h3>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label className="form-label">Mật khẩu hiện tại</label>
-          <input
-            type="password"
-            className="form-control"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            required
-          />
-        </div>
+    <div>
+      <Header />
+      <div className="container py-5" style={{ maxWidth: "600px" }}>
+        <h3 className="mb-4 text-center" style={{ color: "#2ECCB6" }}>
+          Đổi mật khẩu
+        </h3>
 
-        <div className="mb-3">
-          <label className="form-label">Mật khẩu mới</label>
-          <input
-            type="password"
-            className="form-control"
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            required
-            minLength={6}
-          />
-        </div>
+        <form onSubmit={handleSubmit}>
+          {/* Mật khẩu hiện tại */}
+          <div className="mb-3 position-relative">
+            <label className="form-label">Mật khẩu hiện tại</label>
+            <input
+              type={showCurrent ? "text" : "password"}
+              className="form-control"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              required
+            />
 
-        <div className="mb-3">
-          <label className="form-label">Xác nhận mật khẩu mới</label>
-          <input
-            type="password"
-            className="form-control"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            minLength={6}
-          />
-        </div>
+            <span
+              onClick={() => setShowCurrent(!showCurrent)}
+              style={{
+                position: "absolute",
+                right: "12px",
+                top: "38px",
+                cursor: "pointer",
+                userSelect: "none",
+              }}
+            >
+              {showCurrent ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
 
-        <button
-          type="submit"
-          className="btn btn-primary w-100"
-          style={{ backgroundColor: "#2ECCB6", border: "none" }}
-        >
-          Cập nhật mật khẩu
-        </button>
-      </form>
+          {/* Mật khẩu mới */}
+          <div className="mb-3 position-relative">
+            <label className="form-label">Mật khẩu mới</label>
+            <input
+              type={showNew ? "text" : "password"}
+              className="form-control"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+              minLength={6}
+            />
+
+            <span
+              onClick={() => setShowNew(!showNew)}
+              style={{
+                position: "absolute",
+                right: "12px",
+                top: "38px",
+                cursor: "pointer",
+                userSelect: "none",
+              }}
+            >
+              {showNew ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
+
+          {/* Xác nhận mật khẩu mới */}
+          <div className="mb-3 position-relative">
+            <label className="form-label">Xác nhận mật khẩu mới</label>
+            <input
+              type={showConfirm ? "text" : "password"}
+              className="form-control"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              minLength={6}
+            />
+
+            <span
+              onClick={() => setShowConfirm(!showConfirm)}
+              style={{
+                position: "absolute",
+                right: "12px",
+                top: "38px",
+                cursor: "pointer",
+                userSelect: "none",
+              }}
+            >
+              {showConfirm ? <FaEyeSlash /> : <FaEye />}
+            </span>
+          </div>
+
+          <button
+            type="submit"
+            className="btn btn-primary w-100"
+            style={{ backgroundColor: "#2ECCB6", border: "none" }}
+          >
+            Cập nhật mật khẩu
+          </button>
+        </form>
+      </div>
+      <Footer />
     </div>
   );
 }

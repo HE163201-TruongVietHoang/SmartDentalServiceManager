@@ -94,11 +94,48 @@ export default function UserProfile({ role }) {
   };
 
   const handleAvatarClick = () => fileInputRef.current.click();
-  const handleAvatarChange = (e) => {
+  const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Validate
+    if (!["image/jpeg", "image/png", "image/jpg"].includes(file.type)) {
+      return toast.warning("Chỉ chấp nhận PNG/JPG/JPEG");
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      return toast.warning("Ảnh không vượt quá 10MB");
+    }
+
+    // Preview ảnh trước
     setPreview(URL.createObjectURL(file));
-    // Upload avatar nếu muốn
+
+    // Upload lên server
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      const res = await axios.put(
+        "http://localhost:5000/api/auth/profile/avatar",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      // Cập nhật user.avatar sau khi backend trả về link mới
+      setUser((prev) => ({
+        ...prev,
+        avatar: res.data.avatar,
+      }));
+
+      toast.success("Cập nhật avatar thành công!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Cập nhật avatar thất bại!");
+    }
   };
 
   if (loading)

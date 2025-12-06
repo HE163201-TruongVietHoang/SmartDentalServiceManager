@@ -16,8 +16,9 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSendOtp = async (e) => {
-    e.preventDefault();
+  const handleSendOtp = async (e, isResend = false) => {
+    if (e) e.preventDefault(); // tránh lỗi submit
+
     setLoading(true);
     try {
       const res = await fetch(
@@ -28,15 +29,18 @@ export default function ResetPassword() {
           body: JSON.stringify({ email }),
         }
       );
+
       const data = await res.json();
       if (res.ok) {
-        toast.info("Mã OTP đã được gửi đến email của bạn!");
-        setStep(2);
+        toast.info(
+          isResend ? "Mã OTP mới đã được gửi!" : "Mã OTP đã gửi đến email!"
+        );
+        if (!isResend) setStep(2);
       } else {
-        toast.error(data.error || "Không thể gửi OTP, vui lòng thử lại!");
+        toast.error(data.error || "Không thể gửi OTP");
       }
     } catch {
-      toast.error("Lỗi máy chủ hoặc không thể kết nối!");
+      toast.error("Lỗi kết nối!");
     } finally {
       setLoading(false);
     }
@@ -323,9 +327,9 @@ export default function ResetPassword() {
                   cursor: "pointer",
                   fontWeight: "500",
                 }}
-                onClick={() => setStep(1)}
+                onClick={() => handleSendOtp(null, true)}
               >
-                ← Gửi lại OTP
+                Gửi lại OTP
               </p>
             </form>
           )}

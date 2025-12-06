@@ -268,7 +268,10 @@ export default function ScheduleRequests() {
               <p>
                 <b>Ngày tạo:</b>{" "}
                 {new Date(selectedRequest.request.createdAt).toLocaleString(
-                  "vi-VN"
+                  "vi-VN",
+                  {
+                    timeZone: "UTC",
+                  }
                 )}
               </p>
               <p>
