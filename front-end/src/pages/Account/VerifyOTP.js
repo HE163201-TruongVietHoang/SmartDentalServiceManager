@@ -4,51 +4,75 @@ import Header from "../../components/home/Header/Header";
 import Footer from "../../components/home/Footer/Footer";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 export default function VerifyOtp() {
   const [otp, setOtp] = useState("");
-  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleVerify = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage("");
+
+    const storedUser = JSON.parse(localStorage.getItem("signupUser"));
+    if (!storedUser?.email) {
+      toast.error("Không tìm thấy email. Vui lòng đăng nhập lại!");
+      setLoading(false);
+      return;
+    }
 
     try {
-      const storedUser = JSON.parse(localStorage.getItem("signupUser"));
-      if (!storedUser || !storedUser.userId) {
-        setMessage(
-          "Không tìm thấy thông tin người dùng. Vui lòng đăng ký lại."
-        );
-        setLoading(false);
-        return;
-      }
+      const payload = {
+        email: storedUser.email,
+        code: otp, // đổi key thành code theo backend
+      };
 
       const res = await axios.post(
         "http://localhost:5000/api/auth/verify-otp",
-        {
-          userId: storedUser.userId,
-          otp,
-        }
+        payload
       );
 
-      // ✅ Lưu token và thông tin người dùng
-      // localStorage.setItem("token", res.data.jwtToken);
-      // localStorage.setItem("refreshToken", res.data.refreshToken);
-      // localStorage.setItem("user", JSON.stringify(res.data.user));
+      // Lưu token & user info
       localStorage.setItem("token", res.data.token || res.data.jwtToken);
       localStorage.setItem("refreshToken", res.data.refreshToken);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       localStorage.setItem("sessionId", res.data.sessionId);
 
-      setMessage("✅ Xác minh thành công! Đang đăng nhập...");
+      toast.success("✅ Xác minh thành công! Đang đăng nhập...");
       setTimeout(() => navigate("/"), 1500);
     } catch (err) {
-      setMessage(
+      console.error("Verify OTP error:", err);
+      toast.error(
         err.response?.data?.error || "❌ Lỗi xác minh OTP, vui lòng thử lại!"
       );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    const storedUser = JSON.parse(localStorage.getItem("signupUser"));
+    if (!storedUser?.email) {
+      toast.error("Không tìm thấy email. Vui lòng đăng nhập lại!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/auth/request-reset-password",
+        { email: storedUser.email }
+      );
+
+      if (res.data.success) {
+        toast.success("🔄 OTP mới đã được gửi tới email!");
+      } else {
+        toast.error(res.data.error || "Không thể gửi lại OTP!");
+      }
+    } catch (err) {
+      console.error("Resend OTP error:", err);
+      toast.error("❌ Lỗi kết nối, vui lòng thử lại!");
     } finally {
       setLoading(false);
     }
@@ -59,10 +83,7 @@ export default function VerifyOtp() {
       <Header />
       <section
         className="d-flex align-items-center justify-content-center"
-        style={{
-          backgroundColor: "#f0fffa",
-          minHeight: "75vh",
-        }}
+        style={{ backgroundColor: "#f0fffa", minHeight: "75vh" }}
       >
         <div
           className="card shadow-sm p-4 text-center"
@@ -73,13 +94,10 @@ export default function VerifyOtp() {
             maxWidth: "400px",
           }}
         >
-          <h3
-            className="fw-bold mb-3"
-            style={{ color: "#2ECCB6", fontSize: "1.6rem" }}
-          >
+          <h3 className="fw-bold mb-3" style={{ color: "#2ECCB6" }}>
             Xác minh OTP
           </h3>
-          <p className="text-muted mb-4" style={{ fontSize: "0.95rem" }}>
+          <p className="text-muted mb-4">
             Nhập mã OTP đã gửi đến email của bạn
           </p>
 
@@ -99,13 +117,11 @@ export default function VerifyOtp() {
                 }}
               />
             </div>
-
             <button
               type="submit"
               className="btn w-100 fw-bold"
               style={{
                 backgroundColor: "#2ECCB6",
-                borderColor: "#2ECCB6",
                 color: "#fff",
                 borderRadius: "10px",
               }}
@@ -115,24 +131,13 @@ export default function VerifyOtp() {
             </button>
           </form>
 
-          {message && (
-            <p
-              className={`mt-3 mb-0 fw-medium ${
-                message.includes("✅") ? "text-success" : "text-danger"
-              }`}
-              style={{ fontSize: "0.9rem" }}
-            >
-              {message}
-            </p>
-          )}
-
           <p className="mt-3 text-muted" style={{ fontSize: "0.9rem" }}>
-            Chưa nhận được mã?{" "}
+            Không nhận được mã?{" "}
             <span
-              style={{ color: "#2ECCB6", cursor: "pointer" }}
-              onClick={() => navigate("/signup")}
+              style={{ color: "#2ECCB6", cursor: "pointer", fontWeight: "600" }}
+              onClick={handleResendOtp}
             >
-              Đăng ký lại
+              Gửi lại OTP
             </span>
           </p>
         </div>

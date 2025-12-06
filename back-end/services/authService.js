@@ -217,6 +217,8 @@ async function resetPassword({ email, otpCode, newPassword }) {
 
 //   return { message: "Xác minh tài khoản thành công" };
 // }
+
+//comet 06/12/25
 async function verifyAccountOtp(userId, otp, ip, device) {
   const user = await verifyUserOtp(userId, otp);
   if (!user) throw new Error("Người dùng không tồn tại");

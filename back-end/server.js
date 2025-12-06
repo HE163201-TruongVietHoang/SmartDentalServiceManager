@@ -20,12 +20,13 @@ const doctorRoutes = require("./routes/doctorRoutes");
 const patientRoutes = require("./routes/patientRoutes");
 const doctorDiagnosisRoutes = require("./routes/doctorDiagnosisRoutes");
 const { getPool } = require("./config/db");
-const promotionRoutes = require('./routes/promotionRoutes');
-const invoiceRoutes = require('./routes/invoiceRoutes');
-const paymentRoutes = require('./routes/paymentRoutes');
-const statisticsRoutes = require('./routes/statisticsRoutes');
-const dashboardRoutes = require('./routes/dashboardRoutes');
+const promotionRoutes = require("./routes/promotionRoutes");
+const invoiceRoutes = require("./routes/invoiceRoutes");
+const paymentRoutes = require("./routes/paymentRoutes");
+const statisticsRoutes = require("./routes/statisticsRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 const nurseRoutes = require("./routes/nurseRoutes");
+const adminRoutes = require("./routes/adminRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 //const prescriptionRoutes = require("./routes/prescriptionRoutes");
 
@@ -33,19 +34,21 @@ const app = express();
 const http = require("http");
 const { initSocket } = require("./utils/socket");
 app.use(cookieParser());
-app.use(cors({
-  origin: "http://localhost:3000",
-  credentials: true   // QUAN TRỌNG: cho phép gửi cookie
-}));
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true, // QUAN TRỌNG: cho phép gửi cookie
+  })
+);
 app.use(express.json());
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use('/api/promotions', promotionRoutes);
-app.use('/api/invoices', invoiceRoutes);
-app.use('/api/payments', paymentRoutes);
-app.use('/api/statistics', statisticsRoutes);
-app.use('/api/dashboard', dashboardRoutes);
+app.use("/api/promotions", promotionRoutes);
+app.use("/api/invoices", invoiceRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/statistics", statisticsRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/chat", chatRoutes);
 
 app.use("/api/materials", materialRoutes);
@@ -62,6 +65,7 @@ app.use("/api/diagnoses", doctorDiagnosisRoutes);
 app.use("/api/medicines", require("./routes/medicineRoutes"));
 app.use("/api/invoices", invoiceRoutes);
 app.use("/api/nurses", nurseRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/notifications", notificationRoutes);
 cron.schedule("*/30 * * * *", async () => {
   console.log("Running auto-cancel job...");
@@ -72,8 +76,6 @@ cron.schedule("0 0 * * *", async () => {
   await promotionService.deactivateExpiredPromotions();
 });
 getPool();
-
-
 
 // Start server with Socket.IO
 const PORT = process.env.PORT || 5000;
