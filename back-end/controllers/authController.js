@@ -252,7 +252,9 @@ async function logoutAllDevicesController(req, res) {
 async function verifyOtp(req, res) {
   try {
     const { userId, otp } = req.body;
-    const result = await verifyAccountOtp(userId, otp);
+    const ip = req.ip;
+    const device = req.headers["user-agent"];
+    const result = await verifyAccountOtp(userId, otp, ip, device);
     res.status(200).json(result);
   } catch (err) {
     res.status(400).json({ error: err.message });

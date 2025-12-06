@@ -186,7 +186,7 @@ async function createUser({ email, phone, fullName, gender, dob, address }) {
     .input("address", sql.NVarChar, address || null)
     .input("roleId", sql.Int, roleId || null)
     .input("isActive", sql.Bit, 1)
-    .input("isVerify", sql.Bit, 0).query(`
+    .input("isVerify", sql.Bit, 1).query(`
       INSERT INTO Users (email, phone, fullName, password, gender, dob, address,roleId, isActive, isVerify )
       OUTPUT INSERTED.userId
       VALUES (@email, @phone, @fullName, @password, @gender, @dob, @address, @roleId, @isActive, @isVerify)

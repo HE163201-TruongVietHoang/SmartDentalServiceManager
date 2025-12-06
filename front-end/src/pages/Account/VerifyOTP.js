@@ -33,17 +33,11 @@ export default function VerifyOtp() {
           otp,
         }
       );
-
-      // ✅ Lưu token và thông tin người dùng
-      // localStorage.setItem("token", res.data.jwtToken);
-      // localStorage.setItem("refreshToken", res.data.refreshToken);
-      // localStorage.setItem("user", JSON.stringify(res.data.user));
       localStorage.setItem("token", res.data.token || res.data.jwtToken);
-      localStorage.setItem("refreshToken", res.data.refreshToken);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("user", localStorage.getItem("signupUser"));
       localStorage.setItem("sessionId", res.data.sessionId);
-
-      setMessage("✅ Xác minh thành công! Đang đăng nhập...");
+      localStorage.removeItem("signupUser");
+      setMessage(" Xác minh thành công! Đang đăng nhập...");
       setTimeout(() => navigate("/"), 1500);
     } catch (err) {
       setMessage(

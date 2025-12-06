@@ -133,7 +133,7 @@ async function verifyUserOtp(userId, otpCode) {
     .input("userId", sql.Int, userId)
     .input("otpCode", sql.NVarChar, otpCode)
     .query(`
-      SELECT otpCode, otpExpiresAt, isVerify
+      SELECT userId, fullName, otpCode, otpExpiresAt, isVerify
       FROM dbo.Users
       WHERE userId = @userId
     `);
