@@ -57,7 +57,6 @@ export default function SignUp() {
         gender: formData.gender,
         dob: formData.dob,
         password: formData.password,
-        roleId: 3, // default Patient
         isActive: true,
       });
 
@@ -68,6 +67,8 @@ export default function SignUp() {
         JSON.stringify({
           userId: userData?.userId || null,
           email: userData?.email || formData.email,
+          fullName: userData?.fullName || formData.fullName,
+          roleName: userData?.roleName || "Patient",
         })
       );
       navigate("/verify-otp");

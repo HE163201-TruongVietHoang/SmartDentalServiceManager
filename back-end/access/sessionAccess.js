@@ -14,7 +14,6 @@ async function createSession({ userId, jwtToken, refreshToken, ip, device }) {
   const pool = await getPool();
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 1 ngày
-
   const result = await pool.request()
     .input('userId', sql.Int, userId)
     .input('jwtToken', sql.NVarChar, jwtToken)

@@ -41,13 +41,10 @@ const appointmentService = {
     // Chuẩn bị danh sách notification
     const notifyUsers = [];
     const timeStr = slot.startTime instanceof Date
-      ? slot.startTime.toISOString().substring(11, 16)  // an toàn
-      : slot.startTime;                                 // nếu đã là string
+      ? slot.startTime.toISOString().substring(11, 16)
+      : slot.startTime;
 
     const workDateStr = slot.workDate ? slot.workDate.toISOString().slice(0, 10) : null;
-    console.log("=== SLOT RAW VALUE ===");
-    console.log("startTime (raw):", timeStr);
-    console.log("workDate (raw):", workDateStr);
     // Bệnh nhân
     notifyUsers.push({
       receiverId: patientId,
@@ -111,8 +108,17 @@ const appointmentService = {
           message: "Bạn đã hủy quá 5 lần — tài khoản bị khóa!"
         };
       }
-
-
+      if (cancelCount === 3) {
+        await sendNotificationToMany([
+          {
+            receiverId: userId,
+            senderId: null,
+            title: "Cảnh báo hủy lịch",
+            message: `Bạn đã hủy 3 lần hẹn trong tháng này. Hủy thêm 2 lần nữa sẽ bị khóa tài khoản!`,
+            type: "appointment"
+          }
+        ]);
+      }
       await transaction.begin();
 
       // 2. Lấy appointment
@@ -197,22 +203,19 @@ const appointmentService = {
         try {
           if (!appt.startTime || !appt.workDate) continue;
 
-          // Chuẩn hóa giờ startTime
           const startStr = normalizeTime(appt.startTime);
           const [h, m] = startStr.split(":").map(Number);
 
-          // Tạo datetime chính xác của appointment
           const workDate = new Date(
             new Date(appt.workDate).toLocaleString("en-US", { timeZone: "Asia/Ho_Chi_Minh" })
           );
           workDate.setHours(h, m, 0, 0);
 
-          // Diff giờ
-          const now = new Date();
-          const diffHours = (now - workDate) / (1000 * 60 * 60);
 
-          if (diffHours >= 2) {
-            // Xử lý từng appointment trong transaction riêng
+          const now = new Date();
+          const diffMinutes = (now - workDate) / (1000 * 60);
+
+          if (diffMinutes >= 10) {
             const transaction = new sql.Transaction(pool);
             await transaction.begin();
 
@@ -239,17 +242,23 @@ const appointmentService = {
                 .input("userId", sql.Int, appt.patientId)
                 .query(`UPDATE Users SET isActive = 0 WHERE userId = @userId`);
             }
-
-            console.log(`Auto-canceled appointment ${appt.appointmentId}`);
+            if (cancelCount === 3) {
+              await sendNotificationToMany([
+                {
+                  receiverId: userId,
+                  senderId: null,
+                  title: "Cảnh báo hủy lịch",
+                  message: `Bạn đã hủy 3 lần hẹn trong tháng này. Hủy thêm 2 lần nữa sẽ bị khóa tài khoản!`,
+                  type: "appointment"
+                }
+              ]);
+            }
           }
 
         } catch (innerErr) {
           console.error(`Error processing appointment ${appt.appointmentId}:`, innerErr);
         }
       }
-
-      console.log("Auto-cancel no-show finished");
-
     } catch (err) {
       console.error("Error in auto-cancel no-show:", err);
     }
@@ -260,22 +269,22 @@ const appointmentService = {
     await transaction.begin();
 
     try {
-      // 1️⃣ Tìm user theo email hoặc sđt
+      //  Tìm user theo email hoặc sđt
       let patient = await findUserByEmailOrPhone(email, phone);
 
-      // 2️⃣ Nếu chưa tồn tại thì tạo mới
+      //  Nếu chưa tồn tại thì tạo mới
       if (!patient) {
         patient = await createUser({ email, phone, fullName, gender, dob, address });
       }
 
-      // 3️⃣ Kiểm tra slot
+      //  Kiểm tra slot
       const slot = await checkSlot(slotId, transaction);
       if (!slot) throw new Error("Slot không tồn tại");
       if (slot.isBooked) throw new Error("Slot đã được đặt");
 
       await markAsBooked(slotId, transaction);
 
-      // 4️⃣ Tạo appointment
+      // 4 Tạo appointment
       const appointment = await create({
         patientId: patient.userId,
         doctorId,

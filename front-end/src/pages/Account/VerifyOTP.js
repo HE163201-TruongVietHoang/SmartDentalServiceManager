@@ -32,14 +32,11 @@ export default function VerifyOtp() {
         "http://localhost:5000/api/auth/verify-otp",
         payload
       );
-
-      // Lưu token & user info
       localStorage.setItem("token", res.data.token || res.data.jwtToken);
-      localStorage.setItem("refreshToken", res.data.refreshToken);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      localStorage.setItem("user", localStorage.getItem("signupUser"));
       localStorage.setItem("sessionId", res.data.sessionId);
-
-      toast.success("✅ Xác minh thành công! Đang đăng nhập...");
+      localStorage.removeItem("signupUser");
+      setMessage(" Xác minh thành công! Đang đăng nhập...");
       setTimeout(() => navigate("/"), 1500);
     } catch (err) {
       console.error("Verify OTP error:", err);

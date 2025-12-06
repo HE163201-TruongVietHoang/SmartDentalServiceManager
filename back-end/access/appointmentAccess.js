@@ -129,7 +129,8 @@ async function countUserCancellations(patientId) {
       FROM Appointments
       WHERE patientId = @patientId
         AND status = 'Cancelled'
-        AND updatedAt >= DATEADD(DAY, -7, GETDATE())
+        AND MONTH(updatedAt) = MONTH(GETDATE())
+        AND YEAR(updatedAt) = YEAR(GETDATE())
     `);
   return result.recordset[0].cancelCount;
 }

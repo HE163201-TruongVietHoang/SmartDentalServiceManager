@@ -4,7 +4,7 @@ const statisticsController = require('../controllers/statisticsController');
 const { authMiddleware } = require('../middlewares/authMiddleware');
 
 // Áp dụng middleware xác thực cho tất cả routes
-// router.use(authMiddleware);
+router.use(authMiddleware);
 
 // Routes cho thống kê
 router.get('/appointments', statisticsController.getAppointmentStats);

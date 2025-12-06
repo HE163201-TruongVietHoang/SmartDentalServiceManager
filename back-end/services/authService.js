@@ -240,7 +240,6 @@ async function verifyAccountOtp(userId, otp, ip, device) {
     ip,
     device,
   });
-
   return {
     message: "Xác minh tài khoản thành công",
     jwtToken,
