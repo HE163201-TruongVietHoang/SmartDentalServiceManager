@@ -33,6 +33,7 @@ async function loginController(req, res) {
 
     const result = await login({ identifier, password, ip, device });
 
+
     // Set cookie accessToken
     res.cookie("accessToken", result.jwtToken, {
       httpOnly: true,
@@ -46,10 +47,9 @@ async function loginController(req, res) {
       httpOnly: true,
       secure: false,
       sameSite: "lax",
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 ngày
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
-    // Trả JSON response đồng bộ với cookie
     res.json({
       message: "Đăng nhập thành công",
       token: result.jwtToken,
@@ -61,8 +61,14 @@ async function loginController(req, res) {
         roleName: result.user.roleName,
       },
     });
+
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(400).json({
+      error: err.message,
+      userId: err.userId || null,
+      roleName : err.roleName,
+      fullName : err.fullName
+    });
   }
 }
 

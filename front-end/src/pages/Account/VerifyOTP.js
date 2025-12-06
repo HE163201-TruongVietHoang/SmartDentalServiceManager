@@ -34,11 +34,37 @@ export default function VerifyOtp() {
         }
       );
       localStorage.setItem("token", res.data.token || res.data.jwtToken);
-      localStorage.setItem("user", localStorage.getItem("signupUser"));
+      localStorage.setItem("user", JSON.stringify(res.data.user));
       localStorage.setItem("sessionId", res.data.sessionId);
       localStorage.removeItem("signupUser");
       setMessage(" Xác minh thành công! Đang đăng nhập...");
-      setTimeout(() => navigate("/"), 1500);
+
+      const roleName = res.data.user?.roleName;
+
+      setTimeout(() => {
+        switch (roleName) {
+          case "Patient":
+            navigate("/");
+            break;
+          case "Doctor":
+            navigate("/doctor/schedule");
+            break;
+          case "Nurse":
+            navigate("/nurse/materials");
+            break;
+          case "ClinicManager":
+            navigate("/clinicmanager/dashboard");
+            break;
+          case "Receptionist":
+            navigate("/receptionist/patient/appointment");
+            break;
+          case "Admin":
+            navigate("/admin/accounts");
+            break;
+          default:
+            navigate("/");
+        }
+      }, 1200);
     } catch (err) {
       setMessage(
         err.response?.data?.error || "❌ Lỗi xác minh OTP, vui lòng thử lại!"
@@ -111,9 +137,8 @@ export default function VerifyOtp() {
 
           {message && (
             <p
-              className={`mt-3 mb-0 fw-medium ${
-                message.includes("✅") ? "text-success" : "text-danger"
-              }`}
+              className={`mt-3 mb-0 fw-medium ${message.includes("✅") ? "text-success" : "text-danger"
+                }`}
               style={{ fontSize: "0.9rem" }}
             >
               {message}

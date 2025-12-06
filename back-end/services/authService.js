@@ -32,6 +32,7 @@ const {
   findSessionByRefreshToken,
   deactivateAllSessionsByUser,
 } = require("../access/sessionAccess");
+
 const { getPool, sql } = require("../config/db");
 const { get } = require("jquery");
 const MAX_SESSIONS = 3;
@@ -53,10 +54,21 @@ function generateRefreshToken() {
 async function login({ identifier, password, ip, device }) {
   const user = await findUserByEmailOrPhone(identifier);
   if (!user) throw new Error("Email hoặc số điện thoại không tồn tại");
-  if (!user.isActive) throw new Error("Tài khoản đã bị vô hiệu hóa");
-  if (!user.isVerify) throw new Error("Tài khoản chưa xác minh");
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) throw new Error("Sai mật khẩu");
+  if (!user.isActive) throw new Error("Tài khoản đã bị vô hiệu hóa");
+  if (!user.isVerify) {
+    const error = new Error("Tài khoản chưa xác minh");
+    const otp = generateOtp();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    await setOtpForUser(user.userId, otp, expiresAt);
+    await sendOtpEmail(identifier, otp);
+    error.userId = user.userId;
+    error.roleName = user.roleName;
+    error.fullName = user.fullName;
+    throw error;
+  }
+
 
   // Giới hạn số session
   const activeSessions = await getActiveSessions(user.userId);
@@ -244,8 +256,12 @@ async function verifyAccountOtp(userId, otp, ip, device) {
     message: "Xác minh tài khoản thành công",
     jwtToken,
     refreshToken,
-    user,
     sessionId,
+    user: {
+      userId: user.userId,
+      fullName: user.fullName,
+      roleName: user.roleName
+    }
   };
 }
 
