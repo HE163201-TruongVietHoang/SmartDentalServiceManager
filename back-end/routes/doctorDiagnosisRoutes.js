@@ -5,7 +5,7 @@ const controller = require("../controllers/doctorDiagnosisController");
 const { authMiddleware } = require("../middlewares/authMiddleware");
 const authorizeRoles = require("../middlewares/roleMiddleware");
 
-// 👨‍⚕️ Bác sĩ xem ca khám của mình (InProgress hôm nay)
+//  Bác sĩ xem ca khám của mình (InProgress hôm nay)
 router.get(
   "/appointments",
   authMiddleware,
@@ -13,7 +13,7 @@ router.get(
   controller.getDoctorAppointments
 );
 
-// 👨‍⚕️ Tạo chẩn đoán + dịch vụ + đơn thuốc + hóa đơn (Pending)
+//  Tạo chẩn đoán + dịch vụ + đơn thuốc + hóa đơn (Pending)
 router.post(
   "/create",
   authMiddleware,
@@ -21,7 +21,7 @@ router.post(
   controller.createDiagnosis
 );
 
-// 👨‍⚕️ Thêm dịch vụ điều trị vào chẩn đoán (nếu cần tách riêng)
+//  Thêm dịch vụ điều trị vào chẩn đoán (nếu cần tách riêng)
 router.post(
   "/:diagnosisId/services",
   authMiddleware,
@@ -29,7 +29,7 @@ router.post(
   controller.addDiagnosisServices
 );
 
-// 👨‍⚕️ Lịch sử chẩn đoán
+//  Lịch sử chẩn đoán
 router.get(
   "/history",
   authMiddleware,

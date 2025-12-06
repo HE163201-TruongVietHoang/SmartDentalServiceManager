@@ -4,6 +4,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 import Header from "../../components/home/Header/Header";
 import Footer from "../../components/home/Footer/Footer";
 import { toast } from "react-toastify";
+import { error } from "jquery";
 
 function SignIn() {
   const [identifier, setIdentifier] = useState(""); // email hoặc SĐT
@@ -32,8 +33,9 @@ function SignIn() {
         localStorage.setItem(
           "signupUser",
           JSON.stringify({
-            email: identifier, // dùng identifier vì bạn login bằng email/sđt
-            userId: data?.user?.id || null,
+            email: identifier,
+            userId: data.userId,
+            roleName: data.roleName,
           })
         );
 

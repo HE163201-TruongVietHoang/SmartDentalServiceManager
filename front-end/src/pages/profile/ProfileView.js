@@ -186,7 +186,20 @@ export default function ProfileView() {
                 </button>
                 <button
                   className="btn btn-secondary"
-                  onClick={() => setIsEditing(false)}
+                  onClick={() => {
+                    setForm({
+                      avatar: user.avatar || "",
+                      fullName: user.fullName || "",
+                      phone: user.phone || "",
+                      gender: user.gender || "",
+                      dob: user.dob ? user.dob.slice(0, 10) : "",
+                      address: user.address || "",
+                      citizenIdNumber: user.citizenIdNumber || "",
+                      occupation: user.occupation || "",
+                      ethnicity: user.ethnicity || "",
+                    });
+                    setIsEditing(false);
+                  }}
                 >
                   Hủy
                 </button>
@@ -293,7 +306,12 @@ const AvatarSection = ({
 const ProfileFields = ({ user, form, isEditing, handleChange }) => (
   <div className="row text-start">
     {[
-      { label: "Email", value: user.email, name: null },
+      {
+        label: "Email",
+        name: "email",
+        value: user.email,
+        readOnly: true, // không cho sửa
+      },
       { label: "Số điện thoại", value: form.phone, name: "phone" },
       {
         label: "Giới tính",
@@ -303,24 +321,26 @@ const ProfileFields = ({ user, form, isEditing, handleChange }) => (
         options: ["Male", "Female", "Other"],
       },
       { label: "Ngày sinh", value: form.dob, name: "dob", type: "date" },
-      {
-        label: "Địa chỉ",
-        value: form.address,
-        name: "address",
-        type: "textarea",
-      },
-      {
-        label: "Số căn cước công dân",
-        value: form.citizenIdNumber,
-        name: "citizenIdNumber",
-      },
+      { label: "Địa chỉ", value: form.address, name: "address", type: "textarea" },
+      { label: "Số căn cước công dân", value: form.citizenIdNumber, name: "citizenIdNumber" },
       { label: "Nghề nghiệp", value: form.occupation, name: "occupation" },
       { label: "Dân tộc", value: form.ethnicity, name: "ethnicity" },
     ].map((f, idx) => (
       <div className="col-6 mb-3" key={idx}>
         <div className="fw-bold">{f.label}:</div>
+
+        {/* Nếu đang edit */}
         {isEditing && f.name ? (
-          f.type === "select" ? (
+          f.readOnly ? (
+            // READ-ONLY FIELD (vd email)
+            <input
+              className="form-control"
+              type="text"
+              name={f.name}
+              value={f.value}
+              readOnly
+            />
+          ) : f.type === "select" ? (
             <select
               className="form-select"
               name={f.name}
@@ -352,14 +372,14 @@ const ProfileFields = ({ user, form, isEditing, handleChange }) => (
             />
           )
         ) : (
-          <div className="text-secondary">
-            {user[f.name] || user[f.value] || "—"}
-          </div>
+          // Chế độ xem
+          <div className="text-secondary">{f.value || "—"}</div>
         )}
       </div>
     ))}
   </div>
 );
+
 
 // Devices List Component
 const DevicesList = ({
