@@ -30,12 +30,15 @@ function SignIn() {
         toast.error(data.error);
 
         // Lưu email & userId để Verify OTP
+        // khi data.error === "Tài khoản chưa xác minh"
         localStorage.setItem(
           "signupUser",
           JSON.stringify({
             email: identifier,
-            userId: data.userId,
-            roleName: data.roleName,
+            userId: data.userId ?? data.user?.id ?? null,
+            roleName: data.roleName ?? data.user?.roleName ?? null,
+            // lưu nguyên response để debug (tuỳ bạn)
+            _raw: data,
           })
         );
 
@@ -83,7 +86,7 @@ function SignIn() {
         toast.error(data.error || "Đăng nhập thất bại!");
       }
     } catch (error) {
-      console.error("❌ Lỗi kết nối:", error);
+      console.error("Lỗi kết nối:", error);
       toast.error("Không thể kết nối đến máy chủ!");
     }
   };

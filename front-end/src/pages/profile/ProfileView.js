@@ -9,6 +9,7 @@ import {
   FaCamera,
 } from "react-icons/fa";
 import Header from "../../components/home/Header/Header";
+import Footer from "../../components/home/Footer/Footer";
 import { toast } from "react-toastify";
 
 const API_BASE = "http://localhost:5000/api/auth";
@@ -216,6 +217,7 @@ export default function ProfileView() {
           handleLogoutAllDevices={handleLogoutAllDevices}
         />
       </div>
+      <Footer />
     </>
   );
 }
@@ -321,8 +323,17 @@ const ProfileFields = ({ user, form, isEditing, handleChange }) => (
         options: ["Male", "Female", "Other"],
       },
       { label: "Ngày sinh", value: form.dob, name: "dob", type: "date" },
-      { label: "Địa chỉ", value: form.address, name: "address", type: "textarea" },
-      { label: "Số căn cước công dân", value: form.citizenIdNumber, name: "citizenIdNumber" },
+      {
+        label: "Địa chỉ",
+        value: form.address,
+        name: "address",
+        type: "textarea",
+      },
+      {
+        label: "Số căn cước công dân",
+        value: form.citizenIdNumber,
+        name: "citizenIdNumber",
+      },
       { label: "Nghề nghiệp", value: form.occupation, name: "occupation" },
       { label: "Dân tộc", value: form.ethnicity, name: "ethnicity" },
     ].map((f, idx) => (
@@ -379,7 +390,6 @@ const ProfileFields = ({ user, form, isEditing, handleChange }) => (
     ))}
   </div>
 );
-
 
 // Devices List Component
 const DevicesList = ({

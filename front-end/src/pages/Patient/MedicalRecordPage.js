@@ -50,7 +50,7 @@ export default function MedicalRecordPage() {
     <>
       <Header />
 
-      <div className="min-vh-100 py-4" style={{ backgroundColor: "#f5f7f8" }}>
+      <div className="min-vh-100 py-4">
         <div className="container">
           <h1 className="text-center fw-bold mb-2" style={{ color: "#2ECCB6" }}>
             Hồ Sơ Khám Bệnh
