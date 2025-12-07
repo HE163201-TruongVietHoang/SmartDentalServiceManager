@@ -13,8 +13,14 @@ export default function ManagerServices() {
   });
   const [editingService, setEditingService] = useState(null);
   const [preview, setPreview] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   const fileInputRef = useRef(null);
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // --- Fetch services ---
   const fetchServices = async () => {
     try {
       const res = await axios.get("http://localhost:5000/api/services");
@@ -28,7 +34,7 @@ export default function ManagerServices() {
     fetchServices();
   }, []);
 
-  // --- Thêm dịch vụ mới ---
+  // --- Add service ---
   const handleAddService = async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -41,20 +47,18 @@ export default function ManagerServices() {
       await axios.post("http://localhost:5000/api/services", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      setNewService({
-        serviceName: "",
-        description: "",
-        price: "",
-        image: null,
-      });
+      setNewService({ serviceName: "", description: "", price: "", image: null });
       setPreview(null);
+      setShowModal(false);
       fetchServices();
+      toast.success("Thêm dịch vụ thành công!");
     } catch (err) {
       console.error("Lỗi khi thêm dịch vụ:", err);
+      toast.error("Thêm dịch vụ thất bại");
     }
   };
 
-  // --- Cập nhật dịch vụ ---
+  // --- Update service ---
   const handleUpdateService = async (e) => {
     e.preventDefault();
     const formData = new FormData();
@@ -72,25 +76,31 @@ export default function ManagerServices() {
         { headers: { "Content-Type": "multipart/form-data" } }
       );
       setEditingService(null);
+      setPreview(null);
+      setShowModal(false);
       fetchServices();
+      toast.success("Cập nhật dịch vụ thành công!");
     } catch (err) {
       console.error("Lỗi khi cập nhật dịch vụ:", err);
+      toast.error("Cập nhật thất bại");
     }
   };
 
-  // --- Xóa dịch vụ ---
+  // --- Delete service ---
   const handleDeleteService = async (id) => {
     if (window.confirm("Bạn có chắc muốn xóa dịch vụ này không?")) {
       try {
         await axios.delete(`http://localhost:5000/api/services/${id}`);
         fetchServices();
+        toast.success("Xóa dịch vụ thành công!");
       } catch (err) {
         console.error("Lỗi khi xóa:", err);
+        toast.error("Xóa thất bại");
       }
     }
   };
 
-  // --- Chọn ảnh ---
+  // --- File input ---
   const handleFileChange = (e, isEdit = false) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -118,11 +128,44 @@ export default function ManagerServices() {
     fileInputRef.current.click();
   };
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  // --- Upload ảnh cho textarea ---
+  const uploadImage = async () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.click();
 
-  // normalize có/dấu
+    input.onchange = async () => {
+      const file = input.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const res = await axios.post("http://localhost:5000/api/services/upload", formData);
+        const imageUrl = res.data.url;
+
+        // Chèn HTML <img> vào description dạng text
+        if (editingService) {
+          setEditingService({
+            ...editingService,
+            description: (editingService.description || "") + `<img src="${imageUrl}" />`,
+          });
+        } else {
+          setNewService({
+            ...newService,
+            description: (newService.description || "") + `<img src="${imageUrl}" />`,
+          });
+        }
+      } catch (err) {
+        console.error("Upload thất bại", err);
+        toast.error("Upload ảnh thất bại");
+      }
+    };
+  };
+
+  // --- Search & Pagination ---
   const normalizeText = (str, removeTone = true) => {
     if (!str) return "";
     let text = str.toLowerCase();
@@ -134,7 +177,6 @@ export default function ManagerServices() {
       : text;
   };
 
-  // lọc theo tên dịch vụ (có dấu + không dấu)
   const filteredServices = services.filter((s) => {
     const name = s.serviceName || "";
     return (
@@ -143,177 +185,155 @@ export default function ManagerServices() {
     );
   });
 
-  // pagination
   const indexOfLast = currentPage * itemsPerPage;
   const indexOfFirst = indexOfLast - itemsPerPage;
   const currentServices = filteredServices.slice(indexOfFirst, indexOfLast);
-
   const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
 
   return (
     <div className="container">
       <h3 className="mb-4 fw-bold text-uppercase">Quản lý Dịch vụ</h3>
 
-      {/* Form thêm dịch vụ */}
-      {!editingService ? (
-        <form onSubmit={handleAddService} className="mb-4 card p-3 shadow-sm">
-          <h5 className="fw-semibold mb-3">
-            <FaPlus className="me-2" />
-            Thêm dịch vụ mới
-          </h5>
-          <div className="row g-3 align-items-center">
-            <div className="col-md-3">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Tên dịch vụ"
-                value={newService.serviceName}
-                onChange={(e) =>
-                  setNewService({ ...newService, serviceName: e.target.value })
-                }
-                required
-              />
-            </div>
-            <div className="col-md-4">
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Mô tả"
-                value={newService.description}
-                onChange={(e) =>
-                  setNewService({ ...newService, description: e.target.value })
-                }
-              />
-            </div>
-            <div className="col-md-2">
-              <input
-                type="number"
-                className="form-control"
-                placeholder="Giá"
-                value={newService.price}
-                onChange={(e) =>
-                  setNewService({ ...newService, price: e.target.value })
-                }
-                required
-              />
-            </div>
-            <div className="col-md-2 d-flex align-items-center gap-2">
-              <input
-                type="file"
-                accept="image/*"
-                style={{ display: "none" }}
-                ref={fileInputRef}
-                onChange={(e) => handleFileChange(e)}
-              />
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={() => triggerFileInput()}
-              >
-                <FaCamera /> Ảnh
-              </button>
-              {preview && (
-                <img
-                  src={preview}
-                  alt="preview"
-                  style={{ width: "50px", height: "50px", objectFit: "cover" }}
-                />
-              )}
-            </div>
-            <div className="col-md-1 d-flex justify-content-center">
-              <button className="btn btn-success w-100">Thêm</button>
-            </div>
-          </div>
-        </form>
-      ) : (
-        <form
-          onSubmit={handleUpdateService}
-          className="mb-4 card p-3 shadow-sm"
+      {/* Nút tạo mới */}
+      <button
+        className="btn btn-success mb-3"
+        onClick={() => {
+          setShowModal(true);
+          setNewService({ serviceName: "", description: "", price: "", image: null });
+          setPreview(null);
+          setEditingService(null);
+        }}
+      >
+        <FaPlus className="me-2" /> Tạo dịch vụ
+      </button>
+
+      {/* Modal */}
+      {showModal && (
+        <div
+          className="modal show fade d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
         >
-          <h5 className="fw-semibold mb-3">
-            <FaEdit className="me-2" />
-            Chỉnh sửa dịch vụ
-          </h5>
-          <div className="row g-3 align-items-center">
-            <div className="col-md-3">
-              <input
-                type="text"
-                className="form-control"
-                value={editingService.serviceName}
-                onChange={(e) =>
-                  setEditingService({
-                    ...editingService,
-                    serviceName: e.target.value,
-                  })
-                }
-              />
-            </div>
-            <div className="col-md-4">
-              <input
-                type="text"
-                className="form-control"
-                value={editingService.description}
-                onChange={(e) =>
-                  setEditingService({
-                    ...editingService,
-                    description: e.target.value,
-                  })
-                }
-              />
-            </div>
-            <div className="col-md-2">
-              <input
-                type="number"
-                className="form-control"
-                value={editingService.price}
-                onChange={(e) =>
-                  setEditingService({
-                    ...editingService,
-                    price: e.target.value,
-                  })
-                }
-              />
-            </div>
-            <div className="col-md-2 d-flex align-items-center gap-2">
-              <input
-                type="file"
-                accept="image/*"
-                style={{ display: "none" }}
-                ref={fileInputRef}
-                onChange={(e) => handleFileChange(e, true)}
-              />
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={() => triggerFileInput(true)}
-              >
-                <FaCamera /> Ảnh
-              </button>
-              {editingService.image && (
-                <img
-                  src={
-                    editingService.image instanceof File
-                      ? URL.createObjectURL(editingService.image)
-                      : editingService.image
-                  }
-                  alt="preview"
-                  style={{ width: "50px", height: "50px", objectFit: "cover" }}
-                />
-              )}
-            </div>
-            <div className="col-md-1 d-flex justify-content-center gap-1">
-              <button className="btn btn-primary">Lưu</button>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => setEditingService(null)}
-              >
-                Hủy
-              </button>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  {editingService ? "Chỉnh sửa dịch vụ" : "Thêm dịch vụ mới"}
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => {
+                    setShowModal(false);
+                    setEditingService(null);
+                    setPreview(null);
+                  }}
+                ></button>
+              </div>
+              <form onSubmit={editingService ? handleUpdateService : handleAddService}>
+                <div
+                  className="modal-body"
+                  style={{ minHeight: "450px", display: "flex", flexDirection: "column", gap: "15px" }}
+                >
+                  {/* Tên dịch vụ */}
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Tên dịch vụ"
+                    value={editingService ? editingService.serviceName : newService.serviceName}
+                    onChange={(e) =>
+                      editingService
+                        ? setEditingService({ ...editingService, serviceName: e.target.value })
+                        : setNewService({ ...newService, serviceName: e.target.value })
+                    }
+                    required
+                  />
+
+                  {/* Mô tả dạng text */}
+                  <div style={{ marginBottom: "40px" }}>
+                    <textarea
+                      className="form-control"
+                      style={{ minHeight: "180px" }}
+                      placeholder="Mô tả dịch vụ"
+                      value={editingService ? editingService.description : newService.description}
+                      onChange={(e) =>
+                        editingService
+                          ? setEditingService({ ...editingService, description: e.target.value })
+                          : setNewService({ ...newService, description: e.target.value })
+                      }
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary mt-2"
+                      onClick={uploadImage}
+                    >
+                      <FaCamera /> Thêm ảnh (dưới dạng text)
+                    </button>
+                  </div>
+
+                  {/* Giá */}
+                  <input
+                    type="number"
+                    className="form-control"
+                    placeholder="Giá"
+                    value={editingService ? editingService.price : newService.price}
+                    onChange={(e) =>
+                      editingService
+                        ? setEditingService({ ...editingService, price: e.target.value })
+                        : setNewService({ ...newService, price: e.target.value })
+                    }
+                    required
+                    style={{ marginBottom: "15px" }}
+                  />
+
+                  {/* Ảnh preview */}
+                  <div className="d-flex align-items-center gap-2">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: "none" }}
+                      ref={fileInputRef}
+                      onChange={(e) => handleFileChange(e, !!editingService)}
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-outline-secondary"
+                      onClick={() => triggerFileInput(!!editingService)}
+                    >
+                      <FaCamera /> Ảnh
+                    </button>
+                    {preview && (
+                      <img
+                        src={preview}
+                        alt="preview"
+                        style={{ width: "50px", height: "50px", objectFit: "cover" }}
+                      />
+                    )}
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button type="submit" className="btn btn-success">
+                    {editingService ? "Cập nhật" : "Thêm"}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => {
+                      setShowModal(false);
+                      setEditingService(null);
+                      setPreview(null);
+                    }}
+                  >
+                    Hủy
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
-        </form>
+        </div>
       )}
+
+      {/* Search */}
       <div className="d-flex justify-content-end mb-3">
         <input
           type="text"
@@ -328,7 +348,7 @@ export default function ManagerServices() {
         />
       </div>
 
-      {/* Bảng dịch vụ */}
+      {/* Table */}
       <div className="table-responsive card shadow-sm p-3">
         <table className="table table-hover align-middle">
           <thead className="table-success">
@@ -351,22 +371,26 @@ export default function ManagerServices() {
                     <img
                       src={s.imageUrl}
                       alt="service"
-                      style={{
-                        width: "50px",
-                        height: "50px",
-                        objectFit: "cover",
-                      }}
+                      style={{ width: "50px", height: "50px", objectFit: "cover" }}
                     />
                   )}
                 </td>
                 <td>{s.serviceName}</td>
-                <td>{s.description}</td>
+                <td>
+                  <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                    {s.description}
+                  </pre>
+                </td>
                 <td>{Number(s.price).toLocaleString("vi-VN")} ₫</td>
                 <td>{new Date(s.createdAt).toLocaleDateString("vi-VN")}</td>
                 <td>
                   <button
                     className="btn btn-sm btn-outline-primary me-2"
-                    onClick={() => setEditingService(s)}
+                    onClick={() => {
+                      setEditingService(s);
+                      setPreview(s.imageUrl || null);
+                      setShowModal(true);
+                    }}
                   >
                     <FaEdit />
                   </button>
@@ -381,6 +405,8 @@ export default function ManagerServices() {
             ))}
           </tbody>
         </table>
+
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="d-flex justify-content-center mt-3 gap-2">
             <button
@@ -390,21 +416,15 @@ export default function ManagerServices() {
             >
               ←
             </button>
-
             {[...Array(totalPages)].map((_, i) => (
               <button
                 key={i}
-                className={`btn ${
-                  currentPage === i + 1
-                    ? "btn-success"
-                    : "btn-outline-secondary"
-                }`}
+                className={`btn ${currentPage === i + 1 ? "btn-success" : "btn-outline-secondary"}`}
                 onClick={() => setCurrentPage(i + 1)}
               >
                 {i + 1}
               </button>
             ))}
-
             <button
               className="btn btn-outline-secondary"
               disabled={currentPage === totalPages}
