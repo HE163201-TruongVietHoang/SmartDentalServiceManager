@@ -1,6 +1,7 @@
 const { getPool } = require("../config/db");
 const sql = require("mssql");
 const cloudinary = require("../config/cloudinary");
+const streamifier = require("streamifier");
 // ==========================
 // 📦 CRUD cho bảng Services
 // ==========================
@@ -206,5 +207,29 @@ exports.deleteService = async (req, res) => {
   } catch (err) {
     console.error("Error deleting service:", err);
     res.status(500).json({ error: "Failed to delete service" });
+  }
+};
+exports.uploadServiceImage = async (req, res) => {
+  if (!req.file) return res.status(400).json({ message: "Chưa chọn file" });
+
+  try {
+    const streamUpload = (fileBuffer) => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "services" },
+          (error, result) => {
+            if (result) resolve(result);
+            else reject(error);
+          }
+        );
+        streamifier.createReadStream(fileBuffer).pipe(stream);
+      });
+    };
+
+    const result = await streamUpload(req.file.buffer);
+    res.json({ url: result.secure_url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Upload thất bại" });
   }
 };

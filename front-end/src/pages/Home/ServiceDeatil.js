@@ -70,9 +70,10 @@ export default function ServiceDetail() {
           </h2>
 
           {/* Description */}
-          <p className="text-muted fs-5 text-center mb-4">
-            {service.description}
-          </p>
+          <div
+            className=" fs-5 text-muted mb-4"
+            dangerouslySetInnerHTML={{ __html: service.description }}
+          ></div>
 
           <div className="row mt-4">
             {/* Price */}

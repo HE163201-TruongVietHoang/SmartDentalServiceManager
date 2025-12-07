@@ -7,5 +7,5 @@ router.get("/:id", serviceController.getServiceById);
 router.post("/",upload.single("image"), serviceController.createService);
 router.put("/:id", upload.single("image"),serviceController.updateService);
 router.delete("/:id", serviceController.deleteService);
-
+router.post("/upload", upload.single("file"), serviceController.uploadServiceImage);
 module.exports = router;
