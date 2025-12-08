@@ -3,6 +3,7 @@ const {
   getAllMedicines,
   addMedicine,
   deleteMedicine,
+  updateMedicine,
 } = require("../access/medicineAccess");
 
 // Lấy danh sách thuốc
@@ -59,6 +60,30 @@ exports.deleteMedicine = async (req, res) => {
     }
   } catch (err) {
     console.error("DELETE MEDICINE ERROR:", err);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
+
+// Cập nhật thuốc
+exports.updateMedicine = async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const { medicineName, unit, description } = req.body;
+
+  if (!medicineName || medicineName.trim() === "") {
+    return res.status(400).json({ error: "Tên thuốc không được để trống" });
+  }
+
+  try {
+    const updated = await updateMedicine(
+      id,
+      medicineName.trim(),
+      unit || "",
+      description || null
+    );
+
+    return res.json(updated);
+  } catch (err) {
+    console.error("UPDATE MEDICINE ERROR:", err);
     return res.status(500).json({ error: "Server error" });
   }
 };

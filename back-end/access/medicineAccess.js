@@ -63,4 +63,27 @@ module.exports = {
 
     return true;
   },
+  // Cập nhật thuốc
+  updateMedicine: async (medicineId, medicineName, unit, description) => {
+    const pool = await getPool();
+
+    const result = await pool
+      .request()
+      .input("id", sql.Int, medicineId)
+      .input("medicineName", sql.NVarChar, medicineName)
+      .input("unit", sql.NVarChar, unit || "")
+      .input("description", sql.NVarChar, description || null).query(`
+      UPDATE Medicines
+      SET medicineName = @medicineName,
+          unit = @unit,
+          description = @description
+      WHERE medicineId = @id;
+
+      SELECT medicineId, medicineName, unit, description
+      FROM Medicines
+      WHERE medicineId = @id;
+    `);
+
+    return result.recordset[0];
+  },
 };

@@ -11,6 +11,7 @@ import {
   FaCalendarAlt,
   FaPercent,
   FaFileInvoiceDollar,
+  FaPills,
 } from "react-icons/fa";
 
 function ClinicManagerLayout({ children }) {
@@ -52,6 +53,11 @@ function ClinicManagerLayout({ children }) {
       name: "Quản lý hóa đơn",
       icon: <FaFileInvoiceDollar />,
       path: "/clinicmanager/invoice",
+    },
+    {
+      name: "Quản lý thuốc",
+      icon: <FaPills />,
+      path: "/clinicmanager/medicines",
     },
   ];
 

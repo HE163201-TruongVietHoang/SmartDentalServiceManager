@@ -1,21 +1,28 @@
-// src/pages/Doctor/DoctorMedicinePage.js
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-export default function DoctorMedicinePage() {
+export default function ClinicManagerMedicinePage() {
   const [medicines, setMedicines] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // ADD state
   const [newName, setNewName] = useState("");
   const [newUnit, setNewUnit] = useState("");
   const [newDescription, setNewDescription] = useState("");
-
-  const [search, setSearch] = useState("");
   const [error, setError] = useState("");
+
+  // SEARCH state
+  const [search, setSearch] = useState("");
+
+  // EDIT state
+  const [editing, setEditing] = useState(null);
+  const [editName, setEditName] = useState("");
+  const [editUnit, setEditUnit] = useState("");
+  const [editDescription, setEditDescription] = useState("");
 
   const token = localStorage.getItem("token");
 
-  // LOAD ALL
+  // LOAD ALL MEDICINES
   const loadMedicines = async () => {
     try {
       setLoading(true);
@@ -72,7 +79,6 @@ export default function DoctorMedicinePage() {
 
       if (!res.ok) throw new Error(data.error || "Không thêm được thuốc");
 
-      // data là object thuốc mới từ backend
       const newMed = {
         ...data,
         unit: data.unit || "",
@@ -88,7 +94,7 @@ export default function DoctorMedicinePage() {
     }
   };
 
-  // DELETE
+  // DELETE MEDICINE
   const handleDeleteMedicine = async (id) => {
     if (!window.confirm("Bạn có chắc muốn xóa thuốc này?")) return;
 
@@ -107,7 +113,50 @@ export default function DoctorMedicinePage() {
     }
   };
 
-  // FILTER
+  // OPEN EDIT MODAL
+  const openEditModal = (m) => {
+    setEditing(m.medicineId);
+    setEditName(m.medicineName);
+    setEditUnit(m.unit);
+    setEditDescription(m.description);
+  };
+
+  // UPDATE MEDICINE
+  const handleUpdateMedicine = async () => {
+    if (!editName.trim()) return toast.error("Tên thuốc không được trống");
+    if (!editUnit.trim()) return toast.error("Đơn vị không được trống");
+
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/medicines/update/${editing}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            medicineName: editName,
+            unit: editUnit,
+            description: editDescription,
+          }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      setMedicines((prev) =>
+        prev.map((m) => (m.medicineId === editing ? data : m))
+      );
+
+      setEditing(null);
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  // FILTER SEARCH
   const filtered = medicines.filter((m) =>
     (m.medicineName || "").toLowerCase().includes(search.toLowerCase())
   );
@@ -115,9 +164,9 @@ export default function DoctorMedicinePage() {
   return (
     <div style={{ padding: "30px", minHeight: "100vh" }}>
       <div style={containerStyle}>
-        <h2 style={titleStyle}>QUẢN LÝ THUỐC – BÁC SĨ</h2>
+        <h2 style={titleStyle}>QUẢN LÝ THUỐC</h2>
 
-        {/* ADD FORM */}
+        {/* ADD MEDICINE FORM */}
         <div style={cardStyle}>
           <h3 style={{ marginTop: 0, color: "#1E90FF" }}>Thêm thuốc mới</h3>
 
@@ -157,7 +206,7 @@ export default function DoctorMedicinePage() {
           {error && <p style={{ color: "red", marginTop: "8px" }}>{error}</p>}
         </div>
 
-        {/* LIST */}
+        {/* MEDICINE LIST */}
         <div style={{ ...cardStyle, marginTop: "25px" }}>
           <h3 style={{ marginTop: 0, color: "#1E90FF" }}>Danh sách thuốc</h3>
 
@@ -192,10 +241,21 @@ export default function DoctorMedicinePage() {
                     <td style={td}>{m.description || "—"}</td>
                     <td style={td}>
                       <button
+                        onClick={() => openEditModal(m)}
+                        style={{
+                          ...btnPrimary,
+                          background: "#FFA500",
+                          marginRight: "8px",
+                        }}
+                      >
+                        Sửa
+                      </button>
+
+                      <button
                         onClick={() => handleDeleteMedicine(m.medicineId)}
                         style={btnDanger}
                       >
-                        Xoá
+                        Xóa
                       </button>
                     </td>
                   </tr>
@@ -216,11 +276,57 @@ export default function DoctorMedicinePage() {
           )}
         </div>
       </div>
+
+      {/* ========================= EDIT MODAL ========================= */}
+      {editing && (
+        <div style={modalOverlay}>
+          <div style={modalContent}>
+            <h3 style={{ marginTop: 0, color: "#1E90FF" }}>
+              Chỉnh sửa thuốc #{editing}
+            </h3>
+
+            <input
+              type="text"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              placeholder="Tên thuốc"
+              style={{ ...inputStyle, marginBottom: 10 }}
+            />
+
+            <input
+              type="text"
+              value={editUnit}
+              onChange={(e) => setEditUnit(e.target.value)}
+              placeholder="Đơn vị"
+              style={{ ...inputStyle, marginBottom: 10 }}
+            />
+
+            <input
+              type="text"
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              placeholder="Mô tả"
+              style={{ ...inputStyle, marginBottom: 10 }}
+            />
+
+            <button onClick={handleUpdateMedicine} style={btnPrimary}>
+              Lưu thay đổi
+            </button>
+            <button
+              onClick={() => setEditing(null)}
+              style={{ ...btnDanger, marginLeft: 10 }}
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-// STYLE
+/* ======================== STYLES ======================== */
+
 const containerStyle = {
   maxWidth: "1000px",
   margin: "auto",
@@ -284,4 +390,25 @@ const btnDanger = {
   borderRadius: "8px",
   border: "none",
   cursor: "pointer",
+};
+
+const modalOverlay = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100%",
+  height: "100%",
+  background: "rgba(0,0,0,0.3)",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  zIndex: 1000,
+};
+
+const modalContent = {
+  background: "#fff",
+  padding: "20px",
+  borderRadius: "12px",
+  width: "400px",
+  boxShadow: "0 2px 10px rgba(0,0,0,0.3)",
 };

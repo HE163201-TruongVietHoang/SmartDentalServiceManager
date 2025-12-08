@@ -32,11 +32,6 @@ function DoctorLayout({ children }) {
       icon: <FaServicestack />,
       path: "/doctor/diagnosis/history",
     },
-    {
-      name: "Quản lý thuốc",
-      icon: <FaServicestack />,
-      path: "/doctor/medicines",
-    },
   ];
 
   // 🧠 Hàm xử lý đăng xuất
